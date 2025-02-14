@@ -1,11 +1,23 @@
 import React, { useState } from "react";
-import { AppBar, Toolbar, InputBase, IconButton, Avatar, Badge, Box, Menu, MenuItem } from "@mui/material";
-import { Search, Notifications, AttachMoney, Mail, AccessTime } from "@mui/icons-material";
+import {
+  AppBar,
+  Toolbar,
+  Avatar,
+  Box,
+  Menu,
+  MenuItem,
+  useMediaQuery,
+} from "@mui/material";
+
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
+import logo from "../../../assets/Images/logo.png"
 
 const Header = ({ onMenuClick }) => {
-  const [anchorEl, setAnchorEl] = useState(null); 
-  const navigate = useNavigate(); 
+  const [anchorEl, setAnchorEl] = useState(null);
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -15,125 +27,91 @@ const Header = ({ onMenuClick }) => {
     setAnchorEl(null);
   };
 
-
   const handleLogout = () => {
-
-    localStorage.removeItem("token"); 
+    localStorage.removeItem("token");
     sessionStorage.removeItem("token");
     navigate("/login");
-    handleMenuClose(); 
+    handleMenuClose();
   };
 
   return (
     <AppBar
-      position="static"
-      elevation={0}
-      sx={{
-        backgroundColor: "#fff",
-        color: "#000",
-        borderBottom: "1px solid #e0e0e0",
-      }}
-    >
+    position="fixed"
+    elevation={0}
+    sx={{
+      backgroundColor: "#fff",
+      color: "#000",
+      borderBottom: "1px solid #e0e0e0",
+      width: `calc(100% - 240px)`, // Subtract sidebar width
+      marginLeft: "240px", // Move right by sidebar width
+    }}
+  >
+  
       <Toolbar
         sx={{
           justifyContent: "space-between",
           flexWrap: "wrap",
+          px: { xs: 1, sm: 2 },
+          pt:"4px",
         }}
       >
-        {}
+        {/* Title */}
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            flexBasis: { xs: "100%", md: "auto" },
-            justifyContent: { xs: "flex-start", md: "flex-start" },
-            mb: { xs: 1, md: 0 },
+            fontWeight: "bold",
+            fontSize: { xs: "14px", sm: "18px" },
+            textAlign: "center",
+            flexGrow: 1,
           }}
         >
-          {}
-          {onMenuClick && (
-            <IconButton
-              sx={{
-                display: { xs: "inline-flex", md: "none" },
-              }}
-              onClick={onMenuClick}
-            >
-              <Search sx={{ fontSize: 20 }} />
-            </IconButton>
-          )}
-
-          {}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              backgroundColor: "#f7f7f7",
-              borderRadius: 1,
-              px: 2,
-              py: 0.5,
-              width: { xs: "70%", sm: 300 },
-              marginLeft: { xs: "auto", sm: 0 }, 
-            }}
-          >
-            <InputBase
-              placeholder="Search term"
-              sx={{
-                flex: 1,
-                color: "#9e9e9e",
-                fontSize: 14,
-              }}
-            />
-            <Search sx={{ color: "#9e9e9e", fontSize: 20 }} />
-          </Box>
+          Dr Ambedkar Janmbhoomi Trust
         </Box>
+        {/* <Box
+  sx={{
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    flexGrow: 1,
+  }}
+>
+  <img
+    src={logo}  // Update this path
+    alt="Dr Ambedkar Janmbhoomi Trust Logo"
+    style={{ maxWidth: "55px", height: "auto" }} // Adjust size as needed
+  />
+</Box> */}
 
-        {}
+        {/* Right Side */}
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
             gap: { xs: 1, sm: 2 },
-            justifyContent: { xs: "flex-end" },
-            width: { xs: "100%", sm: "auto" }, 
+            justifyContent: "flex-end",
           }}
         >
-          {}
-          <IconButton>
-            <Badge badgeContent={4} color="success">
-              <Notifications sx={{ fontSize: 20 }} />
-            </Badge>
-          </IconButton>
-          <IconButton>
-            <AttachMoney sx={{ fontSize: 20 }} />
-          </IconButton>
-          <IconButton>
-            <Mail sx={{ fontSize: 20 }} />
-          </IconButton>
-          <IconButton>
-            <AccessTime sx={{ fontSize: 20 }} />
-          </IconButton>
+          {!isMobile && <></>}
 
-          {}
+          {/* Avatar Menu */}
           <Avatar
             alt="User"
             src="https://via.placeholder.com/150"
             sx={{
               width: 32,
               height: 32,
-              cursor: "pointer", 
+              cursor: "pointer",
             }}
-            onClick={handleMenuClick} 
+            onClick={handleMenuClick}
           />
           <Menu
-            anchorEl={anchorEl} 
-            open={Boolean(anchorEl)} 
-            onClose={handleMenuClose} 
-            sx={{ mt: "45px" }} 
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+            sx={{ mt: "45px" }}
           >
             <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
             <MenuItem onClick={handleMenuClose}>My Account</MenuItem>
-            <MenuItem onClick={handleLogout}>Logout</MenuItem> 
+            <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
         </Box>
       </Toolbar>
