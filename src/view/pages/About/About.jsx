@@ -1,134 +1,168 @@
-import React, { useState } from "react";
-import { 
-  Box, Typography, TextField, Button, Paper, 
-  Grid, Input, IconButton, Avatar 
-} from "@mui/material";
-import { PhotoCamera } from "@mui/icons-material";
+import React, { useState, useEffect, useRef } from "react";
+import { Box, Typography, TextField, Button, Paper, Stack, IconButton, Avatar } from "@mui/material";
+import { Edit, Delete } from "@mui/icons-material";
+import JoditEditor from "jodit-react";
+import { useDispatch, useSelector } from "react-redux";
+import { saveAboutToBackend, updateAbout } from "../../redux/slice/aboutSlice";
+import debounce from "lodash.debounce";
 
 const About = () => {
-  const [aboutText, setAboutText] = useState("");
-  const [dob, setDob] = useState("");
-  const [achievements, setAchievements] = useState("");
-  const [contributions, setContributions] = useState("");
-  const [selectedImage, setSelectedImage] = useState(null);
+  const dispatch = useDispatch();
+  const aboutData = useSelector((state) => state.about);
+
+  // Using localStorage to persist data after refresh
+  const [title, setTitle] = useState(localStorage.getItem("title") || aboutData.title);
+  const [name, setName] = useState(localStorage.getItem("name") || aboutData.name);
+  const [biography, setBiography] = useState(localStorage.getItem("biography") || aboutData.biography);
+  const [selectedImage, setSelectedImage] = useState(null);  // Changed to store the file object
+  const [isEditable, setIsEditable] = useState(false); // Start with editable as false for 'Update' functionality
+
+  const editor = useRef(null); // JoditEditor reference
+
+  // Update localStorage whenever data changes
+  useEffect(() => {
+    localStorage.setItem("title", title);
+    localStorage.setItem("name", name);
+    localStorage.setItem("biography", biography);
+    if (selectedImage) {
+      localStorage.setItem("image_name", selectedImage.name);  // Store image name instead of URL
+    }
+  }, [title, name, biography, selectedImage]);
 
   const handleChange = (event, setter) => {
     setter(event.target.value);
   };
 
   const handleImageUpload = (event) => {
-    const file = event.target.files[0];
+    const file = event.target.files[0];  // Ensure it is a file object
     if (file) {
-      setSelectedImage(URL.createObjectURL(file));
+      setSelectedImage(file);  // Store the actual File object
     }
   };
 
-  const handleSave = () => {
-    const aboutData = {
-      aboutText,
-      dob,
-      achievements,
-      contributions,
-      image: selectedImage,
-    };
-    console.log("Saved Data:", aboutData);
-    // Here you can send aboutData to an API to save in the database
+  const handleDeleteBiography = () => {
+    setBiography("");
+  };
+
+  // Debounced editor change handler
+  const handleEditorChange = debounce((newContent) => {
+    setBiography(newContent);  // Update biography state with editor's content
+  }, 500); // Reduced debounce time to 500ms for quicker updates
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+
+    const aboutDataToSend = new FormData();
+    aboutDataToSend.append("title", title);
+    aboutDataToSend.append("name", name);
+    aboutDataToSend.append("biography", biography); // Biography as HTML with <p> tags
+
+    if (selectedImage) {
+      aboutDataToSend.append("images", selectedImage);  // Send the actual file
+    }
+
+    // Log FormData for debugging
+    console.log("Sending FormData:");
+    aboutDataToSend.forEach((value, key) => {
+      console.log(key, value);
+    });
+
+    try {
+      // Ensure that 'Content-Type' is automatically set for FormData
+      await dispatch(saveAboutToBackend(aboutDataToSend)); 
+      setIsEditable(false);
+    } catch (error) {
+      console.error("Error saving data: ", error);
+    }
+  };
+
+  const handleUpdate = () => {
+    setIsEditable(true); // Set editable to true to allow changes
   };
 
   return (
-    <Box sx={{ p: 5 ,pt:"50px" }}>
+    <Box sx={{ p: 5, mt:5}}>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
-        About Dr. Ambedkar
+        {title}
       </Typography>
 
       <Paper sx={{ p: 3, border: "1px solid #ddd" }}>
-        <Grid container spacing={2}>
+        <Stack spacing={2}>
           {/* Profile Image Upload */}
-          <Grid item xs={12} md={4} sx={{ textAlign: "center" }}>
+          <Box sx={{ textAlign: "center" }}>
             <Avatar 
-              src={selectedImage} 
-              alt="Dr. Ambedkar" 
+              src={selectedImage ? URL.createObjectURL(selectedImage) : ''} 
+              alt={name} 
               sx={{ width: 120, height: 120, mb: 1, mx: "auto" }} 
             />
             <IconButton color="primary" component="label">
               <input hidden accept="image/*" type="file" onChange={handleImageUpload} />
-              <PhotoCamera />
+              <Edit />
             </IconButton>
-          </Grid>
+          </Box>
 
           {/* Form Fields */}
-          <Grid item xs={12} md={8}>
-            {/* Name */}
+          <form onSubmit={handleSave}>
             <TextField
               fullWidth
-              label="Full Name"
+              label="Title"
               variant="outlined"
-              value="Dr. Bhimrao Ambedkar"
-              disabled
-              sx={{ mb: 2 }}
+              value={title}
+              onChange={(e) => handleChange(e, setTitle)}
+              disabled={!isEditable}
+              sx={{ mb: 2 }} // Added margin
             />
 
-            {/* Date of Birth */}
             <TextField
               fullWidth
-              label="Date of Birth"
-              type="date"
+              label="Name"
               variant="outlined"
-              value={dob}
-              onChange={(e) => handleChange(e, setDob)}
-              InputLabelProps={{ shrink: true }}
-              sx={{ mb: 2 }}
+              value={name}
+              onChange={(e) => handleChange(e, setName)}
+              disabled={!isEditable}
+              sx={{ mb: 2 }} // Added margin
             />
 
-            {/* Key Achievements */}
-            <TextField
+            {/* Biography (Jodit Editor) */}
+            <Typography variant="h6" sx={{ mb: 2 }}>Biography</Typography> {/* Added margin */}
+            <JoditEditor
+              ref={editor}
+              value={biography}
+              config={{
+                readonly: !isEditable,
+                placeholder: "Write about Dr. Ambedkar's life...",
+                height: 400,
+                cleanOnPaste: false,  // Retain styles when pasting
+                cleanOnChange: false,  // Retain the HTML structure while editing
+              }}
+              style={{ width: "100%", minHeight: "200px" }}
+              onChange={handleEditorChange} // Update state on content change
+            />
+
+            {/* Action Buttons */}
+            <Button 
+              type="submit" 
+              variant="contained" 
+              color="primary" 
               fullWidth
-              multiline
-              minRows={3}
-              label="Key Achievements"
-              variant="outlined"
-              placeholder="List Dr. Ambedkar's key achievements..."
-              value={achievements}
-              onChange={(e) => handleChange(e, setAchievements)}
-              sx={{ mb: 2 }}
-            />
-
-            {/* Contributions */}
-            <TextField
-              fullWidth
-              multiline
-              minRows={3}
-              label="Contributions"
-              variant="outlined"
-              placeholder="Describe his contributions..."
-              value={contributions}
-              onChange={(e) => handleChange(e, setContributions)}
-              sx={{ mb: 2 }}
-            />
-          </Grid>
-
-          {/* About Text */}
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              multiline
-              minRows={5}
-              label="About Dr. Ambedkar"
-              variant="outlined"
-              placeholder="Write about Dr. Ambedkar's life..."
-              value={aboutText}
-              onChange={(e) => handleChange(e, setAboutText)}
-              sx={{ mb: 2 }}
-            />
-          </Grid>
-
-          {/* Save Button */}
-          <Grid item xs={12}>
-            <Button variant="contained" color="primary" fullWidth onClick={handleSave}>
+              disabled={!isEditable}
+              sx={{ mb: 2 }} // Added margin
+            >
               Save
             </Button>
-          </Grid>
-        </Grid>
+          </form>
+
+          {/* Update Button */}
+          {!isEditable && (
+            <Button variant="outlined" color="secondary" fullWidth onClick={handleUpdate}>
+              Update
+            </Button>
+          )}
+
+          <IconButton color="error" onClick={handleDeleteBiography}>
+            <Delete />
+          </IconButton>
+        </Stack>
       </Paper>
     </Box>
   );

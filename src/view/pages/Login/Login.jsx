@@ -28,26 +28,25 @@ function Login() {
   });
 
   const initialValues = { email: "", password: "" };
-
   const handleSubmit = async (values) => {
     loginMutation.mutate(values, {
       onSuccess: (response) => {
         const { encryptedToken, user_role } = response.data;
-
+  
         if (user_role === "user") {
           toast.error("Access denied! Only admins can log in.", {
             position: "top-right",
           });
           return;
         }
-
-        localStorage.setItem("authToken", encryptedToken);
+  
+        localStorage.setItem("token", encryptedToken);
         localStorage.setItem("userRole", user_role);
-
+  
         toast.success("Login Successful!", { position: "top-right" });
-
+  
         setTimeout(() => {
-          if (user_role === "admin" || user_role === "super_admin") {
+          if (user_role === "admin" || user_role === "super-admin") {
             navigate("/dash"); // Admin/Super Admin Dashboard
           }
         }, 1500);
@@ -59,6 +58,7 @@ function Login() {
       },
     });
   };
+  
 
   return (
     <Box

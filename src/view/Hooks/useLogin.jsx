@@ -1,11 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import api from "../redux/axios/axios";  // Import your Axios instance
 
 const login = async (userData) => {
-  const response = await axios.post(
-    "http://192.168.0.127:8080/api/user/login",
-    userData
-  );
+  const response = await api.post("/user/login", userData);  // Use the api instance
+  console.log("Response: ", response);
+  
   return response.data;
 };
 

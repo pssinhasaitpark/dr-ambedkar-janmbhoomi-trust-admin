@@ -43,7 +43,7 @@ const Sidebar = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const menuItems = [
-    { text: "Dashboard", icon: <Dashboard />, path: "/" },
+    { text: "Dashboard", icon: <Dashboard />, path: "/dash" },
  
     { text: "Home", icon: <HomeIcon />, path: "/home" },
     { text: "About", icon: <Info />, path: "/about" },

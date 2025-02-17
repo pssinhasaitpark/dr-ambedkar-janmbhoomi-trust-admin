@@ -1,18 +1,18 @@
 import "./App.css";
 import { Routes, Route, useLocation } from "react-router-dom";
-import AboutPage from "../src/view/pages/About/About";
-import Login from "./view/pages/Login/AdminLogin";
+import AboutPage from "./view/pages/About/About";
+import Login from "./view/pages/Login/Login";
 import Sidebar from "./view/components/SideBar/Sidebar";
 import Header from "./view/components/Header/AdminHeader";
-
 import { Box } from "@mui/material";
 import AdminMemorialForm from "./view/pages/Home/Home";
+import Dashboard from "./view/components/Dashboard/Dashboard";
+import PrivateRoute from "./view/routes/PrivateRoute";
+import DashboardLayout from "./view/layout/DashboardLayout/DashboardLayout";
 
 function AppLayout({ children }) {
   const location = useLocation();
-  const hideSidebarAndHeader = ["/login", "/signup"].includes(
-    location.pathname
-  );
+  const hideSidebarAndHeader = ["/login", "/signup"].includes(location.pathname);
 
   return (
     <Box
@@ -36,9 +36,14 @@ function App() {
     <AppLayout>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/home" element={<AdminMemorialForm />} />
         
+        {/* Protect all admin routes */}
+        <Route element={<PrivateRoute />}>
+          <Route path="/" element={<DashboardLayout />} />
+          <Route path="/dash" element={<Dashboard />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/home" element={<AdminMemorialForm />} />
+        </Route>
       </Routes>
     </AppLayout>
   );
