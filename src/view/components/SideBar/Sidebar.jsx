@@ -13,18 +13,20 @@ import {
 } from "@mui/material";
 import {
   Dashboard,
- 
+  EmojiEvents,
   RateReview,
- Home,
  Info,
-
+ AutoStories,
+ Collections,
 VolunteerActivism,
   BarChart,
   Settings,
   Label,
   ExpandLess,
   ExpandMore,
+  ContactMail,
   Menu as MenuIcon,
+  Close as CloseIcon, 
 } from "@mui/icons-material";
 import HomeIcon from '@mui/icons-material/Home';
 import { useNavigate } from "react-router-dom";
@@ -48,18 +50,18 @@ const Sidebar = () => {
     { text: "Home", icon: <HomeIcon />, path: "/home" },
     { text: "About", icon: <Info />, path: "/about" },
     { text: "Museum & Exhibits", icon: <RateReview />, path: "/Exhibition" },
-    { text: "Events & Celebrations", icon: <BarChart />, path: "/Events" },
-    { text: "history", icon: <VolunteerActivism />, path: "/history" },
-    { text: "Books", icon: <Home />, path: "/Books" },
+    { text: "Events & Celebrations", icon: <EmojiEvents />, path: "/event" },
+    { text: "Donation and Support", icon: <VolunteerActivism />, path: "/donation" },
+    { text: "Books and Publications", icon: <AutoStories  />, path: "/book" },
     { text: "News & Updates", icon: <BarChart />, path: "/News" },
-    { text: "Gallery", icon: <BarChart />, path: "/Gallery" },
-    { text: "Contact & Inquiries", icon: <BarChart />, path: "/Contact" },
+    { text: "Gallery", icon: <Collections />, path: "/Gallery" },
+    { text: "Contact & Inquiries", icon: <ContactMail />, path: "/Contact" },
   ];
 
-  const settingsItems = [
-    { text: "Setting Sample 1", path: "/settings/setingsample1" },
-    { text: "Setting Sample 2", path: "/settings/setingsample1" },
-  ];
+  // const settingsItems = [
+  //   { text: "Setting Sample 1", path: "/settings/setingsample1" },
+  //   { text: "Setting Sample 2", path: "/settings/setingsample1" },
+  // ];
 
   const handleParentClick = (index, item) => {
     setActiveParent(index);
@@ -95,11 +97,14 @@ const Sidebar = () => {
           sx={{
             position: "absolute",
             top: "10px",
-            left: "10px",
+            // left: "10px",
             zIndex: 1300,
+            right: drawerOpen ? "10px" : "inherit",
+            left: drawerOpen ? "inherit" : "10px",
           }}
         >
-          <MenuIcon />
+          {drawerOpen ? <CloseIcon /> : <MenuIcon />}
+
         </IconButton>
       )}
 
@@ -231,7 +236,7 @@ const Sidebar = () => {
             />
             {settingsOpen ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
-          <Collapse in={settingsOpen} timeout="auto" unmountOnExit>
+          {/* <Collapse in={settingsOpen} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
               {settingsItems.map((item, index) => (
                 <ListItem
@@ -268,8 +273,8 @@ const Sidebar = () => {
                 </ListItem>
               ))}
             </List>
-          </Collapse>
-
+          </Collapse> */}
+{/* 
           <ListItem
             button
             onClick={() =>
@@ -304,7 +309,7 @@ const Sidebar = () => {
                 },
               }}
             />
-          </ListItem>
+          </ListItem> */}
         </List>
       </Drawer>
     </>
