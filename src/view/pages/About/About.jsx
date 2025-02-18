@@ -1,42 +1,58 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Box, Typography, TextField, Button, Paper, Stack, IconButton, Avatar } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { Box, Typography, TextField, Button, Paper, Stack, IconButton, Avatar, Divider } from "@mui/material";
+import { Edit } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 import { useDispatch, useSelector } from "react-redux";
-import { saveAboutToBackend, updateAbout } from "../../redux/slice/aboutSlice";
+import { saveAboutToBackend, fetchAboutData } from "../../redux/slice/aboutSlice";
 import debounce from "lodash.debounce";
 
 const About = () => {
   const dispatch = useDispatch();
   const aboutData = useSelector((state) => state.about);
+  
+  const [title, setTitle] = useState(aboutData.title || "About Dr. Ambedkar");
+  const [name, setName] = useState(aboutData.name || "Dr. Bhimrao Ambedkar");
+  const [biography, setBiography] = useState(aboutData.biography || "");
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(aboutData.images?.[0]?.url || null); // Use the first image URL from Redux state
+  const [isEditable, setIsEditable] = useState(false);
+  const [error, setError] = useState("");
+  const editor = useRef(null);
 
-  // Using localStorage to persist data after refresh
-  const [title, setTitle] = useState(localStorage.getItem("title") || aboutData.title);
-  const [name, setName] = useState(localStorage.getItem("name") || aboutData.name);
-  const [biography, setBiography] = useState(localStorage.getItem("biography") || aboutData.biography);
-  const [selectedImage, setSelectedImage] = useState(null);  // Changed to store the file object
-  const [isEditable, setIsEditable] = useState(false); // Start with editable as false for 'Update' functionality
-
-  const editor = useRef(null); // JoditEditor reference
-
-  // Update localStorage whenever data changes
+  // Fetch the data from the backend when the component mounts
   useEffect(() => {
-    localStorage.setItem("title", title);
-    localStorage.setItem("name", name);
-    localStorage.setItem("biography", biography);
-    if (selectedImage) {
-      localStorage.setItem("image_name", selectedImage.name);  // Store image name instead of URL
-    }
-  }, [title, name, biography, selectedImage]);
+    const fetchData = async () => {
+      try {
+        // Dispatch to fetch data from the backend
+        await dispatch(fetchAboutData());
+      } catch (error) {
+        console.error("Error fetching about data:", error);
+      }
+    };
 
+    fetchData();
+  }, [dispatch]); // Ensure the fetch happens on page load
+
+  // Handle change for form fields
   const handleChange = (event, setter) => {
     setter(event.target.value);
   };
 
   const handleImageUpload = (event) => {
-    const file = event.target.files[0];  // Ensure it is a file object
+    const file = event.target.files[0];
+    const maxSize = 10 * 1024 * 1024; // 10MB limit
+
     if (file) {
-      setSelectedImage(file);  // Store the actual File object
+      if (file.size > maxSize) {
+        setError("File size should be less than 10MB.");
+        return;
+      }
+      setError(""); // Clear error if file is valid
+      setSelectedImage(file); // Store the actual file object
+
+      // Create a preview of the image
+      const objectUrl = URL.createObjectURL(file);
+      setImagePreview(objectUrl);
     }
   };
 
@@ -44,9 +60,8 @@ const About = () => {
     setBiography("");
   };
 
-  // Debounced editor change handler
   const handleEditorChange = debounce((newContent) => {
-    setBiography(newContent);  // Update biography state with editor's content
+    setBiography(newContent);
   }, 500); // Reduced debounce time to 500ms for quicker updates
 
   const handleSave = async (e) => {
@@ -55,22 +70,15 @@ const About = () => {
     const aboutDataToSend = new FormData();
     aboutDataToSend.append("title", title);
     aboutDataToSend.append("name", name);
-    aboutDataToSend.append("biography", biography); // Biography as HTML with <p> tags
+    aboutDataToSend.append("biography", biography);
 
     if (selectedImage) {
-      aboutDataToSend.append("images", selectedImage);  // Send the actual file
+      aboutDataToSend.append("images", selectedImage);
     }
 
-    // Log FormData for debugging
-    console.log("Sending FormData:");
-    aboutDataToSend.forEach((value, key) => {
-      console.log(key, value);
-    });
-
     try {
-      // Ensure that 'Content-Type' is automatically set for FormData
-      await dispatch(saveAboutToBackend(aboutDataToSend)); 
-      setIsEditable(false);
+      await dispatch(saveAboutToBackend(aboutDataToSend));
+      setIsEditable(false); // Disable edit mode after saving
     } catch (error) {
       console.error("Error saving data: ", error);
     }
@@ -81,7 +89,7 @@ const About = () => {
   };
 
   return (
-    <Box sx={{ p: 5, mt:5}}>
+    <Box sx={{ p: 5 }}>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
         {title}
       </Typography>
@@ -90,15 +98,16 @@ const About = () => {
         <Stack spacing={2}>
           {/* Profile Image Upload */}
           <Box sx={{ textAlign: "center" }}>
-            <Avatar 
-              src={selectedImage ? URL.createObjectURL(selectedImage) : ''} 
-              alt={name} 
-              sx={{ width: 120, height: 120, mb: 1, mx: "auto" }} 
+            <Avatar
+              src={imagePreview || (selectedImage ? URL.createObjectURL(selectedImage) : '')}
+              alt={name}
+              sx={{ width: 120, height: 120, mb: 1, mx: "auto" }}
             />
             <IconButton color="primary" component="label">
               <input hidden accept="image/*" type="file" onChange={handleImageUpload} />
               <Edit />
             </IconButton>
+            {error && <Typography color="error">{error}</Typography>} {/* Display error if any */}
           </Box>
 
           {/* Form Fields */}
@@ -120,48 +129,80 @@ const About = () => {
               value={name}
               onChange={(e) => handleChange(e, setName)}
               disabled={!isEditable}
-              sx={{ mb: 2 }} // Added margin
+              sx={{ mb: 2 }}
             />
 
-            {/* Biography (Jodit Editor) */}
-            <Typography variant="h6" sx={{ mb: 2 }}>Biography</Typography> {/* Added margin */}
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Biography
+            </Typography>
+
             <JoditEditor
               ref={editor}
               value={biography}
               config={{
                 readonly: !isEditable,
-                placeholder: "Write about Dr. Ambedkar's life...",
-                height: 400,
-                cleanOnPaste: false,  // Retain styles when pasting
-                cleanOnChange: false,  // Retain the HTML structure while editing
+                placeholder: "Write about Dr. Ambedkar...",
+                height: 300,
+                cleanOnPaste: false,
+                cleanOnChange: false,
+                toolbar: {
+                  items: [
+                    "bold",
+                    "italic",
+                    "underline",
+                    "strikethrough",
+                    "eraser",
+                    "|",
+                    "font",
+                    "fontsize",
+                    "paragraph",
+                    "|",
+                    "align",
+                    "outdent",
+                    "indent",
+                    "|",
+                    "link",
+                    "image",
+                    "video",
+                    "table",
+                    "line",
+                    "code",
+                    "fullsize",
+                    "undo",
+                    "redo",
+                  ],
+                },
+                uploader: {
+                  insertImageAsBase64URI: true,
+                  url: "/upload",
+                  format: "json",
+                },
               }}
               style={{ width: "100%", minHeight: "200px" }}
-              onChange={handleEditorChange} // Update state on content change
+              onChange={handleEditorChange}
             />
 
-            {/* Action Buttons */}
-            <Button 
-              type="submit" 
-              variant="contained" 
-              color="primary" 
-              fullWidth
-              disabled={!isEditable}
-              sx={{ mb: 2 }} // Added margin
-            >
-              Save
-            </Button>
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={!isEditable}
+                sx={{ width: "48%" }}
+              >
+                Save
+              </Button>
+
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={handleUpdate}
+                sx={{ width: "48%" }}
+              >
+                Update Biography
+              </Button>
+            </Box>
           </form>
-
-          {/* Update Button */}
-          {!isEditable && (
-            <Button variant="outlined" color="secondary" fullWidth onClick={handleUpdate}>
-              Update
-            </Button>
-          )}
-
-          <IconButton color="error" onClick={handleDeleteBiography}>
-            <Delete />
-          </IconButton>
         </Stack>
       </Paper>
     </Box>

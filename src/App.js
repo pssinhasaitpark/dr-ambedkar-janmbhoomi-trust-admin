@@ -1,6 +1,10 @@
 import "./App.css";
 import { Routes, Route, useLocation } from "react-router-dom";
 import AboutPage from "./view/pages/About/About";
+import BookPage from "./view/pages/Books/Books";
+import EventPage from "./view/pages/Event/Event";
+import DonationPage from "./view/pages/Donation/Donation";
+
 import Login from "./view/pages/Login/Login";
 import Sidebar from "./view/components/SideBar/Sidebar";
 import Header from "./view/components/Header/AdminHeader";
@@ -42,6 +46,9 @@ function App() {
           <Route path="/" element={<DashboardLayout />} />
           <Route path="/dash" element={<Dashboard />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/book" element={<BookPage />} />
+          <Route path="/event" element={<EventPage />} />
+          <Route path="/donation" element={<DonationPage />} />
           <Route path="/home" element={<AdminMemorialForm />} />
         </Route>
       </Routes>

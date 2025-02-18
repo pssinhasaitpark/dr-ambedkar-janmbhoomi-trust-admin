@@ -9,7 +9,7 @@ export const logoutUser = createAsyncThunk("user/logoutUser", async (_, { dispat
 
     dispatch(resetAuth()); // Reset Redux state after logout
 
-    console.log("Logout: localStorage cleared");
+    // console.log("Logout: localStorage cleared");
 
     setTimeout(() => {
       window.location.href = "/login"; // Redirect to login after clearing data

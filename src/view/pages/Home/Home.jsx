@@ -132,7 +132,7 @@ const AdminMemorialForm = () => {
   // };
 
   return (
-    <Box sx={{ display: "flex", maxWidth: 1000, mx: "auto", mt: 10, boxShadow: 3, borderRadius: 2, backgroundColor: "#fff" }}>
+    <Box sx={{ display: "flex", maxWidth: 1000, mx: "auto", mt:5, boxShadow: 3, borderRadius: 2, backgroundColor: "#fff" }}>
       {/* Left Section - Form */}
       <Box sx={{ flex: 1, p: 3 }}>
         <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
