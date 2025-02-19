@@ -11,7 +11,7 @@ const store = configureStore({
   reducer: {
     auth: authReducer,
     about: aboutReducer,
-    book: bookReducer,
+    books: bookReducer,
     event: eventReducer,
     donation: donationReducer,
     memorial: memorialReducer,
