@@ -14,7 +14,7 @@ const initialState = {
 export const fetchAboutData = createAsyncThunk("about/fetchAboutData", async (_, { rejectWithValue }) => {
   try {
     const response = await api.get("/biography");
-    console.log("API Response:", response.data);
+    // console.log("API Response:", response.data);
     return response.data.data[0];
   } catch (error) {
     console.error("Error fetching About data:", error);

@@ -15,7 +15,7 @@ export const fetchBooksData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get("/books");
-      console.log("Fetched Books Data:", response.data.data);
+      // console.log("Fetched Books Data:", response.data.data);
       return response.data.data[0] || {};
     } catch (error) {
       console.error("Error fetching books data:", error);
@@ -33,7 +33,7 @@ export const saveBooksToBackend = createAsyncThunk(
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log("Saved Books Data:", response.data.data);
+      // console.log("Saved Books Data:", response.data.data);
       return response.data.data || {};
     } catch (error) {
       console.error("Error saving books data:", error);

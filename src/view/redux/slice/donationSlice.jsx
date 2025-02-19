@@ -15,7 +15,7 @@ export const fetchDonationData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get("/donation");
-      console.log("Fetched Donation Data:", response.data.data);
+      // console.log("Fetched Donation Data:", response.data.data);
       return response.data.data[0] || {};
     } catch (error) {
       console.error("Error fetching donation data:", error);
@@ -33,7 +33,7 @@ export const saveDonationToBackend = createAsyncThunk(
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log("Saved Donation Data:", response.data.data);
+      // console.log("Saved Donation Data:", response.data.data);
       return response.data.data || {};
     } catch (error) {
       console.error("Error saving donation data:", error);

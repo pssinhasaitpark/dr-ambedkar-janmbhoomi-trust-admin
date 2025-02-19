@@ -41,7 +41,7 @@ const Books = () => {
     setDescription(booksData.description || "");
     setSelectedImages(booksData.images || []);
   }, [booksData]);
-  console.log("book image",booksData.images);
+  // console.log("book image",booksData.images);
   
 
   const handleEditorChange = debounce((newContent) => {
@@ -76,8 +76,8 @@ const Books = () => {
     }
     setIsEditable(!isEditable);
   };
-  console.log("selectedImages:",selectedImages);
-  console.log("chech book data",booksData)
+  // console.log("selectedImages:",selectedImages);
+  // console.log("chech book data",booksData)
   return (
     <Box sx={{ p: 5 }}>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
