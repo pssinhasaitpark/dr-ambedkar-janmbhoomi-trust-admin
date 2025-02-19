@@ -4,6 +4,7 @@ import AboutPage from "./view/pages/About/About";
 import BookPage from "./view/pages/Books/Books";
 import EventPage from "./view/pages/Event/Event";
 import DonationPage from "./view/pages/Donation/Donation";
+import Newspage from "./view/pages/News/News";
 
 import Login from "./view/pages/Login/Login";
 import Sidebar from "./view/components/SideBar/Sidebar";
@@ -13,6 +14,7 @@ import AdminMemorialForm from "./view/pages/Home/Home";
 import Dashboard from "./view/components/Dashboard/Dashboard";
 import PrivateRoute from "./view/routes/PrivateRoute";
 import DashboardLayout from "./view/layout/DashboardLayout/DashboardLayout";
+import AdminProfile from "./view/pages/Profile/Profile";
 
 function AppLayout({ children }) {
   const location = useLocation();
@@ -50,6 +52,8 @@ function App() {
           <Route path="/event" element={<EventPage />} />
           <Route path="/donation" element={<DonationPage />} />
           <Route path="/home" element={<AdminMemorialForm />} />
+          <Route path="/profile" element={<AdminProfile />} />
+          <Route path="/news" element={<Newspage />} />
         </Route>
       </Routes>
     </AppLayout>

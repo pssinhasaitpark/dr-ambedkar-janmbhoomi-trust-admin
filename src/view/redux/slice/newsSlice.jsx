@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../axios/axios";
 
 const initialState = {
-  title: "Events",
+  title: "News",
   name: "",
   description: "",
   images: [],
@@ -10,73 +10,73 @@ const initialState = {
   error: null,
 };
 
-export const fetchEventsData = createAsyncThunk(
-  "events/fetchEventsData",
+export const fetchNewsData = createAsyncThunk(
+  "news/fetchNewsData",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/events");
-      // console.log("Fetched event Data:", response.data);
+      const response = await api.get("/news");
+    //   console.log("Fetched News Data:", response.data);
       return response.data.data[0] || {};
     } catch (error) {
-      console.error("Error fetching events data:", error);
+      console.error("Error fetching news data:", error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-export const saveEventsToBackend = createAsyncThunk(
-  "events/saveEventsToBackend",
-  async (eventsData, { rejectWithValue }) => {
+export const saveNewsToBackend = createAsyncThunk(
+  "news/saveNewsToBackend",
+  async (newsData, { rejectWithValue }) => {
     try {
-      const response = await api.post("/events", eventsData, {
+      const response = await api.post("/news", newsData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      // console.log("Saved events Data:", response.data.data);
+    //   console.log("Saved News Data:", response.data.data);
       return response.data.data || {};
     } catch (error) {
-      console.error("Error saving events data:", error);
+      console.error("Error saving news data:", error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-const eventSlice = createSlice({
-  name: "events",
+const newsSlice = createSlice({
+  name: "news",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchEventsData.pending, (state) => {
+      .addCase(fetchNewsData.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(fetchEventsData.fulfilled, (state, action) => {
+      .addCase(fetchNewsData.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.title = action.payload?.title || "Events";
+        state.title = action.payload?.title || "News";
         state.name = action.payload?.name || "";
         state.description = action.payload?.description || "";
         state.images = action.payload?.images || [];
       })
-      .addCase(fetchEventsData.rejected, (state, action) => {
+      .addCase(fetchNewsData.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       })
-      .addCase(saveEventsToBackend.pending, (state) => {
+      .addCase(saveNewsToBackend.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(saveEventsToBackend.fulfilled, (state, action) => {
+      .addCase(saveNewsToBackend.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.title = action.payload?.title || "events";
+        state.title = action.payload?.title || "News";
         state.name = action.payload?.name || "";
         state.description = action.payload?.description || "";
         state.images = action.payload?.images || [];
       })
-      .addCase(saveEventsToBackend.rejected, (state, action) => {
+      .addCase(saveNewsToBackend.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       });
   },
 });
 
-export default eventSlice.reducer;
+export default newsSlice.reducer;

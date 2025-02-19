@@ -6,15 +6,17 @@ import memorialReducer from "../slice/memorialSlice";
 import bookReducer from "../slice/bookSlice";
 import eventReducer from "../slice/eventSlice";
 import donationReducer from "../slice/donationSlice";
+import newsReducer from "../slice/newsSlice";
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
     about: aboutReducer,
     books: bookReducer,
-    event: eventReducer,
+    events: eventReducer,
     donation: donationReducer,
     memorial: memorialReducer,
+    news: newsReducer,
 },
 });
 
