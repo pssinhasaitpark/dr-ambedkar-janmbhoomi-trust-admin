@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Box, Typography, TextField, Button, Paper, Stack, IconButton, Avatar, Divider } from "@mui/material";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Paper,
+  Stack,
+  IconButton,
+  Avatar,
+} from "@mui/material";
 import { Edit } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,32 +17,31 @@ import debounce from "lodash.debounce";
 
 const About = () => {
   const dispatch = useDispatch();
-  const aboutData = useSelector((state) => state.about);
-  
-  const [title, setTitle] = useState(aboutData.title || "About Dr. Ambedkar");
-  const [name, setName] = useState(aboutData.name || "Dr. Bhimrao Ambedkar");
-  const [biography, setBiography] = useState(aboutData.biography || "");
+  const Biographydata = useSelector((state) => state.about);
+
+  const [title, setTitle] = useState("");
+  const [name, setName] = useState("");
+  const [bioText, setBioText] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(aboutData.images?.[0]?.url || null); // Use the first image URL from Redux state
+  const [imagePreview, setImagePreview] = useState("");
   const [isEditable, setIsEditable] = useState(false);
-  const [error, setError] = useState("");
+  const [fileError, setFileError] = useState("");
+
   const editor = useRef(null);
 
-  // Fetch the data from the backend when the component mounts
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Dispatch to fetch data from the backend
-        await dispatch(fetchAboutData());
-      } catch (error) {
-        console.error("Error fetching about data:", error);
-      }
-    };
+    dispatch(fetchAboutData());
+  }, [dispatch]);
 
-    fetchData();
-  }, [dispatch]); // Ensure the fetch happens on page load
+  useEffect(() => {
+    if (Biographydata.title) setTitle(Biographydata.title);
+    if (Biographydata.name) setName(Biographydata.name);
+    if (Biographydata.biography) setBioText(Biographydata.biography);
+    if (Biographydata.image_urls && Biographydata.image_urls.length > 0) {
+      setImagePreview(Biographydata.image_urls[0]);
+    }
+  }, [Biographydata]);
 
-  // Handle change for form fields
   const handleChange = (event, setter) => {
     setter(event.target.value);
   };
@@ -44,48 +52,39 @@ const About = () => {
 
     if (file) {
       if (file.size > maxSize) {
-        setError("File size should be less than 10MB.");
+        setFileError("File size should be less than 10MB.");
         return;
       }
-      setError(""); // Clear error if file is valid
-      setSelectedImage(file); // Store the actual file object
-
-      // Create a preview of the image
+      setFileError("");
+      setSelectedImage(file);
       const objectUrl = URL.createObjectURL(file);
       setImagePreview(objectUrl);
     }
   };
 
-  const handleDeleteBiography = () => {
-    setBiography("");
-  };
-
   const handleEditorChange = debounce((newContent) => {
-    setBiography(newContent);
-  }, 500); // Reduced debounce time to 500ms for quicker updates
+    setBioText(newContent);
+  }, 500);
 
-  const handleSave = async (e) => {
-    e.preventDefault();
+  const handleSaveOrEdit = async () => {
+    if (isEditable) {
+      // If in edit mode, save changes
+      const aboutDataToSend = new FormData();
+      aboutDataToSend.append("title", title);
+      aboutDataToSend.append("name", name);
+      aboutDataToSend.append("biography", bioText);
+      if (selectedImage) aboutDataToSend.append("images", selectedImage);
 
-    const aboutDataToSend = new FormData();
-    aboutDataToSend.append("title", title);
-    aboutDataToSend.append("name", name);
-    aboutDataToSend.append("biography", biography);
-
-    if (selectedImage) {
-      aboutDataToSend.append("images", selectedImage);
+      try {
+        await dispatch(saveAboutToBackend(aboutDataToSend));
+        setIsEditable(false);
+      } catch (err) {
+        console.error("Error saving data:", err);
+      }
+    } else {
+      // If not in edit mode, switch to edit mode
+      setIsEditable(true);
     }
-
-    try {
-      await dispatch(saveAboutToBackend(aboutDataToSend));
-      setIsEditable(false); // Disable edit mode after saving
-    } catch (error) {
-      console.error("Error saving data: ", error);
-    }
-  };
-
-  const handleUpdate = () => {
-    setIsEditable(true); // Set editable to true to allow changes
   };
 
   return (
@@ -93,13 +92,11 @@ const About = () => {
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
         {title}
       </Typography>
-
       <Paper sx={{ p: 3, border: "1px solid #ddd" }}>
         <Stack spacing={2}>
-          {/* Profile Image Upload */}
           <Box sx={{ textAlign: "center" }}>
             <Avatar
-              src={imagePreview || (selectedImage ? URL.createObjectURL(selectedImage) : '')}
+              src={imagePreview}
               alt={name}
               sx={{ width: 120, height: 120, mb: 1, mx: "auto" }}
             />
@@ -107,102 +104,56 @@ const About = () => {
               <input hidden accept="image/*" type="file" onChange={handleImageUpload} />
               <Edit />
             </IconButton>
-            {error && <Typography color="error">{error}</Typography>} {/* Display error if any */}
+            {fileError && <Typography color="error">{fileError}</Typography>}
           </Box>
 
-          {/* Form Fields */}
-          <form onSubmit={handleSave}>
-            <TextField
-              fullWidth
-              label="Title"
-              variant="outlined"
-              value={title}
-              onChange={(e) => handleChange(e, setTitle)}
-              disabled={!isEditable}
-              sx={{ mb: 2 }} // Added margin
-            />
+          <TextField
+            fullWidth
+            label="Title"
+            variant="outlined"
+            value={title}
+            onChange={(e) => handleChange(e, setTitle)}
+            disabled={!isEditable}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Name"
+            variant="outlined"
+            value={name}
+            onChange={(e) => handleChange(e, setName)}
+            disabled={!isEditable}
+            sx={{ mb: 2 }}
+          />
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Biography
+          </Typography>
 
-            <TextField
-              fullWidth
-              label="Name"
-              variant="outlined"
-              value={name}
-              onChange={(e) => handleChange(e, setName)}
-              disabled={!isEditable}
-              sx={{ mb: 2 }}
-            />
+          <JoditEditor
+            key={bioText}
+            ref={editor}
+            value={bioText}
+            config={{
+              readonly: !isEditable,
+              placeholder: "Write about Dr. Ambedkar's life...",
+              height: 400,
+              cleanOnPaste: false,
+              cleanOnChange: false,
+            }}
+            style={{ width: "100%", minHeight: "200px" }}
+            onChange={handleEditorChange}
+          />
 
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Biography
-            </Typography>
-
-            <JoditEditor
-              ref={editor}
-              value={biography}
-              config={{
-                readonly: !isEditable,
-                placeholder: "Write about Dr. Ambedkar...",
-                height: 300,
-                cleanOnPaste: false,
-                cleanOnChange: false,
-                toolbar: {
-                  items: [
-                    "bold",
-                    "italic",
-                    "underline",
-                    "strikethrough",
-                    "eraser",
-                    "|",
-                    "font",
-                    "fontsize",
-                    "paragraph",
-                    "|",
-                    "align",
-                    "outdent",
-                    "indent",
-                    "|",
-                    "link",
-                    "image",
-                    "video",
-                    "table",
-                    "line",
-                    "code",
-                    "fullsize",
-                    "undo",
-                    "redo",
-                  ],
-                },
-                uploader: {
-                  insertImageAsBase64URI: true,
-                  url: "/upload",
-                  format: "json",
-                },
-              }}
-              style={{ width: "100%", minHeight: "200px" }}
-              onChange={handleEditorChange}
-            />
-
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={!isEditable}
-                sx={{ width: "48%" }}
-              >
-                Save
-              </Button>
-
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={handleUpdate}
-                sx={{ width: "48%" }}
-              >
-                Update Biography
-              </Button>
-            </Box>
-          </form>
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSaveOrEdit}
+              sx={{ width: "50%" }}
+            >
+              {isEditable ? "Save" : "Edit"}
+            </Button>
+          </Box>
         </Stack>
       </Paper>
     </Box>
