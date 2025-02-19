@@ -53,7 +53,7 @@ const Sidebar = () => {
     { text: "Events & Celebrations", icon: <EmojiEvents />, path: "/event" },
     { text: "Donation and Support", icon: <VolunteerActivism />, path: "/donation" },
     { text: "Books and Publications", icon: <AutoStories  />, path: "/book" },
-    { text: "News & Updates", icon: <BarChart />, path: "/News" },
+    { text: "News & Updates", icon: <BarChart />, path: "/news" },
     { text: "Gallery", icon: <Collections />, path: "/Gallery" },
     { text: "Contact & Inquiries", icon: <ContactMail />, path: "/Contact" },
   ];

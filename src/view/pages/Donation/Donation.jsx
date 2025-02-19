@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect,useCallback } from "react";
 import {
   Box,
   Typography,
@@ -41,10 +41,12 @@ const Donation = () => {
     setSelectedImages(donationData.images || []);
   }, [donationData]);
 
-  const handleEditorChange = debounce((newContent) => {
-    setDescription(newContent);
-  }, 3000);
-
+  const debouncedEditorChange = useCallback(
+    debounce((newContent) => {
+      setDescription(newContent);
+    }, 3000),
+    []
+  );
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
     setSelectedImages([...selectedImages, ...files]);
@@ -146,7 +148,8 @@ const Donation = () => {
                 },
               }}
               style={{ width: "100%", minHeight: "200px" }}
-              onChange={handleEditorChange} // Update state on content change
+              onChange={debouncedEditorChange} // Update immediately
+              onBlur={(newContent) => setDescription(newContent)} // Ensure update on blur
             />
             <Box sx={{ mt: 3, p: 2, border: "1px solid #ddd", borderRadius: 2 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>

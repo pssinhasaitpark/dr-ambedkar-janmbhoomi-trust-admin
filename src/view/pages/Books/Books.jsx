@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect,useCallback } from "react";
 import {
   Box,
   Typography,
@@ -44,9 +44,12 @@ const Books = () => {
   // console.log("book image",booksData.images);
   
 
-  const handleEditorChange = debounce((newContent) => {
-    setDescription(newContent);
-  }, 3000);
+  const debouncedEditorChange = useCallback(
+    debounce((newContent) => {
+      setDescription(newContent);
+    }, 3000),
+    []
+  );
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -121,7 +124,7 @@ const Books = () => {
                 readonly: !isEditable,
                 placeholder: "Write about Dr. Ambedkar's life...",
                 height: 400,
-                cleanOnPaste: true, // Retain styles when pasting
+                cleanOnPaste: false, // Retain styles when pasting
                 cleanOnChange: false, // Retain the HTML structure while editing
                 toolbar: {
                   items: [
@@ -157,7 +160,8 @@ const Books = () => {
                 },
               }}
               style={{ width: "100%", minHeight: "200px" }}
-              onChange={handleEditorChange} // Update state on content change
+              onChange={debouncedEditorChange} // Update immediately
+              onBlur={(newContent) => setDescription(newContent)} // Ensure update on blur
             />
             <Box
               sx={{ mt: 3, p: 2, border: "1px solid #ddd", borderRadius: 2 }}

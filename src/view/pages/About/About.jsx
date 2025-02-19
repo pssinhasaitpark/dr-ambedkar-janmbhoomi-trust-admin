@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback} from "react";
 import {
   Box,
   Typography,
@@ -18,7 +18,8 @@ import debounce from "lodash.debounce";
 const About = () => {
   const dispatch = useDispatch();
   const Biographydata = useSelector((state) => state.about);
-
+  const editor = useRef(null);
+  
   const [title, setTitle] = useState("");
   const [name, setName] = useState("");
   const [bioText, setBioText] = useState("");
@@ -27,7 +28,7 @@ const About = () => {
   const [isEditable, setIsEditable] = useState(false);
   const [fileError, setFileError] = useState("");
 
-  const editor = useRef(null);
+
 
   useEffect(() => {
     dispatch(fetchAboutData());

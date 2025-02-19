@@ -13,66 +13,59 @@ import { Edit, Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  fetchEventsData,
-  saveEventsToBackend,
-} from "../../redux/slice/eventSlice";
+  fetchNewsData,
+  saveNewsToBackend,
+} from "../../redux/slice/newsSlice";
 import debounce from "lodash.debounce";
 
-const Events = () => {
+const News = () => {
   const dispatch = useDispatch();
-  const eventsData = useSelector((state) => state.events) || {};
-// console.log("data",eventsData);
+  const newsData = useSelector((state) => state.news) || {};
 
   const editor = useRef(null);
 
-  const [title, setTitle] = useState("Events");
-  const [name, setName] = useState("");
+  const [title, setTitle] = useState("News");
+  const [headline, setHeadline] = useState("");
   const [description, setDescription] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
 
-  // Fetch data on mount
   useEffect(() => {
-    dispatch(fetchEventsData());
+    dispatch(fetchNewsData());
   }, [dispatch]);
 
-  // Update state when data is fetched
   useEffect(() => {
-    if (eventsData) {
-      setTitle(eventsData.title || "Events");
-      setName(eventsData.name || "");
-      setDescription(eventsData.description || "");
-      setSelectedImages(eventsData.images || []);
+    if (newsData) {
+      setTitle(newsData.title || "News");
+      setHeadline(newsData.headline || "");
+      setDescription(newsData.description || "");
+      setSelectedImages(newsData.images || []);
     }
-  }, [eventsData]);
+  }, [newsData]);
 
-  // Debounced description update
   const debouncedEditorChange = useCallback(
     debounce((newContent) => {
-      setDescription(newContent);
+        setDescription(newContent);
     }, 3000),
     []
   );
 
-  // Handle Image Upload
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
     setSelectedImages([...selectedImages, ...files]);
   };
 
-  // Remove Image
   const handleImageRemove = (index) => {
     const updatedImages = selectedImages.filter((_, i) => i !== index);
     setSelectedImages(updatedImages);
   };
 
-  // Handle Save/Edit
   const handleEditSave = async (e) => {
     e.preventDefault();
     if (isEditable) {
       const formData = new FormData();
       formData.append("title", title);
-      formData.append("name", name);
+      formData.append("headline", headline);
       formData.append("description", description);
 
       selectedImages.forEach((image) => {
@@ -82,8 +75,8 @@ const Events = () => {
       });
 
       try {
-        await dispatch(saveEventsToBackend(formData)).unwrap(); // Ensure data is saved
-        await dispatch(fetchEventsData()); // Fetch latest data after saving
+        await dispatch(saveNewsToBackend(formData)).unwrap();
+        await dispatch(fetchNewsData());
       } catch (error) {
         console.error("Error saving data: ", error);
       }
@@ -110,15 +103,15 @@ const Events = () => {
             />
             <TextField
               fullWidth
-              label="name"
+              label="Headline"
               variant="outlined"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={headline}
+              onChange={(e) => setHeadline(e.target.value)}
               disabled={!isEditable}
               sx={{ mb: 2 }}
             />
             <Typography variant="h6" sx={{ mb: 2 }}>
-              Description
+            description
             </Typography>
 
             <JoditEditor
@@ -126,7 +119,7 @@ const Events = () => {
               value={description}
               config={{
                 readonly: !isEditable,
-                placeholder: "Write about the event...",
+                placeholder: "Write the news description...",
                 height: 400,
                 cleanOnPaste: false,
                 cleanOnChange: false,
@@ -162,16 +155,13 @@ const Events = () => {
                 },
               }}
               style={{ width: "100%", minHeight: "200px" }}
-              onChange={debouncedEditorChange} // Update immediately
-              onBlur={(newContent) => setDescription(newContent)} // Ensure update on blur
+              onChange={debouncedEditorChange}
+              onBlur={(newContent) => setDescription(newContent)}
             />
 
-            {/* Image Upload Section */}
-            <Box
-              sx={{ mt: 3, p: 2, border: "1px solid #ddd", borderRadius: 2 }}
-            >
+            <Box sx={{ mt: 3, p: 2, border: "1px solid #ddd", borderRadius: 2 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                Upload Event Images
+                Upload News Images
               </Typography>
               <IconButton color="primary" component="label">
                 <input
@@ -188,11 +178,9 @@ const Events = () => {
                   <Box key={index} sx={{ position: "relative" }}>
                     <Avatar
                       src={
-                        image instanceof File
-                          ? URL.createObjectURL(image)
-                          : image
+                        image instanceof File ? URL.createObjectURL(image) : image
                       }
-                      alt={`Event ${index + 1}`}
+                      alt={`News ${index + 1}`}
                       sx={{ width: 100, height: 100, borderRadius: 2 }}
                     />
                     <IconButton
@@ -211,7 +199,6 @@ const Events = () => {
               </Box>
             </Box>
 
-            {/* Edit/Save Button */}
             <Button
               type="submit"
               variant="contained"
@@ -227,4 +214,4 @@ const Events = () => {
   );
 };
 
-export default Events;
+export default News;
