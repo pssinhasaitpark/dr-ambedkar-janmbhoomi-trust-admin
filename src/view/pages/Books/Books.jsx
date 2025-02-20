@@ -82,7 +82,7 @@ const Books = () => {
   // console.log("selectedImages:",selectedImages);
   // console.log("chech book data",booksData)
   return (
-    <Box sx={{ p: 5 }}>
+    <Box sx={{ p: 2 }}>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
         {title}
       </Typography>

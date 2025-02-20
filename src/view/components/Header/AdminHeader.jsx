@@ -195,7 +195,7 @@ const Header = ({ onMenuClick }) => {
 
           {/* Avatar Menu */}
           <Avatar
-            alt="User"
+            alt="Admin"
             src="https://via.placeholder.com/150"
             sx={{
               width: 32,

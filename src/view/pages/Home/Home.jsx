@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchHomeData, submitHomeData } from "../../redux/slice/homeSlice";
 import {
   TextField,
   Button,
@@ -10,51 +12,42 @@ import {
   IconButton,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useDispatch, useSelector } from "react-redux";
-import { submitMemorialData, updateMemorialData } from "../../redux/slice/memorialSlice";
 import { toast } from "react-toastify";
 
-const AdminMemorialForm = () => {
+const Home = () => {
   const dispatch = useDispatch();
-  const { isLoading } = useSelector((state) => state.memorial);
-
-  // Load saved form data from localStorage (if available)
-  const getSavedFormData = () => {
-    const savedData = localStorage.getItem("memorialFormData");
-    return savedData ? JSON.parse(savedData) : {
-      title: "",
-      beginningDate: "",
-      completionDate: "",
-      openingDate: "",
-      location: "",
-    };
-  };
-
-  const getSavedImages = () => {
-    const savedImages = localStorage.getItem("memorialImages");
-    return savedImages ? JSON.parse(savedImages) : [];
-  };
-
-  const [formData, setFormData] = useState(getSavedFormData());
-  const [selectedImages, setSelectedImages] = useState(getSavedImages());
-  const [isUpdate, setIsUpdate] = useState(false);  
-  const [memorialId, setMemorialId] = useState(null); 
-
+  const { homeData, isLoading } = useSelector((state) => state.home);
+  const [formData, setFormData] = useState({
+    title: "",
+    beginningDate: "",
+    completionDate: "",
+    openingDate: "",
+    location: "",
+  });
+  const [selectedImages, setSelectedImages] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("memorialFormData", JSON.stringify(formData));
-  }, [formData]);
+    dispatch(fetchHomeData());
+  }, [dispatch]);
 
   useEffect(() => {
-    localStorage.setItem("memorialImages", JSON.stringify(selectedImages));
-  }, [selectedImages]);
-
+    if (homeData?.data?.length > 0) {
+      const banner = homeData.data[0]; // Fetch the first banner
+      setFormData({
+        title: banner.name || "",
+        beginningDate: banner.beginning_date || "",
+        completionDate: banner.completion_date || "",
+        openingDate: banner.opening_date || "",
+        location: banner.location || "",
+      });
+      setSelectedImages(banner.image_urls || []);
+    }
+  }, [homeData]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
- 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     const newImages = files.map((file) => ({
@@ -64,18 +57,22 @@ const AdminMemorialForm = () => {
     setSelectedImages([...selectedImages, ...newImages]);
   };
 
- 
   const handleImageRemove = (index) => {
     const updatedImages = [...selectedImages];
     updatedImages.splice(index, 1);
     setSelectedImages(updatedImages);
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.beginningDate || !formData.completionDate || !formData.openingDate || !formData.location) {
+    if (
+      !formData.title ||
+      !formData.beginningDate ||
+      !formData.completionDate ||
+      !formData.openingDate ||
+      !formData.location
+    ) {
       toast.error("Please fill in all required fields.");
       return;
     }
@@ -89,54 +86,33 @@ const AdminMemorialForm = () => {
     formDataToSend.append("location", formData.location);
 
     selectedImages.forEach((img) => {
-      formDataToSend.append("images", img.file);
+      if (img.file) {
+        formDataToSend.append("images", img.file);
+      }
     });
 
-    if (isUpdate) {
-      dispatch(updateMemorialData({ id: memorialId, formData: formDataToSend }))
-        .unwrap()
-        .then(() => {
-          toast.success("Memorial data updated successfully!");
-          // resetForm();
-        })
-        .catch((error) => {
-          toast.error(error || "Update failed");
-        });
-    } else {
-      dispatch(submitMemorialData(formDataToSend))
-        .unwrap()
-        .then(() => {
-          toast.success("Memorial data submitted successfully!");
-          // resetForm();
-        })
-        .catch((error) => {
-          toast.error(error || "Submission failed");
-        });
-    }
+    dispatch(submitHomeData(formDataToSend))
+      .unwrap()
+      .then(() => {
+        toast.success("Home data submitted successfully!");
+      })
+      .catch((error) => {
+        toast.error(error || "Submission failed");
+      });
   };
 
-  // Reset Form
-  // const resetForm = () => {
-  //   setFormData({
-  //     title: "",
-  //     beginningDate: "",
-  //     completionDate: "",
-  //     openingDate: "",
-  //     location: "",
-  //   });
-  //   setSelectedImages([]);
-  //   setIsUpdate(false);
-  //   setMemorialId(null);
-  //   localStorage.removeItem("memorialFormData");
-  //   localStorage.removeItem("memorialImages");
-  // };
-
   return (
-    <Box sx={{ display: "flex", maxWidth: 1000, mx: "auto", mt:5, boxShadow: 3, borderRadius: 2, backgroundColor: "#fff" }}>
-      {/* Left Section - Form */}
+    <Box
+      sx={{
+        display: "flex",
+        boxShadow: 3,
+        borderRadius: 2,
+        backgroundColor: "#fff",
+      }}
+    >
       <Box sx={{ flex: 1, p: 3 }}>
         <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
-          Memorial Information
+          Home Information
         </Typography>
         <form onSubmit={handleSubmit}>
           <TextField
@@ -184,16 +160,28 @@ const AdminMemorialForm = () => {
             required
             sx={{ mb: 2 }}
           />
-          {/* Display Save or Update button */}
-          <Button type="submit" variant="contained" color="primary" fullWidth disabled={isLoading}>
-            {isUpdate ? "Update" : "Save"}
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={isLoading}
+          >
+            Save
           </Button>
         </form>
       </Box>
-
-      {/* Right Section - Image Upload */}
-      <Box sx={{ flex: 1, p: 3, textAlign: "center", borderLeft: "1px solid #ddd" }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>Upload Images</Typography>
+      <Box
+        sx={{
+          flex: 1,
+          p: 3,
+          textAlign: "center",
+          borderLeft: "1px solid #ddd",
+        }}
+      >
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Uploaded Images
+        </Typography>
         <Button variant="contained" component="label" sx={{ mb: 2 }}>
           Choose Images
           <input type="file" multiple hidden onChange={handleImageChange} />
@@ -202,8 +190,16 @@ const AdminMemorialForm = () => {
           {selectedImages.map((image, index) => (
             <Grid item xs={6} sm={4} key={index}>
               <Card sx={{ position: "relative" }}>
-                <CardMedia component="img" height="100" image={image.url} alt="Uploaded Image" />
-                <IconButton onClick={() => handleImageRemove(index)} sx={{ position: "absolute", top: 2, right: 2 }}>
+                <CardMedia
+                  component="img"
+                  height="100"
+                  image={typeof image === "string" ? image : image.url}
+                  alt="Uploaded Image"
+                />
+                <IconButton
+                  onClick={() => handleImageRemove(index)}
+                  sx={{ position: "absolute", top: 2, right: 2 }}
+                >
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               </Card>
@@ -215,4 +211,4 @@ const AdminMemorialForm = () => {
   );
 };
 
-export default AdminMemorialForm;
+export default Home;

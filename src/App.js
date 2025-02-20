@@ -5,20 +5,24 @@ import BookPage from "./view/pages/Books/Books";
 import EventPage from "./view/pages/Event/Event";
 import DonationPage from "./view/pages/Donation/Donation";
 import Newspage from "./view/pages/News/News";
+import GalleryPage from "./view/pages/Gallery/Gallery";
+import ContactPage from "./view/pages/Contact/ContactUs";
 
 import Login from "./view/pages/Login/Login";
 import Sidebar from "./view/components/SideBar/Sidebar";
 import Header from "./view/components/Header/AdminHeader";
 import { Box } from "@mui/material";
-import AdminMemorialForm from "./view/pages/Home/Home";
-import Dashboard from "./view/components/Dashboard/Dashboard";
+import Home from "./view/pages/Home/Home";
+import Dashboard from "./view/pages/Dashboard/Dashboard";
 import PrivateRoute from "./view/routes/PrivateRoute";
 import DashboardLayout from "./view/layout/DashboardLayout/DashboardLayout";
 import AdminProfile from "./view/pages/Profile/Profile";
 
 function AppLayout({ children }) {
   const location = useLocation();
-  const hideSidebarAndHeader = ["/login", "/signup"].includes(location.pathname);
+  const hideSidebarAndHeader = ["/login", "/signup"].includes(
+    location.pathname
+  );
 
   return (
     <Box
@@ -42,18 +46,27 @@ function App() {
     <AppLayout>
       <Routes>
         <Route path="/login" element={<Login />} />
-        
+
         {/* Protect all admin routes */}
-        <Route element={<PrivateRoute />}>
-          <Route path="/" element={<DashboardLayout />} />
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <DashboardLayout />
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<Dashboard />} />
           <Route path="/dash" element={<Dashboard />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/book" element={<BookPage />} />
           <Route path="/event" element={<EventPage />} />
           <Route path="/donation" element={<DonationPage />} />
-          <Route path="/home" element={<AdminMemorialForm />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/profile" element={<AdminProfile />} />
           <Route path="/news" element={<Newspage />} />
+          <Route path="/gallery" element={<GalleryPage />} />
+          <Route path="/contact" element={<ContactPage />} />
         </Route>
       </Routes>
     </AppLayout>
