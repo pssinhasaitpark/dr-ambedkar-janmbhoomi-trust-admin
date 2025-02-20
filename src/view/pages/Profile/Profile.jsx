@@ -1,19 +1,45 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchProfileData } from "../../redux/slice/profileSlice";
 import {
   Card,
   CardContent,
   Typography,
   Avatar,
   Box,
-  Button,
   Divider,
-  IconButton,
+  CircularProgress,
+  Paper,
 } from "@mui/material";
-import { Email, Person, Edit, Close } from "@mui/icons-material";
+import { Email, Person, Phone } from "@mui/icons-material";
+import logo from "../../../assets/Images/logo.png";
 
 const Profile = () => {
-  const navigate = useNavigate(); // React Router navigation
+  const dispatch = useDispatch();
+  const { first_name, last_name, user_name, email, mobile, loading, error } =
+    useSelector((state) => state.profile);
+
+  useEffect(() => {
+    dispatch(fetchProfileData());
+  }, [dispatch]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ textAlign: "center", mt: 5 }}>
+        <Typography color="error">
+          Error: {typeof error === "string" ? error : JSON.stringify(error)}
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -24,88 +50,80 @@ const Profile = () => {
         minHeight: "80vh",
         backgroundColor: "#f5f5f5",
         padding: 2,
-        position: "relative",
       }}
     >
       <Card
         sx={{
-          maxWidth: 400,
+          maxWidth: 450,
           width: "100%",
           p: 3,
           textAlign: "center",
           boxShadow: 3,
-          position: "relative",
+          backgroundColor: "#ffffff",
         }}
       >
-        {/* Close Button - Redirects to /dash */}
-        <IconButton
-          sx={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            color: "gray",
-            "&:hover": { color: "black" },
-          }}
-          onClick={() => navigate("/dash")} // Redirect on close
-        >
-          <Close />
-        </IconButton>
-
         {/* Avatar */}
         <Avatar
-          sx={{ width: 90, height: 90, margin: "auto", mb: 2 }}
-          src="https://via.placeholder.com/150"
+          sx={{ width: 100, height: 100, margin: "auto", mb: 2 }}
+          src={logo}
           alt="User Avatar"
         />
 
         <CardContent>
-          {/* Name */}
+          {/* User Information */}
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            {first_name} {last_name}
+          </Typography>
           <Typography
-            variant="h5"
-            fontWeight="bold"
+            variant="subtitle1"
+            color="text.secondary"
             display="flex"
             alignItems="center"
             justifyContent="center"
             gap={1}
           >
             <Person fontSize="small" />
-            Trust Admin
-          </Typography>
-
-          {/* Email */}
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            gap={1}
-            mt={1}
-          >
-            <Email fontSize="small" />
-            admin@gmail.com
-          </Typography>
-
-          {/* Role */}
-          <Typography variant="body2" color="text.secondary" mt={1}>
-            Dr Ambedkar Janmbhoomi Trust Member
+            {user_name || "User"}
           </Typography>
 
           <Divider sx={{ my: 2 }} />
 
-          {/* Edit Profile Button */}
-          <Button
-            variant="contained"
-            startIcon={<Edit />}
-            sx={{
-              mt: 1,
-              textTransform: "none",
-              backgroundColor: "#1976d2",
-              "&:hover": { backgroundColor: "#1565c0" },
-            }}
-          >
-            Edit Profile
-          </Button>
+          {/* Profile Details */}
+          <Box container spacing={2}>
+            <Box item xs={12}>
+              <Paper
+                sx={{
+                  padding: 2,
+                  backgroundColor: "#f0f0f0",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Email fontSize="small" />
+                <Typography variant="body1">
+                  {email || "No email available"}
+                </Typography>
+              </Paper>
+            </Box>
+
+            <Box item xs={12}>
+              <Paper
+                sx={{
+                  padding: 2,
+                  backgroundColor: "#f0f0f0",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Phone fontSize="small" />
+                <Typography variant="body1">
+                  {mobile || "No contact available"}
+                </Typography>
+              </Paper>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
     </Box>

@@ -7,10 +7,9 @@ import "react-toastify/dist/ReactToastify.css";
 import {
   TextField,
   Button,
-  Checkbox,
-  FormControlLabel,
+  // Checkbox,
+  // FormControlLabel,
   Typography,
-  Link,
   Box,
 } from "@mui/material";
 import { useLogin } from "../../Hooks/useLogin";
@@ -120,7 +119,7 @@ function Login() {
                 />
               </Box>
 
-              <Box
+              {/* <Box
                 display="flex"
                 justifyContent="space-between"
                 alignItems="center"
@@ -133,7 +132,7 @@ function Login() {
                 <Link href="#" variant="body2">
                   Forgot password?
                 </Link>
-              </Box>
+              </Box> */}
 
               <Button
                 type="submit"

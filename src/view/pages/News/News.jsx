@@ -25,7 +25,7 @@ const News = () => {
   const editor = useRef(null);
 
   const [title, setTitle] = useState("News");
-  const [headline, setHeadline] = useState("");
+  const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
@@ -37,7 +37,7 @@ const News = () => {
   useEffect(() => {
     if (newsData) {
       setTitle(newsData.title || "News");
-      setHeadline(newsData.headline || "");
+      setName(newsData.name || "");
       setDescription(newsData.description || "");
       setSelectedImages(newsData.images || []);
     }
@@ -65,7 +65,7 @@ const News = () => {
     if (isEditable) {
       const formData = new FormData();
       formData.append("title", title);
-      formData.append("headline", headline);
+      formData.append("name", name);
       formData.append("description", description);
 
       selectedImages.forEach((image) => {
@@ -85,7 +85,7 @@ const News = () => {
   };
 
   return (
-    <Box sx={{ p: 5 }}>
+    <Box sx={{ p: 3 }}>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
         {title}
       </Typography>
@@ -103,10 +103,10 @@ const News = () => {
             />
             <TextField
               fullWidth
-              label="Headline"
+              label="Name"
               variant="outlined"
-              value={headline}
-              onChange={(e) => setHeadline(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               disabled={!isEditable}
               sx={{ mb: 2 }}
             />

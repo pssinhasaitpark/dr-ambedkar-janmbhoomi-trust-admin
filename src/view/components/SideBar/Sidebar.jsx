@@ -14,14 +14,11 @@ import {
 import {
   Dashboard,
   EmojiEvents,
-  RateReview,
  Info,
  AutoStories,
  Collections,
 VolunteerActivism,
   BarChart,
-  Settings,
-  Label,
   ExpandLess,
   ExpandMore,
   ContactMail,
@@ -31,14 +28,14 @@ VolunteerActivism,
 import HomeIcon from '@mui/icons-material/Home';
 import { useNavigate } from "react-router-dom";
 import { useMediaQuery, useTheme } from "@mui/material";
-// import sidelogo from "../../../assests/logo.svg fill.svg";
+import sidelogo from "../../../assets/Images/logo.png";
 
 const Sidebar = () => {
   const [activeParent, setActiveParent] = useState(null);
   const [activeChild, setActiveChild] = useState(null);
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+
 
   const navigate = useNavigate();
   const theme = useTheme();
@@ -49,19 +46,14 @@ const Sidebar = () => {
  
     { text: "Home", icon: <HomeIcon />, path: "/home" },
     { text: "About", icon: <Info />, path: "/about" },
-    { text: "Museum & Exhibits", icon: <RateReview />, path: "/Exhibition" },
     { text: "Events & Celebrations", icon: <EmojiEvents />, path: "/event" },
     { text: "Donation and Support", icon: <VolunteerActivism />, path: "/donation" },
     { text: "Books and Publications", icon: <AutoStories  />, path: "/book" },
     { text: "News & Updates", icon: <BarChart />, path: "/news" },
-    { text: "Gallery", icon: <Collections />, path: "/Gallery" },
+    { text: "Gallery", icon: <Collections />, path: "/gallery" },
     { text: "Contact & Inquiries", icon: <ContactMail />, path: "/Contact" },
   ];
 
-  // const settingsItems = [
-  //   { text: "Setting Sample 1", path: "/settings/setingsample1" },
-  //   { text: "Setting Sample 2", path: "/settings/setingsample1" },
-  // ];
 
   const handleParentClick = (index, item) => {
     setActiveParent(index);
@@ -85,9 +77,7 @@ const Sidebar = () => {
     setDrawerOpen(!drawerOpen);
   };
 
-  const handleSettingsClick = () => {
-    setSettingsOpen(!settingsOpen);
-  };
+
 
   return (
     <>
@@ -122,17 +112,17 @@ const Sidebar = () => {
           },
         }}
       >
-        <Box sx={{ textAlign: "center", py: 3 }}>
+        <Box sx={{ textAlign: "center",  pt: 0, pb: 0}}>
           <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-            {/* <img
+            <img
               src={sidelogo}
               alt="Nest Logo"
-              style={{ marginRight: "10px" }}
-            /> */}
+              style={{ marginRight: "10px",height: "60px"  }}
+            />
           </Typography>
-          <Typography variant="body2" color="textSecondary">
+          {/* <Typography variant="body2" color="textSecondary">
           Dr Ambedkar Janmbhoomi trust
-          </Typography>
+          </Typography> */}
         </Box>
         <Divider />
         <List>
@@ -143,13 +133,13 @@ const Sidebar = () => {
                 onClick={() => handleParentClick(index, item)}
                 sx={{
                   backgroundColor:
-                    activeParent === index ? "#eafaf1" : "transparent",
-                  "&:hover": { backgroundColor: "#eafaf1" },
+                    activeParent === index ? "#a1c4ed" : "transparent",
+                  "&:hover": { backgroundColor: "#a1c4ed" },
                 }}
               >
                 <ListItemIcon
                   sx={{
-                    color: activeParent === index ? "#3bb77e" : "inherit",
+                    color: activeParent === index ? "#1665c0" : "inherit",
                   }}
                 >
                   {item.icon}
@@ -158,8 +148,9 @@ const Sidebar = () => {
                   primary={item.text}
                   sx={{
                     "& .MuiTypography-root": {
-                      color: activeParent === index ? "#3bb77e" : "inherit",
+                      color: activeParent === index ? "#020202" : "inherit",
                       fontWeight: activeParent === index ? "bold" : "normal",
+                      fontSize: "15px",
                     },
                   }}
                 />
@@ -201,6 +192,7 @@ const Sidebar = () => {
                                 activeChild === `${index}-${subIndex}`
                                   ? "bold"
                                   : "normal",
+                                  fontSize: "14px",
                             },
                           }}
                         />
@@ -212,105 +204,8 @@ const Sidebar = () => {
             </React.Fragment>
           ))}
         </List>
-        <Divider />
-        <List>
-          <ListItem
-            button
-            onClick={handleSettingsClick}
-            sx={{
-              backgroundColor: settingsOpen ? "#eafaf1" : "transparent",
-              "&:hover": { backgroundColor: "#eafaf1" },
-            }}
-          >
-            <ListItemIcon>
-              <Settings />
-            </ListItemIcon>
-            <ListItemText
-              primary="Settings"
-              sx={{
-                "& .MuiTypography-root": {
-                  color: settingsOpen ? "#3bb77e" : "inherit",
-                  fontWeight: settingsOpen ? "bold" : "normal",
-                },
-              }}
-            />
-            {settingsOpen ? <ExpandLess /> : <ExpandMore />}
-          </ListItem>
-          {/* <Collapse in={settingsOpen} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {settingsItems.map((item, index) => (
-                <ListItem
-                  button
-                  key={index}
-                  onClick={() =>
-                    handleParentClick(menuItems.length + index, item)
-                  }
-                  sx={{
-                    pl: 2,
-                    backgroundColor:
-                      activeParent === menuItems.length + index
-                        ? "#eafaf1"
-                        : "transparent",
-                    "&:hover": { backgroundColor: "#eafaf1" },
-                  }}
-                >
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText
-                    primary={item.text}
-                    sx={{
-                      "& .MuiTypography-root": {
-                        color:
-                          activeParent === menuItems.length + index
-                            ? "#3bb77e"
-                            : "inherit",
-                        fontWeight:
-                          activeParent === menuItems.length + index
-                            ? "bold"
-                            : "normal",
-                      },
-                    }}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </Collapse> */}
-{/* 
-          <ListItem
-            button
-            onClick={() =>
-              handleParentClick(
-                menuItems.length + settingsItems.length,
-                settingsItems[1]
-              )
-            }
-            sx={{
-              backgroundColor:
-                activeParent === menuItems.length + settingsItems.length
-                  ? "#eafaf1"
-                  : "transparent",
-              "&:hover": { backgroundColor: "#eafaf1" },
-            }}
-          >
-            <ListItemIcon>
-              <Label />
-            </ListItemIcon>
-            <ListItemText
-              primary="Starter Page"
-              sx={{
-                "& .MuiTypography-root": {
-                  color:
-                    activeParent === menuItems.length + settingsItems.length
-                      ? "#3bb77e"
-                      : "inherit",
-                  fontWeight:
-                    activeParent === menuItems.length + settingsItems.length
-                      ? "bold"
-                      : "normal",
-                },
-              }}
-            />
-          </ListItem> */}
-        </List>
+        
+      
       </Drawer>
     </>
   );
