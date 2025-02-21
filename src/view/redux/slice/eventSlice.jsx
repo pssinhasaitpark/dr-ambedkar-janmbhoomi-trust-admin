@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../axios/axios";
 
 const initialState = {
-  title: "Event Title",
+  title: "Events",
   name: "",
   description: "",
   images: [],
@@ -11,36 +11,53 @@ const initialState = {
   _id: null,
 };
 
-// Fetch Events data from backend
-export const fetchEventData = createAsyncThunk(
-  "events/fetchEventData",
+// Fetch Events from backend
+export const fetchEventsData = createAsyncThunk(
+  "events/fetchEventsData",
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get("/events");
+      // console.log("Fetched event Data:", response.data.events);
       return response.data.data[0] || {};
     } catch (error) {
-      console.error("Error fetching Event data:", error);
+      console.error("Error fetching events data:", error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-// Save or Update Event data to backend
-export const saveEventToBackend = createAsyncThunk(
-  "events/saveEventToBackend",
-  async ({ id, eventData }, { rejectWithValue }) => {
+// Save or Update Events data to backend
+export const saveEventsToBackend = createAsyncThunk(
+  "events/saveEventsToBackend",
+  async ({ id, eventsData }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
-      formData.append("title", eventData.title);
-      formData.append("name", eventData.name);
-      formData.append("description", eventData.description);
-      
+      formData.append("title", eventsData.title);
+      formData.append("name", eventsData.name);
 
-      eventData.images.forEach((image) => {
-        formData.append("images", image);
+      // Ensure description is properly trimmed
+      formData.append(
+        "description",
+        eventsData.description?.trim() || "No description provided"
+      );
+
+      // Append only image files (not URLs)
+      eventsData.images.forEach((image) => {
+        if (image instanceof File) {
+          formData.append("images", image);
+        }
       });
 
+      // Ensure `removeImages` is only appended if it has values
+      if (eventsData.removeImages?.length > 0) {
+        formData.append(
+          "removeImages",
+          JSON.stringify(eventsData.removeImages)
+        );
+      }
+
       const endpoint = id ? `/events?id=${id}` : "/events";
+      console.log("Sending Data:", Object.fromEntries(formData));
 
       const response = await api.post(endpoint, formData, {
         headers: {
@@ -48,51 +65,24 @@ export const saveEventToBackend = createAsyncThunk(
         },
       });
 
+      console.log("Saved events Data:", response.data.data);
       return response.data.data || {};
     } catch (error) {
-      console.error("Error saving Event data:", error);
+      console.error("Error saving events data:", error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-const eventsSlice = createSlice({
+const eventSlice = createSlice({
   name: "events",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchEventData.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(fetchEventData.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.title = action.payload?.title || "Event Title";
-        state.name = action.payload?.name || "";
-        state.description = action.payload?.description || "";
-        state.images = action.payload?.images || [];
-        state._id = action.payload?._id || null;
-      })
-      .addCase(fetchEventData.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      })
-      .addCase(saveEventToBackend.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(saveEventToBackend.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.title = action.payload?.title || "Event Title";
-        state.name = action.payload?.name || "";
-        state.description = action.payload?.description || "";
-        state.images = action.payload?.images || [];
-        state._id = action.payload?._id || null;
-      })
-      .addCase(saveEventToBackend.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      });
+    builder.addCase(fetchEventsData.fulfilled, (state, action) => {
+      Object.assign(state, action.payload);
+    });
   },
 });
 
-export default eventsSlice.reducer;
+export default eventSlice.reducer;

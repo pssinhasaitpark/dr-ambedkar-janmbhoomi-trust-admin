@@ -14,12 +14,19 @@ export const fetchHomeData = createAsyncThunk(
   }
 );
 
-// Post new home data
+// Post or update home data
 export const submitHomeData = createAsyncThunk(
   "home/submitHomeData",
-  async (formData, { rejectWithValue }) => {
+  async ({ id, formData }, { rejectWithValue }) => {
     try {
-      const response = await api.post("/banner/add", formData); // Use api instance
+      const config = {
+        headers: {
+          "Content-Type": "multipart/form-data", // Ensure correct headers for file upload
+        },
+      };
+      const response = id
+        ? await api.put(`/banner/${id}`, formData, config) // Update if ID exists
+        : await api.post("/banner/add", formData, config); // Create new if no ID
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Error submitting home data");
