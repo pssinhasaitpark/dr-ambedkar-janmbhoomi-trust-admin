@@ -8,6 +8,7 @@ const initialState = {
   images: [],
   status: "idle",
   error: null,
+  _id: null,
 };
 
 // Fetch About data from backend
@@ -24,16 +25,28 @@ export const fetchAboutData = createAsyncThunk(
   }
 );
 
-// Save About data to backend
+// Save or Update About data to backend
 export const saveAboutToBackend = createAsyncThunk(
   "about/saveAboutToBackend",
-  async (aboutData, { rejectWithValue }) => {
+  async ({ id, aboutData }, { rejectWithValue }) => {
     try {
-      const response = await api.post("/biography/add", aboutData, {
+      const formData = new FormData();
+      formData.append("title", aboutData.title);
+      formData.append("name", aboutData.name);
+      formData.append("biography", aboutData.biography);
+
+      aboutData.images.forEach((image) => {
+        formData.append("images", image);
+      });
+
+      const endpoint = id ? `/biography/add?id=${id}` : "/biography/add";
+
+      const response = await api.post(endpoint, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
+
       return response.data.data || {};
     } catch (error) {
       console.error("Error saving About data:", error);
@@ -41,6 +54,7 @@ export const saveAboutToBackend = createAsyncThunk(
     }
   }
 );
+
 
 const aboutSlice = createSlice({
   name: "about",
@@ -56,7 +70,8 @@ const aboutSlice = createSlice({
         state.title = action.payload?.title || "About";
         state.name = action.payload?.name || "";
         state.biography = action.payload?.biography || "";
-        state.images = action.payload?.images || "";
+        state.images = action.payload?.images || [];
+        state._id = action.payload?._id || null;
       })
       .addCase(fetchAboutData.rejected, (state, action) => {
         state.status = "failed";
@@ -70,7 +85,8 @@ const aboutSlice = createSlice({
         state.title = action.payload?.title || "About";
         state.name = action.payload?.name || "";
         state.biography = action.payload?.biography || "";
-        state.images = action.payload?.images || "";
+        state.images = action.payload?.images || [];
+        state._id = action.payload?._id || null;
       })
       .addCase(saveAboutToBackend.rejected, (state, action) => {
         state.status = "failed";
