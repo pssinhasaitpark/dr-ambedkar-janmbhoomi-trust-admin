@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useRef, useEffect,useCallback } from "react";
 import {
   Box,
   Typography,
@@ -20,15 +20,12 @@ import debounce from "lodash.debounce";
 
 const About = () => {
   const dispatch = useDispatch();
-  
-  // Memoizing `aboutData` to prevent unnecessary re-renders
   const aboutData = useSelector((state) => state.about);
-  const memoizedAboutData = useMemo(() => aboutData, [aboutData]);
 
-  const [title, setTitle] = useState(memoizedAboutData.title || "About");
-  const [name, setName] = useState(memoizedAboutData.name || "");
-  const [biography, setBiography] = useState(memoizedAboutData.biography || "");
-  const [selectedImages, setSelectedImages] = useState(memoizedAboutData.images || []);
+  const [title, setTitle] = useState("About");
+  const [name, setName] = useState("");
+  const [biography, setBiography] = useState("");
+  const [selectedImages, setSelectedImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
 
   const editor = useRef(null);
@@ -38,20 +35,20 @@ const About = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    setTitle(memoizedAboutData.title || "About");
-    setName(memoizedAboutData.name || "");
-    setBiography(memoizedAboutData.biography || "");
-    setSelectedImages(memoizedAboutData.images || []);
-  }, [memoizedAboutData]);
+    if (aboutData) {
+      setTitle(aboutData.title || "About");
+      setName(aboutData.name || "");
+      setBiography(aboutData.biography || "");
+      setSelectedImages(aboutData.images || []);
+    }
+  }, [aboutData]);
 
-  // Move debounce function outside useCallback to avoid unnecessary recreation
-  const debouncedEditorChange = useCallback(
-    () =>
-      debounce((newContent) => {
-        setBiography(newContent);
-      }, 3000),
-    []
-  );
+   const debouncedEditorChange = useCallback(
+     debounce((newContent) => {
+      setBiography(newContent);
+     }, 3000),
+     []
+   );
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -65,20 +62,24 @@ const About = () => {
 
   const handleEditSave = async (e) => {
     e.preventDefault();
+
     if (isEditable) {
-      const aboutDataToSend = new FormData();
-      aboutDataToSend.append("title", title);
-      aboutDataToSend.append("name", name);
-      aboutDataToSend.append("biography", biography);
-      selectedImages.forEach((image) => {
-        aboutDataToSend.append("images", image);
-      });
+      const aboutDataToSend = {
+        title,
+        name,
+        biography,
+        images: selectedImages,
+      };
+
       try {
-        await dispatch(saveAboutToBackend(aboutDataToSend));
+        await dispatch(
+          saveAboutToBackend({ id: aboutData._id, aboutData: aboutDataToSend })
+        );
       } catch (error) {
-        console.error("Error saving data: ", error);
+        console.error("Error saving/updating data: ", error);
       }
     }
+
     setIsEditable(!isEditable);
   };
 
@@ -119,8 +120,8 @@ const About = () => {
                 readonly: !isEditable,
                 placeholder: "Write about Dr. Ambedkar's life...",
                 height: 400,
-                cleanOnPaste: false,
-                cleanOnChange: false,
+                cleanOnPaste: false, // Retain styles when pasting
+                cleanOnChange: false, // Retain the HTML structure while editing
                 toolbar: {
                   items: [
                     "bold",
@@ -150,16 +151,28 @@ const About = () => {
                 },
                 uploader: {
                   insertImageAsBase64URI: true,
-                  url: "/upload",
+                  url: "/upload", // Define your upload endpoint
                   format: "json",
                 },
               }}
               style={{ width: "100%", minHeight: "200px" }}
-              onChange={debouncedEditorChange}
-              onBlur={(newContent) => setBiography(newContent)}
+              onChange={debouncedEditorChange} // Update immediately
+              onBlur={(newContent) => setBiography(newContent)} // Ensure update on blur
             />
 
-            <Box sx={{ mt: 3, p: 2, border: "1px solid #ddd", borderRadius: 2 }}>
+            {/* <JoditEditor
+              ref={editor}
+              value={biography}
+              config={{
+                readonly: !isEditable,
+                placeholder: "Write about Dr. Ambedkar's life...",
+              }}
+              onBlur={(newContent) => setBiography(newContent)}
+            /> */}
+
+            <Box
+              sx={{ mt: 3, p: 2, border: "1px solid #ddd", borderRadius: 2 }}
+            >
               <Typography variant="h6" sx={{ mb: 2 }}>
                 Upload Profile Image
               </Typography>

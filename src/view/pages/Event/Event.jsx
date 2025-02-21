@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -12,87 +12,67 @@ import {
 import { Edit, Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchEventsData,
-  saveEventsToBackend,
-} from "../../redux/slice/eventSlice";
-import debounce from "lodash.debounce";
+import { fetchEventData, saveEventToBackend } from "../../redux/slice/eventSlice";
 
-const Events = () => {
+const Event = () => {
   const dispatch = useDispatch();
-  const eventsData = useSelector((state) => state.events) || {};
-// console.log("data",eventsData);
+  const eventData = useSelector((state) => state.events);
 
-  const editor = useRef(null);
-
-  const [title, setTitle] = useState("Events");
-  const [name, setName] = useState("");
+  const [title, setTitle] = useState("Event Title");
   const [description, setDescription] = useState("");
+  const [name, setName] = useState("");
+
   const [selectedImages, setSelectedImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
 
-  // Fetch data on mount
+  const editor = useRef(null);
+
   useEffect(() => {
-    dispatch(fetchEventsData());
+    dispatch(fetchEventData());
   }, [dispatch]);
 
-  // Update state when data is fetched
   useEffect(() => {
-    if (eventsData) {
-      setTitle(eventsData.title || "Events");
-      setName(eventsData.name || "");
-      setDescription(eventsData.description || "");
-      setSelectedImages(eventsData.images || []);
+    if (eventData) {
+      setTitle(eventData.title || "Event Title");
+      setName(eventData.name || "");
+      setDescription(eventData.description || "");
+      setSelectedImages(eventData.images || []);
     }
-  }, [eventsData]);
+  }, [eventData]);
 
-  // Debounced description update
-  const debouncedEditorChange = useCallback(
-    debounce((newContent) => {
-      setDescription(newContent);
-    }, 3000),
-    []
-  );
-
-  // Handle Image Upload
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
     setSelectedImages([...selectedImages, ...files]);
   };
 
-  // Remove Image
   const handleImageRemove = (index) => {
     const updatedImages = selectedImages.filter((_, i) => i !== index);
     setSelectedImages(updatedImages);
   };
 
-  // Handle Save/Edit
   const handleEditSave = async (e) => {
     e.preventDefault();
-    if (isEditable) {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("name", name);
-      formData.append("description", description);
 
-      selectedImages.forEach((image) => {
-        if (image instanceof File) {
-          formData.append("images", image);
-        }
-      });
+    if (isEditable) {
+      const eventDataToSend = {
+        title,
+        name,
+        description,
+        images: selectedImages,
+      };
 
       try {
-        await dispatch(saveEventsToBackend(formData)).unwrap(); // Ensure data is saved
-        await dispatch(fetchEventsData()); // Fetch latest data after saving
+        await dispatch(saveEventToBackend({ id: eventData._id, eventData: eventDataToSend }));
       } catch (error) {
-        console.error("Error saving data: ", error);
+        console.error("Error saving/updating data: ", error);
       }
     }
+
     setIsEditable(!isEditable);
   };
 
   return (
-    <Box sx={{ p: 5 }}>
+    <Box sx={{ p: 2 }}>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
         {title}
       </Typography>
@@ -108,15 +88,16 @@ const Events = () => {
               disabled={!isEditable}
               sx={{ mb: 2 }}
             />
-            <TextField
-              fullWidth
-              label="name"
-              variant="outlined"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={!isEditable}
-              sx={{ mb: 2 }}
-            />
+           <TextField
+                        fullWidth
+                        label="Name"
+                        variant="outlined"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        disabled={!isEditable}
+                        sx={{ mb: 2 }}
+                      />
+          
             <Typography variant="h6" sx={{ mb: 2 }}>
               Description
             </Typography>
@@ -127,82 +108,29 @@ const Events = () => {
               config={{
                 readonly: !isEditable,
                 placeholder: "Write about the event...",
-                height: 400,
-                cleanOnPaste: false,
-                cleanOnChange: false,
-                toolbar: {
-                  items: [
-                    "bold",
-                    "italic",
-                    "underline",
-                    "strikethrough",
-                    "eraser",
-                    "|",
-                    "font",
-                    "fontsize",
-                    "paragraph",
-                    "|",
-                    "align",
-                    "outdent",
-                    "indent",
-                    "|",
-                    "link",
-                    "image",
-                    "video",
-                    "table",
-                    "line",
-                    "code",
-                    "fullsize",
-                    "undo",
-                    "redo",
-                  ],
-                },
-                uploader: {
-                  insertImageAsBase64URI: true,
-                },
               }}
-              style={{ width: "100%", minHeight: "200px" }}
-              onChange={debouncedEditorChange} // Update immediately
-              onBlur={(newContent) => setDescription(newContent)} // Ensure update on blur
+              onBlur={(newContent) => setDescription(newContent)}
             />
 
-            {/* Image Upload Section */}
-            <Box
-              sx={{ mt: 3, p: 2, border: "1px solid #ddd", borderRadius: 2 }}
-            >
+            <Box sx={{ mt: 3, p: 2, border: "1px solid #ddd", borderRadius: 2 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
                 Upload Event Images
               </Typography>
               <IconButton color="primary" component="label">
-                <input
-                  hidden
-                  accept="image/*"
-                  multiple
-                  type="file"
-                  onChange={handleImageUpload}
-                />
+                <input hidden accept="image/*" type="file" onChange={handleImageUpload} multiple />
                 <Edit />
               </IconButton>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 2 }}>
                 {selectedImages.map((image, index) => (
                   <Box key={index} sx={{ position: "relative" }}>
                     <Avatar
-                      src={
-                        image instanceof File
-                          ? URL.createObjectURL(image)
-                          : image
-                      }
-                      alt={`Event ${index + 1}`}
+                      src={image instanceof File ? URL.createObjectURL(image) : image}
+                      alt={`Event Image ${index + 1}`}
                       sx={{ width: 100, height: 100, borderRadius: 2 }}
                     />
                     <IconButton
                       onClick={() => handleImageRemove(index)}
-                      sx={{
-                        position: "absolute",
-                        top: 2,
-                        right: 2,
-                        backgroundColor: "rgba(255, 255, 255, 0.7)",
-                      }}
+                      sx={{ position: "absolute", top: 2, right: 2, backgroundColor: "rgba(255, 255, 255, 0.7)" }}
                     >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
@@ -210,14 +138,7 @@ const Events = () => {
                 ))}
               </Box>
             </Box>
-
-            {/* Edit/Save Button */}
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              sx={{ mt: 2 }}
-            >
+            <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
               {isEditable ? "Save" : "Edit"}
             </Button>
           </form>
@@ -227,4 +148,4 @@ const Events = () => {
   );
 };
 
-export default Events;
+export default Event;
