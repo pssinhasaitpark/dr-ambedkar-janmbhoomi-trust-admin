@@ -32,7 +32,7 @@ const BookDetails = () => {
   };
 
   const handleSave = () => {
-    console.log("Updated Book:", book);
+    // console.log("Updated Book:", book);
     navigate("/"); // Redirect to book list
   };
 
