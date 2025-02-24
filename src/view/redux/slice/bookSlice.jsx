@@ -51,7 +51,7 @@ export const saveBooksToBackend = createAsyncThunk(
       }
 
       const endpoint = id ? `/books?id=${id}` : "/books";
-      console.log("Sending Data:", Object.fromEntries(formData));
+      // console.log("Sending Data:", Object.fromEntries(formData));
 
       const response = await api.post(endpoint, formData, {
         headers: {
@@ -59,7 +59,7 @@ export const saveBooksToBackend = createAsyncThunk(
         },
       });
 
-      console.log("Saved books Data:", response.data.data);
+      // console.log("Saved books Data:", response.data.data);
       return response.data.data || {};
     } catch (error) {
       console.error("Error saving books data:", error);

@@ -57,7 +57,7 @@ export const saveEventsToBackend = createAsyncThunk(
       }
 
       const endpoint = id ? `/events?id=${id}` : "/events";
-      console.log("Sending Data:", Object.fromEntries(formData));
+      // console.log("Sending Data:", Object.fromEntries(formData));
 
       const response = await api.post(endpoint, formData, {
         headers: {
@@ -65,7 +65,7 @@ export const saveEventsToBackend = createAsyncThunk(
         },
       });
 
-      console.log("Saved events Data:", response.data.data);
+      // console.log("Saved events Data:", response.data.data);
       return response.data.data || {};
     } catch (error) {
       console.error("Error saving events data:", error);

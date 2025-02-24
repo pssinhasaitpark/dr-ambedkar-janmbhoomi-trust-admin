@@ -9,7 +9,7 @@ import {
   IconButton,
   Avatar,
 } from "@mui/material";
-import { Edit, Delete as DeleteIcon } from "@mui/icons-material";
+import { Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -21,13 +21,13 @@ import debounce from "lodash.debounce";
 const News = () => {
   const dispatch = useDispatch();
   const newsData = useSelector((state) => state.news) || {};
-
   const editor = useRef(null);
 
   const [title, setTitle] = useState("News");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
+  const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ const News = () => {
 
   const debouncedEditorChange = useCallback(
     debounce((newContent) => {
-        setDescription(newContent);
+      setDescription(newContent);
     }, 3000),
     []
   );
@@ -56,159 +56,170 @@ const News = () => {
   };
 
   const handleImageRemove = (index) => {
-    const updatedImages = selectedImages.filter((_, i) => i !== index);
-    setSelectedImages(updatedImages);
+    const imageToRemove = selectedImages[index];
+
+    if (typeof imageToRemove === "string") {
+      setRemoveImages((prev) => [...prev, imageToRemove]);
+    }
+
+    setSelectedImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
   const handleEditSave = async (e) => {
     e.preventDefault();
-    if (isEditable) {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("name", name);
-      formData.append("description", description);
 
-      selectedImages.forEach((image) => {
-        if (image instanceof File) {
-          formData.append("images", image);
-        }
-      });
+    if (isEditable) {
+      const newsDataToSend = {
+        title,
+        name,
+        description: description?.trim() || "No description provided",
+        images: selectedImages,
+        removeImages: removeImages.length > 0 ? removeImages : [],
+      };
 
       try {
-        await dispatch(saveNewsToBackend(formData)).unwrap();
-        await dispatch(fetchNewsData());
+        await dispatch(
+          saveNewsToBackend({
+            id: newsData._id,
+            newsData: newsDataToSend,
+          })
+        );
+        setRemoveImages([]);
+        window.location.reload();
       } catch (error) {
-        console.error("Error saving data: ", error);
+        console.error("Error saving/updating data: ", error);
       }
     }
+
     setIsEditable(!isEditable);
   };
 
+  const renderImageSource = (image) => {
+    if (image instanceof File) {
+      return URL.createObjectURL(image);
+    } else if (typeof image === "string") {
+      return image;
+    }
+    return "";
+  };
+
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
+    <Box>
+      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
         {title}
       </Typography>
-      <Paper sx={{ p: 3, border: "1px solid #ddd" }}>
-        <Stack spacing={2}>
-          <form onSubmit={handleEditSave}>
-            <TextField
-              fullWidth
-              label="Title"
-              variant="outlined"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              disabled={!isEditable}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label="Name"
-              variant="outlined"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={!isEditable}
-              sx={{ mb: 2 }}
-            />
-            <Typography variant="h6" sx={{ mb: 2 }}>
-            description
-            </Typography>
+      <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
+        <form onSubmit={handleEditSave}>
+          <TextField
+            fullWidth
+            label="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            disabled={!isEditable}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={!isEditable}
+            sx={{ mb: 2 }}
+          />
 
-            <JoditEditor
-              ref={editor}
-              value={description}
-              config={{
-                readonly: !isEditable,
-                placeholder: "Write the news description...",
-                height: 400,
-                cleanOnPaste: false,
-                cleanOnChange: false,
-                toolbar: {
-                  items: [
-                    "bold",
-                    "italic",
-                    "underline",
-                    "strikethrough",
-                    "eraser",
-                    "|",
-                    "font",
-                    "fontsize",
-                    "paragraph",
-                    "|",
-                    "align",
-                    "outdent",
-                    "indent",
-                    "|",
-                    "link",
-                    "image",
-                    "video",
-                    "table",
-                    "line",
-                    "code",
-                    "fullsize",
-                    "undo",
-                    "redo",
-                  ],
-                },
-                uploader: {
-                  insertImageAsBase64URI: true,
-                },
-              }}
-              style={{ width: "100%", minHeight: "200px" }}
-              onChange={debouncedEditorChange}
-              onBlur={(newContent) => setDescription(newContent)}
-            />
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            News Description
+          </Typography>
+          <JoditEditor
+            ref={editor}
+            value={description}
+            config={{
+              readonly: !isEditable,
+              placeholder: "Write news content...",
+              height: 400,
+              cleanOnPaste: false,
+              cleanOnChange: false,
+              toolbar: {
+                items: [
+                  "bold",
+                  "italic",
+                  "underline",
+                  "strikethrough",
+                  "eraser",
+                  "|",
+                  "font",
+                  "fontsize",
+                  "paragraph",
+                  "|",
+                  "align",
+                  "outdent",
+                  "indent",
+                  "|",
+                  "link",
+                  "image",
+                  "video",
+                  "table",
+                  "line",
+                  "code",
+                  "fullsize",
+                  "undo",
+                  "redo",
+                ],
+              },
+              uploader: {
+                insertImageAsBase64URI: true,
+                url: "/upload",
+                format: "json",
+              },
+            }}
+            style={{ width: "100%", minHeight: "200px" }}
+            onChange={debouncedEditorChange}
+            onBlur={(newContent) => setDescription(newContent?.trim() || "")}
+          />
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Upload News Images
+          </Typography>
 
-            <Box sx={{ mt: 3, p: 2, border: "1px solid #ddd", borderRadius: 2 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Upload News Images
-              </Typography>
-              <IconButton color="primary" component="label">
-                <input
-                  hidden
-                  accept="image/*"
-                  multiple
-                  type="file"
-                  onChange={handleImageUpload}
+          {isEditable && (
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageUpload}
+              style={{ marginBottom: "1rem" }}
+            />
+          )}
+
+          <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
+            {selectedImages.map((image, index) => (
+              <Box key={index} sx={{ position: "relative" }}>
+                <Avatar
+                  src={renderImageSource(image)}
+                  sx={{ width: 100, height: 100 }}
                 />
-                <Edit />
-              </IconButton>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 2 }}>
-                {selectedImages.map((image, index) => (
-                  <Box key={index} sx={{ position: "relative" }}>
-                    <Avatar
-                      src={
-                        image instanceof File ? URL.createObjectURL(image) : image
-                      }
-                      alt={`News ${index + 1}`}
-                      sx={{ width: 100, height: 100, borderRadius: 2 }}
-                    />
-                    <IconButton
-                      onClick={() => handleImageRemove(index)}
-                      sx={{
-                        position: "absolute",
-                        top: 2,
-                        right: 2,
-                        backgroundColor: "rgba(255, 255, 255, 0.7)",
-                      }}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
-                ))}
+                {isEditable && (
+                  <IconButton
+                    onClick={() => handleImageRemove(index)}
+                    sx={{
+                      position: "absolute",
+                      top: -10,
+                      right: -10,
+                      backgroundColor: "white",
+                    }}
+                  >
+                    <DeleteIcon color="error" />
+                  </IconButton>
+                )}
               </Box>
-            </Box>
+            ))}
+          </Stack>
 
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              sx={{ mt: 2 }}
-            >
+          <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+            <Button type="submit" variant="contained">
               {isEditable ? "Save" : "Edit"}
             </Button>
-          </form>
-        </Stack>
+          </Stack>
+        </form>
       </Paper>
     </Box>
   );

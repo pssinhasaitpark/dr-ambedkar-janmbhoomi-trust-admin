@@ -7,6 +7,8 @@ import DonationPage from "./view/pages/Donation/Donation";
 import Newspage from "./view/pages/News/News";
 import GalleryPage from "./view/pages/Gallery/Gallery";
 import ContactPage from "./view/pages/Contact/ContactUs";
+import BookListPage from "./view/pages/Books/BookList";
+import BookDetailsPage from "./view/pages/Books/BookDetails";
 
 import Login from "./view/pages/Login/Login";
 import Sidebar from "./view/components/SideBar/Sidebar";
@@ -67,6 +69,8 @@ function App() {
           <Route path="/news" element={<Newspage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/booklist" element={<BookListPage />} />
+          <Route path="/bookdetails" element={<BookDetailsPage />} />
         </Route>
       </Routes>
     </AppLayout>
