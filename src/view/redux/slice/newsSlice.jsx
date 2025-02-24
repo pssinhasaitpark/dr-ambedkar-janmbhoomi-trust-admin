@@ -8,14 +8,15 @@ const initialState = {
   images: [],
   status: "idle",
   error: null,
+  _id: null,
 };
 
+// Fetch News data from backend
 export const fetchNewsData = createAsyncThunk(
   "news/fetchNewsData",
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get("/news");
-    //   console.log("Fetched News Data:", response.data);
       return response.data.data[0] || {};
     } catch (error) {
       console.error("Error fetching news data:", error);
@@ -24,16 +25,41 @@ export const fetchNewsData = createAsyncThunk(
   }
 );
 
+// Save or Update News data to backend
 export const saveNewsToBackend = createAsyncThunk(
   "news/saveNewsToBackend",
-  async (newsData, { rejectWithValue }) => {
+  async ({ id, newsData }, { rejectWithValue }) => {
     try {
-      const response = await api.post("/news", newsData, {
+      const formData = new FormData();
+      formData.append("title", newsData.title);
+      formData.append("name", newsData.name);
+      
+      formData.append(
+        "description",
+        newsData.description?.trim() || "No description provided"
+      );
+      
+      newsData.images.forEach((image) => {
+        if (image instanceof File) {
+          formData.append("images", image);
+        }
+      });
+
+      if (newsData.removeImages?.length > 0) {
+        formData.append(
+          "removeImages",
+          JSON.stringify(newsData.removeImages)
+        );
+      }
+
+      const endpoint = id ? `/news?id=${id}` : "/news";
+      
+      const response = await api.post(endpoint, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-    //   console.log("Saved News Data:", response.data.data);
+
       return response.data.data || {};
     } catch (error) {
       console.error("Error saving news data:", error);
@@ -47,35 +73,9 @@ const newsSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchNewsData.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(fetchNewsData.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.title = action.payload?.title || "News";
-        state.name = action.payload?.name || "";
-        state.description = action.payload?.description || "";
-        state.images = action.payload?.images || [];
-      })
-      .addCase(fetchNewsData.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      })
-      .addCase(saveNewsToBackend.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(saveNewsToBackend.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.title = action.payload?.title || "News";
-        state.name = action.payload?.name || "";
-        state.description = action.payload?.description || "";
-        state.images = action.payload?.images || [];
-      })
-      .addCase(saveNewsToBackend.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      });
+    builder.addCase(fetchNewsData.fulfilled, (state, action) => {
+      Object.assign(state, action.payload);
+    });
   },
 });
 
