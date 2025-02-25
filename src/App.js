@@ -9,6 +9,7 @@ import GalleryPage from "./view/pages/Gallery/Gallery";
 import ContactPage from "./view/pages/Contact/ContactUs";
 import BookListPage from "./view/pages/Books/BookList";
 import BookDetailsPage from "./view/pages/Books/BookDetails";
+import SubscriberPage from "./view/pages/Subscribers/Subscribers";
 
 import Login from "./view/pages/Login/Login";
 import Sidebar from "./view/components/SideBar/Sidebar";
@@ -71,6 +72,7 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/booklist" element={<BookListPage />} />
           <Route path="/bookdetails" element={<BookDetailsPage />} />
+          <Route path="/subsciber" element={<SubscriberPage />} />
         </Route>
       </Routes>
     </AppLayout>

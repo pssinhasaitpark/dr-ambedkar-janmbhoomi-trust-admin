@@ -2,9 +2,8 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../axios/axios";
 
 const initialState = {
-  title: "Gallery",
-  name: "",
-  description: "",
+  gallery_info: "Gallery",
+  gallery_description: "",
   birthplace_media: [],
   events_media: [],
   exhibitions_media: [],
@@ -34,12 +33,10 @@ export const saveGalleryToBackend = createAsyncThunk(
   async ({ id, galleryData }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
-      formData.append("title", galleryData.title);
-      formData.append("name", galleryData.name);
-      
+      formData.append("gallery_info", galleryData.gallery_info);
       formData.append(
-        "description",
-        galleryData.description?.trim() || "No description provided"
+        "gallery_description",
+        galleryData.gallery_description?.trim() || "No description provided"
       );
       
       ["birthplace_media", "events_media", "exhibitions_media", "online_media"].forEach((field) => {

@@ -19,7 +19,7 @@ export const fetchAboutData = createAsyncThunk(
       const response = await api.get("/biography");
       return response.data.data[0] || {};
     } catch (error) {
-      console.error("Error fetching About data:", error);
+      console.error("Error fetching about data:", error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
@@ -33,14 +33,25 @@ export const saveAboutToBackend = createAsyncThunk(
       const formData = new FormData();
       formData.append("title", aboutData.title);
       formData.append("name", aboutData.name);
-      formData.append("biography", aboutData.biography);
+      formData.append(
+        "biography",
+        aboutData.biography?.trim() || "No biography provided"
+      );
 
       aboutData.images.forEach((image) => {
-        formData.append("images", image);
+        if (image instanceof File) {
+          formData.append("images", image);
+        }
       });
 
-      const endpoint = id ? `/biography/add?id=${id}` : "/biography/add";
+      if (aboutData.removeImages?.length > 0) {
+        formData.append(
+          "removeImages",
+          JSON.stringify(aboutData.removeImages)
+        );
+      }
 
+      const endpoint = id ? `/biography/add?id=${id}` : "/biography/add";
       const response = await api.post(endpoint, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -49,49 +60,20 @@ export const saveAboutToBackend = createAsyncThunk(
 
       return response.data.data || {};
     } catch (error) {
-      console.error("Error saving About data:", error);
+      console.error("Error saving about data:", error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
-
 
 const aboutSlice = createSlice({
   name: "about",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchAboutData.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(fetchAboutData.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.title = action.payload?.title || "About";
-        state.name = action.payload?.name || "";
-        state.biography = action.payload?.biography || "";
-        state.images = action.payload?.images || [];
-        state._id = action.payload?._id || null;
-      })
-      .addCase(fetchAboutData.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      })
-      .addCase(saveAboutToBackend.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(saveAboutToBackend.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.title = action.payload?.title || "About";
-        state.name = action.payload?.name || "";
-        state.biography = action.payload?.biography || "";
-        state.images = action.payload?.images || [];
-        state._id = action.payload?._id || null;
-      })
-      .addCase(saveAboutToBackend.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      });
+    builder.addCase(fetchAboutData.fulfilled, (state, action) => {
+      Object.assign(state, action.payload);
+    });
   },
 });
 

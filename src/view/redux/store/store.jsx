@@ -11,6 +11,8 @@ import galleryReducer from "../slice/gallerySlice";
 import profileReducer from "../slice/profileSlice";
 import contactReducer from "../slice/contactSlice";
 import homeReducer from "../slice/homeSlice";
+import booklistReducer from "../slice/booklistSlice";
+import subscribersReducer from "../slice/subscribersSlice";
 
 const store = configureStore({
   reducer: {
@@ -25,6 +27,8 @@ const store = configureStore({
     profile: profileReducer,
     contact: contactReducer,
     home: homeReducer,
+    booklist: booklistReducer,
+    subscribers: subscribersReducer,
 },
 });
 
