@@ -134,6 +134,20 @@ const Donation = () => {
               height: 400,
               cleanOnPaste: false,
               cleanOnChange: false,
+              toolbarSticky: true,
+              toolbarAdaptive: false,
+
+              // Custom styling for border box around paragraphs
+              contentStyle: `
+      p {
+        border: 1px solid #ccc;  /* Light gray border */
+        padding: 12px;           /* Add padding inside the box */
+        margin-bottom: 10px;     /* Space between boxes */
+        border-radius: 5px;      /* Rounded corners */
+        background-color: #f9f9f9; /* Light background for contrast */
+      }
+    `,
+
               toolbar: {
                 items: [
                   "bold",

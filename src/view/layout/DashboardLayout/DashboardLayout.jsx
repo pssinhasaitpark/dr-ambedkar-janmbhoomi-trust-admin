@@ -10,6 +10,7 @@ import GalleryPage from "../../pages/Gallery/Gallery";
 import ContactPage from "../../pages/Contact/ContactUs";
 import BookListPage from "../../pages/Books/BookList";
 import BookDetailsPage from "../../pages/Books/BookDetails";
+import SubscriberPage from "../../pages/Subscribers/Subscribers";
 
 import Home from "../../pages/Home/Home";
 import Dashboard from "../../pages/Dashboard/Dashboard";
@@ -30,6 +31,7 @@ const DashboardLayout = () => {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/booklist" element={<BookListPage />} />
         <Route path="/bookdetails" element={<BookDetailsPage />} />
+        <Route path="/subsciber" element={<SubscriberPage />} />
       </Routes>
     </>
   );

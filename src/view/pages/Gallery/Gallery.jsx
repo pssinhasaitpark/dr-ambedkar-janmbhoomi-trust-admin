@@ -23,8 +23,8 @@ const Gallery = () => {
   const galleryData = useSelector((state) => state.gallery) || {};
   const editor = useRef(null);
 
-  const [title, setTitle] = useState("Gallery");
-  const [description, setDescription] = useState("");
+  const [gallery_info, setGalleryInfo] = useState("Gallery");
+  const [gallery_description, setGalleryDescription] = useState("");
   const [media, setMedia] = useState({
     birthplace_media: [],
     events_media: [],
@@ -40,8 +40,8 @@ const Gallery = () => {
 
   useEffect(() => {
     if (galleryData) {
-      setTitle(galleryData.title || "Gallery");
-      setDescription(galleryData.description || "");
+      setGalleryInfo(galleryData.gallery_info || "Gallery");
+      setGalleryDescription(galleryData.gallery_description || "");
       setMedia({
         birthplace_media: galleryData.birthplace_media || [],
         events_media: galleryData.events_media || [],
@@ -53,7 +53,7 @@ const Gallery = () => {
 
   const debouncedEditorChange = useCallback(
     debounce((newContent) => {
-      setDescription(newContent);
+      setGalleryDescription(newContent);
     }, 3000),
     []
   );
@@ -81,13 +81,19 @@ const Gallery = () => {
     e.preventDefault();
     if (isEditable) {
       const galleryDataToSend = {
-        title,
-        description: description?.trim() || "No description provided",
+        gallery_info,
+        gallery_description:
+          gallery_description?.trim() || "No description provided",
         ...media,
         removeImages: removeImages.length > 0 ? removeImages : [],
       };
       try {
-        await dispatch(saveGalleryToBackend({ id: galleryData._id, galleryData: galleryDataToSend }));
+        await dispatch(
+          saveGalleryToBackend({
+            id: galleryData._id,
+            galleryData: galleryDataToSend,
+          })
+        );
         setRemoveImages([]);
       } catch (error) {
         console.error("Error saving/updating data: ", error);
@@ -107,25 +113,51 @@ const Gallery = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>{title}</Typography>
+      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}></Typography>
       <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
         <form onSubmit={handleEditSave}>
-          <TextField
-            fullWidth
-            label="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={!isEditable}
-            sx={{ mb: 2 }}
-          />
-
-          <Typography variant="h6" sx={{ mt: 2 }}>Gallery Description</Typography>
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Gallery Info
+          </Typography>
           <JoditEditor
             ref={editor}
-            value={description}
-            config={{ readonly: !isEditable, placeholder: "Write about gallery..." }}
+            value={gallery_info}
+            config={{
+              readonly: !isEditable,
+              placeholder: "Enter gallery info...",
+            }}
+            onChange={debounce(
+              (newContent) => setGalleryInfo(newContent),
+              3000
+            )}
+            onBlur={(newContent) =>
+              setGalleryInfo(newContent?.trim() || "Gallery")
+            }
+          />
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Gallery Description
+          </Typography>
+
+          <JoditEditor
+            ref={editor}
+            value={gallery_description}
+            config={{
+              readonly: !isEditable,
+              placeholder: "Write about gallery...",
+              uploader: {
+                insertImageAsBase64URI: true, // Allows base64 image upload (local handling)
+              },
+              filebrowser: {
+                ajax: {
+                  url: "/upload", // Backend API for image uploads (update this if needed)
+                },
+                insertImageAsBase64URI: true, // Allows pasting images directly as base64
+              },
+            }}
             onChange={debouncedEditorChange}
-            onBlur={(newContent) => setDescription(newContent?.trim() || "")}
+            onBlur={(newContent) =>
+              setGalleryDescription(newContent?.trim() || "")
+            }
           />
 
           {Object.keys(media).map((category) => (
@@ -139,14 +171,26 @@ const Gallery = () => {
                   onChange={(event) => handleImageUpload(event, category)}
                 />
               )}
-              <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
+              <Stack
+                direction="row"
+                spacing={2}
+                sx={{ flexWrap: "wrap", mt: 2 }}
+              >
                 {media[category].map((image, index) => (
                   <Box key={index} sx={{ position: "relative" }}>
-                    <Avatar src={renderImageSource(image)} sx={{ width: 100, height: 100 }} />
+                    <Avatar
+                      src={renderImageSource(image)}
+                      sx={{ width: 100, height: 100 }}
+                    />
                     {isEditable && (
                       <IconButton
                         onClick={() => handleImageRemove(category, index)}
-                        sx={{ position: "absolute", top: -10, right: -10, backgroundColor: "white" }}
+                        sx={{
+                          position: "absolute",
+                          top: -10,
+                          right: -10,
+                          backgroundColor: "white",
+                        }}
                       >
                         <DeleteIcon color="error" />
                       </IconButton>
@@ -158,7 +202,9 @@ const Gallery = () => {
           ))}
 
           <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-            <Button type="submit" variant="contained">{isEditable ? "Save" : "Edit"}</Button>
+            <Button type="submit" variant="contained">
+              {isEditable ? "Save" : "Edit"}
+            </Button>
           </Stack>
         </form>
       </Paper>

@@ -58,6 +58,7 @@ const Sidebar = () => {
     { text: "News & Updates", icon: <BarChart />, path: "/news" },
     { text: "Gallery", icon: <Collections />, path: "/gallery" },
     { text: "Contact & Inquiries", icon: <ContactMail />, path: "/Contact" },
+    { text: "Subscribers", icon: <ContactMail />, path: "/subscriber" },
   ];
 
   const handleParentClick = (index, item) => {
