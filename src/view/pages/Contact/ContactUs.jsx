@@ -43,15 +43,34 @@ function ContactUs() {
       component={Paper}
       sx={{ mt: 3, boxShadow: 3, borderRadius: 2 }}
     >
-      <Typography
-        variant="h5"
-        sx={{ p: 2, textAlign: "center", fontWeight: "bold" }}
-      >
+      <Typography variant="h5" sx={{ p: 2, fontWeight: "bold" }}>
         Contact Inquiries
       </Typography>
 
       <Table>
         <TableHead>
+          <TableRow>
+            <TableCell>
+              <b>First Name</b>
+            </TableCell>
+            <TableCell>
+              <b>Last Name</b>
+            </TableCell>
+            <TableCell>
+              <b>Email</b>
+            </TableCell>
+            <TableCell>
+              <b>Contact No</b>
+            </TableCell>
+            <TableCell>
+              <b>Location</b>
+            </TableCell>
+            <TableCell>
+              <b>Created</b>
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        {/* <TableHead>
           <TableRow sx={{ backgroundColor: "#1976d2" }}>
             <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
               First Name
@@ -72,7 +91,7 @@ function ContactUs() {
               Created At
             </TableCell>
           </TableRow>
-        </TableHead>
+        </TableHead> */}
         <TableBody>
           {contacts.length === 0 ? (
             <TableRow>
@@ -84,14 +103,15 @@ function ContactUs() {
             contacts.map((contact) => (
               <TableRow
                 key={contact._id}
-                sx={{ "&:nth-of-type(odd)": { backgroundColor: "#f5f5f5" } }}
+
+                // sx={{ "&:nth-of-type(odd)": { backgroundColor: "#f5f5f5" } }}
               >
                 <TableCell>{contact.first_name}</TableCell>
                 <TableCell>{contact.last_name}</TableCell>
                 <TableCell>{contact.email}</TableCell>
                 <TableCell>{contact.phone_no}</TableCell>
                 <TableCell>{contact.location}</TableCell>
-              
+
                 <TableCell>
                   {new Date(contact.createdAt).toLocaleString()}
                 </TableCell>

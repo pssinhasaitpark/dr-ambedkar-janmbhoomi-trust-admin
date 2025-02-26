@@ -22,6 +22,8 @@ import {
   ExpandLess,
   ExpandMore,
   ContactMail,
+  EmailSharp,
+  Group,
   Menu as MenuIcon,
   Close as CloseIcon,
 } from "@mui/icons-material";
@@ -42,10 +44,15 @@ const Sidebar = () => {
 
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/dash" },
-    { text: "Home", icon: <HomeIcon />, path: "/home" },
+    // { text: "Home", icon: <HomeIcon />, path: "/home" },
     { text: "About", icon: <Info />, path: "/about" },
     { text: "Events & Celebrations", icon: <EmojiEvents />, path: "/event" },
-    { text: "Donation and Support", icon: <VolunteerActivism />, path: "/donation" },
+    {
+      text: "Donation and Support",
+      icon: <VolunteerActivism />,
+      path: "/donation",
+      subItems: [{ text: "Donation Collections", path: "/donationcollection" }],
+    },
     {
       text: "Books and Publications",
       icon: <AutoStories />,
@@ -57,8 +64,9 @@ const Sidebar = () => {
     },
     { text: "News & Updates", icon: <BarChart />, path: "/news" },
     { text: "Gallery", icon: <Collections />, path: "/gallery" },
+    { text: "Trustees", icon: <Group />, path: "/trustee" },
     { text: "Contact & Inquiries", icon: <ContactMail />, path: "/Contact" },
-    { text: "Subscribers", icon: <ContactMail />, path: "/subscriber" },
+    { text: "Subscribers", icon: <EmailSharp />, path: "/subscriber" },
   ];
 
   const handleParentClick = (index, item) => {
@@ -115,7 +123,11 @@ const Sidebar = () => {
       >
         <Box sx={{ textAlign: "center", pt: 0, pb: 0 }}>
           <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-            <img src={sidelogo} alt="Logo" style={{ marginRight: "10px", height: "60px" }} />
+            <img
+              src={sidelogo}
+              alt="Logo"
+              style={{ marginRight: "10px", height: "60px" }}
+            />
           </Typography>
         </Box>
         <Divider />
@@ -126,11 +138,13 @@ const Sidebar = () => {
                 button
                 onClick={() => handleParentClick(index, item)}
                 sx={{
-                  backgroundColor: activeParent === index ? "#a1c4ed" : "transparent",
+                  backgroundColor: activeParent === index ? "" : "transparent",
                   "&:hover": { backgroundColor: "#a1c4ed" },
                 }}
               >
-                <ListItemIcon sx={{ color: activeParent === index ? "#1665c0" : "inherit" }}>
+                <ListItemIcon
+                  sx={{ color: activeParent === index ? "#1665c0" : "inherit" }}
+                >
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText
@@ -143,28 +157,44 @@ const Sidebar = () => {
                     },
                   }}
                 />
-                {item.subItems && (expandedIndex === index ? <ExpandLess /> : <ExpandMore />)}
+                {item.subItems &&
+                  (expandedIndex === index ? <ExpandLess /> : <ExpandMore />)}
               </ListItem>
               {item.subItems && (
-                <Collapse in={expandedIndex === index} timeout="auto" unmountOnExit>
+                <Collapse
+                  in={expandedIndex === index}
+                  timeout="auto"
+                  unmountOnExit
+                >
                   <List component="div" disablePadding>
                     {item.subItems.map((subItem, subIndex) => (
                       <ListItem
                         button
                         key={`${index}-${subIndex}`}
-                        onClick={() => handleChildClick(index, subIndex, subItem)}
+                        onClick={() =>
+                          handleChildClick(index, subIndex, subItem)
+                        }
                         sx={{
                           pl: 6,
-                          backgroundColor: activeChild === `${index}-${subIndex}` ? "#eafaf1" : "transparent",
-                          "&:hover": { backgroundColor: "#eafaf1" },
+                          backgroundColor:
+                            activeChild === `${index}-${subIndex}`
+                              ? "#a1c4ed"
+                              : "transparent",
+                          "&:hover": { backgroundColor: "#a1c4ed" },
                         }}
                       >
                         <ListItemText
                           primary={subItem.text}
                           sx={{
                             "& .MuiTypography-root": {
-                              color: activeChild === `${index}-${subIndex}` ? "#3bb77e" : "inherit",
-                              fontWeight: activeChild === `${index}-${subIndex}` ? "bold" : "normal",
+                              color:
+                                activeChild === `${index}-${subIndex}`
+                                  ? "#020202"
+                                  : "inherit",
+                              fontWeight:
+                                activeChild === `${index}-${subIndex}`
+                                  ? "bold"
+                                  : "normal",
                               fontSize: "14px",
                             },
                           }}

@@ -178,7 +178,7 @@ function BookList() {
   };
   
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="xlg">
       <Box my={3}>
         <Box
           display="flex"
