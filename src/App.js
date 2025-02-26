@@ -10,6 +10,8 @@ import ContactPage from "./view/pages/Contact/ContactUs";
 import BookListPage from "./view/pages/Books/BookList";
 import BookDetailsPage from "./view/pages/Books/BookDetails";
 import SubscriberPage from "./view/pages/Subscribers/Subscribers";
+import TrusteePage from "./view/pages/Trustee/TrusteeRegistration";
+import DonationCollectionsPage from "./view/pages/Donation/DonationCollection";
 
 import Login from "./view/pages/Login/Login";
 import Sidebar from "./view/components/SideBar/Sidebar";
@@ -72,7 +74,12 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/booklist" element={<BookListPage />} />
           <Route path="/bookdetails" element={<BookDetailsPage />} />
-          <Route path="/subsciber" element={<SubscriberPage />} />
+          <Route path="/subscriber" element={<SubscriberPage />} />
+          <Route path="/trustee" element={<TrusteePage />} />
+          <Route
+            path="/donationcollection"
+            element={<DonationCollectionsPage />}
+          />
         </Route>
       </Routes>
     </AppLayout>

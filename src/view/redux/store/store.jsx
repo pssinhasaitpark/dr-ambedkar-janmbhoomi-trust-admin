@@ -13,6 +13,8 @@ import contactReducer from "../slice/contactSlice";
 import homeReducer from "../slice/homeSlice";
 import booklistReducer from "../slice/booklistSlice";
 import subscribersReducer from "../slice/subscribersSlice";
+import trusteeReducer from "../slice/trusteeSlice";
+import donationCollectionReducer from "../slice/donationcollectionSlice";
 
 const store = configureStore({
   reducer: {
@@ -29,6 +31,8 @@ const store = configureStore({
     home: homeReducer,
     booklist: booklistReducer,
     subscribers: subscribersReducer,
+    trustee: trusteeReducer,
+    donations: donationCollectionReducer,
 },
 });
 

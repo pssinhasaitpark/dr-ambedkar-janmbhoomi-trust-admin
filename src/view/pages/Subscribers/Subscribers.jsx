@@ -61,7 +61,8 @@ function Subscribers() {
       </Typography>
       <Table sx={{ width: "100%" }}>
         <TableHead>
-          <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+          <TableRow>  
+              {/* sx={{ backgroundColor: "#f5f5f5" }} */}
             <TableCell align="center" sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>#</TableCell>
             <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Email</TableCell>
             <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Created At</TableCell>
@@ -69,7 +70,7 @@ function Subscribers() {
         </TableHead>
         <TableBody>
           {subscribers.map((subscriber, index) => (
-            <TableRow key={subscriber._id} sx={{ "&:nth-of-type(odd)": { backgroundColor: "#fafafa" } }}>
+            <TableRow key={subscriber._id} >
               <TableCell align="center">{index + 1}</TableCell>
               <TableCell>{subscriber.email}</TableCell>
               <TableCell>{new Date(subscriber.createdAt).toLocaleString()}</TableCell>

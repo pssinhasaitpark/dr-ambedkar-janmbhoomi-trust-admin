@@ -11,6 +11,8 @@ import ContactPage from "../../pages/Contact/ContactUs";
 import BookListPage from "../../pages/Books/BookList";
 import BookDetailsPage from "../../pages/Books/BookDetails";
 import SubscriberPage from "../../pages/Subscribers/Subscribers";
+import TrusteePage from "../../pages/Trustee/TrusteeRegistration";
+import DonationCollectionsPage from "../../pages/Donation/DonationCollection";
 
 import Home from "../../pages/Home/Home";
 import Dashboard from "../../pages/Dashboard/Dashboard";
@@ -31,7 +33,9 @@ const DashboardLayout = () => {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/booklist" element={<BookListPage />} />
         <Route path="/bookdetails" element={<BookDetailsPage />} />
-        <Route path="/subsciber" element={<SubscriberPage />} />
+        <Route path="/subscriber" element={<SubscriberPage />} />
+        <Route path="/trustee" element={<TrusteePage />} />
+        <Route path="/donationcollection" element={<DonationCollectionsPage />} />
       </Routes>
     </>
   );
