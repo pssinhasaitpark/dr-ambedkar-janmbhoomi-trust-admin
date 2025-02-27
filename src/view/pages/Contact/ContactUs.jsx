@@ -49,7 +49,7 @@ function ContactUs() {
 
       <Table>
         <TableHead>
-          <TableRow>
+          <TableRow  sx={{ backgroundColor: "#3387e8" }}>
             <TableCell>
               <b>First Name</b>
             </TableCell>
@@ -66,7 +66,7 @@ function ContactUs() {
               <b>Location</b>
             </TableCell>
             <TableCell>
-              <b>Created</b>
+              <b>Date</b>
             </TableCell>
           </TableRow>
         </TableHead>
@@ -113,7 +113,7 @@ function ContactUs() {
                 <TableCell>{contact.location}</TableCell>
 
                 <TableCell>
-                  {new Date(contact.createdAt).toLocaleString()}
+                  {new Date(contact.createdAt).toLocaleDateString()}
                 </TableCell>
               </TableRow>
             ))

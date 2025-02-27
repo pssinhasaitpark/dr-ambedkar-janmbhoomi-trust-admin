@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  fetchBooks,
-  addBook,
-  updateBook,
-  deleteBook,
-} from "../../redux/slice/booklistSlice";
+  fetchNews,
+  addNews,
+  updateNews,
+  deleteNews,
+} from "../../redux/slice/newslistSlice";
 import JoditEditor from "jodit-react";
 import {
   Button,
@@ -38,124 +38,94 @@ import {
 } from "@mui/icons-material";
 import debounce from "lodash.debounce";
 
-function BookList() {
+function NewsList() {
   const dispatch = useDispatch();
-  const { books, loading, error } = useSelector((state) => state.booklist);
-  const [removeImages, setRemoveImages] = useState([]); 
-  const [editingBook, setEditingBook] = useState(null);
+  const { news, loading, error } = useSelector((state) => state.newslist);
+  const [removeImages, setRemoveImages] = useState([]);
+  const [expandedRows, setExpandedRows] = useState({});
+  const [editingNews, setEditingNews] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(null);
   const [formData, setFormData] = useState({
     id: null,
-    title: "",
-    author: "",
+    latest_news: "",
+    headline: "",
     description: "",
     images: [],
-    cover_image: null,
   });
 
   useEffect(() => {
-    dispatch(fetchBooks());
+    dispatch(fetchNews());
   }, [dispatch]);
 
   const handleAddNew = () => {
-    setEditingBook(null);
+    setEditingNews(null);
     setFormData({
       id: null,
-      title: "",
-      author: "",
+      latest_news: "",
+      headline: "",
       description: "",
       images: [],
-      cover_image: null,
     });
     setIsFormOpen(true);
   };
 
-  const handleEdit = (book) => {
-    setEditingBook(book.id);
-    setFormData(book);
+  const handleEdit = (newsItem) => {
+    setEditingNews(newsItem.id);
+    setFormData(newsItem);
     setIsFormOpen(true);
   };
 
   const handleDeleteConfirm = async (id) => {
-    if (window.confirm("Are you sure you want to delete this book?")) {
+    if (window.confirm("Are you sure you want to delete this news?")) {
       try {
-        await dispatch(deleteBook(id)).unwrap(); // Ensure delete action completes
-        alert("Book deleted successfully");
+        await dispatch(deleteNews(id)).unwrap();
+        alert("News deleted successfully");
       } catch (error) {
-        console.error("Error deleting book:", error);
-        alert("Failed to delete the book. Please try again.");
-      }
-    }
-  };
-
-  const handleDelete = async () => {
-    if (confirmDelete) {
-      try {
-        await dispatch(deleteBook(confirmDelete)).unwrap();
-        setConfirmDelete(null);
-      } catch (error) {
-        console.error("Error deleting book:", error);
-        alert("Failed to delete the book. Please try again.");
+        console.error("Error deleting news:", error);
+        alert("Failed to delete the news. Please try again.");
       }
     }
   };
 
   const handleSave = async () => {
-    if (!formData.title.trim() || !formData.author.trim()) {
-      alert("Title and Author Name cannot be empty");
+    if (!formData.headline.trim() || !formData.latest_news.trim()) {
+      alert("Headline and Latest News cannot be empty");
       return;
     }
 
     const formDataToSend = new FormData();
-    formDataToSend.append("book_title", formData.title);
-    formDataToSend.append("author_name", formData.author);
+    formDataToSend.append("headline", formData.headline);
+    formDataToSend.append("latest_news", formData.latest_news);
     formDataToSend.append("description", formData.description);
 
-    if (formData.cover_image instanceof File) {
-      formDataToSend.append("cover_image", formData.cover_image);
-    }
-
-
-    // Append images correctly
     formData.images.forEach((image) => {
       if (image instanceof File) {
         formDataToSend.append("images", image);
       }
     });
 
-      // Send removed images array
-  // if (removeImages.length > 0) {
-  //   removeImages.forEach((imageUrl) => {
-  //     formDataToSend.append("removeImages[]", imageUrl); 
-  //   });
-  // }
-  if (removeImages.length > 0) {
-    formDataToSend.append("removeImages", JSON.stringify(removeImages)); // Convert to string
-  }
-  
+    if (removeImages.length > 0) {
+      formDataToSend.append("removeImages", JSON.stringify(removeImages));
+    }
 
     try {
-      if (editingBook) {
+      if (editingNews) {
         await dispatch(
-          updateBook({ id: editingBook, updatedData: formDataToSend })
+          updateNews({ id: editingNews, updatedData: formDataToSend })
         ).unwrap();
       } else {
-        await dispatch(addBook(formDataToSend)).unwrap();
+        await dispatch(addNews(formDataToSend)).unwrap();
       }
 
       setIsFormOpen(false);
-      window.location.reload(); // Reload page after save/update
+      window.location.reload();
     } catch (error) {
-      console.error("Error saving book:", error);
+      console.error("Error saving news:", error);
     }
   };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-  const handleCoverImageChange = (e) => {
-    setFormData({ ...formData, cover_image: e.target.files[0] });
   };
 
   const debouncedHandleChange = useCallback(
@@ -167,33 +137,26 @@ function BookList() {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    setFormData((prev) => ({
-      ...prev,
-      images: [...prev.images, ...files],
-    }));
+    setFormData((prev) => ({ ...prev, images: [...prev.images, ...files] }));
   };
-
-  // const handleRemoveImage = (index) => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     images: prev.images.filter((_, i) => i !== index),
-  //   }));
-  // };
 
   const handleRemoveImage = (index) => {
     const imageToRemove = formData.images[index];
-  
     setFormData((prev) => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index),
     }));
-  
-    // If the image is from the backend (string URL), store it in `removeImages`
     if (typeof imageToRemove === "string") {
       setRemoveImages((prev) => [...prev, imageToRemove]);
     }
   };
-  
+  const toggleReadMore = (id) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [id]: !prev[id], // Toggle state for the row
+    }));
+  };
+
   return (
     <Container maxWidth="xlg">
       <Box my={3}>
@@ -203,61 +166,86 @@ function BookList() {
           alignItems="center"
           mb={3}
         >
-          <Typography variant="h6">Manage Books</Typography>
+          <Typography variant="h6">Manage News</Typography>
           <Button
             variant="contained"
             startIcon={<Add />}
             onClick={handleAddNew}
           >
-            Add New Book
+            Add News
           </Button>
         </Box>
 
-        {loading && <Typography>Loading...</Typography>}
-        {error && <Typography color="error">{error}</Typography>}
-
-        {books.length === 0 ? (
-          <Paper sx={{ p: 4, textAlign: "center", borderRadius: 2 }}>
-            <Typography variant="h6" color="text.secondary">
-              No books available
-            </Typography>
-          </Paper>
-        ) : (
-
-          <TableContainer component={Paper} sx={{ borderRadius: 2, overflow: "hidden" }}>
+        <TableContainer
+          component={Paper}
+          sx={{ borderRadius: 2, overflow: "hidden" }}
+        >
           <Table>
             <TableHead>
-              <TableRow sx={{ backgroundColor: "#3387e8"}}>
+              <TableRow sx={{ backgroundColor: "#3387e8" }}>
                 <TableCell>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Title
-                  </Typography>
+                  <Typography variant="subtitle1">Headline</Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Author
-                  </Typography>
+                  <Typography variant="subtitle1">Latest News</Typography>
                 </TableCell>
                 <TableCell align="right">
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Actions
-                  </Typography>
+                  <Typography variant="subtitle1">Actions</Typography>
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {books.map((book) => (
-                <TableRow key={book.id}>
-                  <TableCell>{book.title}</TableCell>
-                  <TableCell>{book.author}</TableCell>
+              {news.map((newsItem) => (
+                <TableRow key={newsItem.id}>
+                  <TableCell>
+                    <Typography
+                      sx={{
+                        wordWrap: "break-word",
+                        whiteSpace: "normal",
+                        overflowWrap: "break-word",
+                        maxWidth: "200px", // Adjust as needed
+                      }}
+                    >
+                      {newsItem.headline}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell>
+                    <Typography
+                      variant="body1"
+                      sx={{ maxWidth: "200px", display: "inline" }}
+                    >
+                      {expandedRows[newsItem.id] ||
+                      newsItem.latest_news.length <= 50
+                        ? newsItem.latest_news
+                        : `${newsItem.latest_news.substring(0, 50)}...`}
+                    </Typography>
+                    {newsItem.latest_news.length > 50 && (
+                      <Button
+                        size="small"
+                        onClick={() => toggleReadMore(newsItem.id)}
+                        sx={{ textTransform: "none", color: "#007BFF" }}
+                      >
+                        {expandedRows[newsItem.id] ? "Read Less" : "Read More"}
+                      </Button>
+                    )}
+                  </TableCell>
                   <TableCell align="right">
                     <Tooltip title="Edit">
-                      <IconButton color="primary" onClick={() => handleEdit(book)} size="small">
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleEdit(newsItem)}
+                        size="small"
+                      >
                         <Edit />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Delete">
-                      <IconButton color="error" onClick={() => handleDeleteConfirm(book.id)} size="small">
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDeleteConfirm(newsItem.id)}
+                        size="small"
+                      >
                         <Delete />
                       </IconButton>
                     </Tooltip>
@@ -267,8 +255,6 @@ function BookList() {
             </TableBody>
           </Table>
         </TableContainer>
-        )}
-
         <Dialog
           open={isFormOpen}
           onClose={() => setIsFormOpen(false)}
@@ -276,7 +262,7 @@ function BookList() {
           maxWidth="md"
         >
           <DialogTitle>
-            {editingBook ? "Edit Book" : "Add New Book"}
+            {editingNews ? "Edit News" : "Add New News"}
             <IconButton
               onClick={() => setIsFormOpen(false)}
               size="small"
@@ -288,9 +274,9 @@ function BookList() {
           <DialogContent dividers>
             <TextField
               fullWidth
-              label="Book Title"
-              name="title"
-              value={formData.title}
+              label="Latest_News"
+              name="latest_news"
+              value={formData.latest_news}
               onChange={handleChange}
               margin="normal"
               variant="outlined"
@@ -298,9 +284,9 @@ function BookList() {
             />
             <TextField
               fullWidth
-              label="Author Name"
-              name="author"
-              value={formData.author}
+              label="Headline"
+              name="headline"
+              value={formData.headline}
               onChange={handleChange}
               margin="normal"
               variant="outlined"
@@ -314,16 +300,6 @@ function BookList() {
               value={formData.description}
               onChange={debouncedHandleChange}
             />
-             <Typography variant="subtitle1">Cover Image:</Typography>
-            <Button component="label" variant="contained" startIcon={<ImageIcon />}>
-              Select Cover Image
-              <input type="file" hidden accept="image/*" onChange={handleCoverImageChange} />
-            </Button>
-            {formData.cover_image && (
-              <Box mt={2}>
-                <img src={formData.cover_image instanceof File ? URL.createObjectURL(formData.cover_image) : formData.cover_image} alt="Cover" width="100" height="100" />
-              </Box>
-            )}
 
             <Box sx={{ mt: 2 }}>
               <Typography variant="subtitle1">Upload Images:</Typography>
@@ -389,4 +365,4 @@ function BookList() {
   );
 }
 
-export default BookList;
+export default NewsList;

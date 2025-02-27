@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   Typography,
-  TextField,
   Button,
   Paper,
   Stack,
@@ -21,7 +20,10 @@ import debounce from "lodash.debounce";
 const Gallery = () => {
   const dispatch = useDispatch();
   const galleryData = useSelector((state) => state.gallery) || {};
-  const editor = useRef(null);
+
+  // Separate Refs for Editors
+  const infoEditorRef = useRef(null);
+  const descriptionEditorRef = useRef(null);
 
   const [gallery_info, setGalleryInfo] = useState("Gallery");
   const [gallery_description, setGalleryDescription] = useState("");
@@ -33,6 +35,11 @@ const Gallery = () => {
   });
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
+
+  // Debounce the description state update
+  const debouncedSetGalleryDescription = useRef(
+    debounce((content) => setGalleryDescription(content), 1000)
+  ).current;
 
   useEffect(() => {
     dispatch(fetchGalleryData());
@@ -50,32 +57,6 @@ const Gallery = () => {
       });
     }
   }, [galleryData]);
-
-  const debouncedEditorChange = useCallback(
-    debounce((newContent) => {
-      setGalleryDescription(newContent);
-    }, 3000),
-    []
-  );
-
-  const handleImageUpload = (event, category) => {
-    const files = Array.from(event.target.files);
-    setMedia((prev) => ({
-      ...prev,
-      [category]: [...prev[category], ...files],
-    }));
-  };
-
-  const handleImageRemove = (category, index) => {
-    const imageToRemove = media[category][index];
-    if (typeof imageToRemove === "string") {
-      setRemoveImages((prev) => [...prev, imageToRemove]);
-    }
-    setMedia((prev) => ({
-      ...prev,
-      [category]: prev[category].filter((_, i) => i !== index),
-    }));
-  };
 
   const handleEditSave = async (e) => {
     e.preventDefault();
@@ -113,53 +94,33 @@ const Gallery = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}></Typography>
+      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>Gallery</Typography>
       <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
         <form onSubmit={handleEditSave}>
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Gallery Info
-          </Typography>
+          {/* Gallery Info */}
+          <Typography variant="h6" sx={{ mt: 2 }}>Gallery Info</Typography>
           <JoditEditor
-            ref={editor}
+            ref={infoEditorRef}
             value={gallery_info}
-            config={{
-              readonly: !isEditable,
-              placeholder: "Enter gallery info...",
-            }}
-            onChange={debounce(
-              (newContent) => setGalleryInfo(newContent),
-              3000
-            )}
-            onBlur={(newContent) =>
-              setGalleryInfo(newContent?.trim() || "Gallery")
-            }
+            config={{ readonly: !isEditable, placeholder: "Enter gallery info..." }}
+            onBlur={(newContent) => setGalleryInfo(newContent?.trim() || "Gallery")}
           />
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Gallery Description
-          </Typography>
 
+          {/* Gallery Description */}
+          <Typography variant="h6" sx={{ mt: 2 }}>Gallery Description</Typography>
           <JoditEditor
-            ref={editor}
+            ref={descriptionEditorRef}
             value={gallery_description}
             config={{
               readonly: !isEditable,
               placeholder: "Write about gallery...",
-              uploader: {
-                insertImageAsBase64URI: true, // Allows base64 image upload (local handling)
-              },
-              filebrowser: {
-                ajax: {
-                  url: "/upload", // Backend API for image uploads (update this if needed)
-                },
-                insertImageAsBase64URI: true, // Allows pasting images directly as base64
-              },
+              uploader: { insertImageAsBase64URI: true },
             }}
-            onChange={debouncedEditorChange}
-            onBlur={(newContent) =>
-              setGalleryDescription(newContent?.trim() || "")
-            }
+            onChange={(newContent) => debouncedSetGalleryDescription(newContent)}
+            onBlur={(newContent) => setGalleryDescription(newContent?.trim() || "")}
           />
 
+          {/* Media Upload */}
           {Object.keys(media).map((category) => (
             <Box key={category} sx={{ mt: 3 }}>
               <Typography variant="h6">{category.replace("_", " ")}</Typography>
@@ -168,23 +129,30 @@ const Gallery = () => {
                   type="file"
                   multiple
                   accept="image/*"
-                  onChange={(event) => handleImageUpload(event, category)}
+                  onChange={(event) => {
+                    const files = Array.from(event.target.files);
+                    setMedia((prev) => ({
+                      ...prev,
+                      [category]: [...prev[category], ...files],
+                    }));
+                  }}
                 />
               )}
-              <Stack
-                direction="row"
-                spacing={2}
-                sx={{ flexWrap: "wrap", mt: 2 }}
-              >
+              <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
                 {media[category].map((image, index) => (
                   <Box key={index} sx={{ position: "relative" }}>
-                    <Avatar
-                      src={renderImageSource(image)}
-                      sx={{ width: 100, height: 100 }}
-                    />
+                    <Avatar src={renderImageSource(image)} sx={{ width: 100, height: 100 }} />
                     {isEditable && (
                       <IconButton
-                        onClick={() => handleImageRemove(category, index)}
+                        onClick={() => {
+                          if (typeof media[category][index] === "string") {
+                            setRemoveImages((prev) => [...prev, media[category][index]]);
+                          }
+                          setMedia((prev) => ({
+                            ...prev,
+                            [category]: prev[category].filter((_, i) => i !== index),
+                          }));
+                        }}
                         sx={{
                           position: "absolute",
                           top: -10,
@@ -201,6 +169,7 @@ const Gallery = () => {
             </Box>
           ))}
 
+          {/* Save/Edit Button */}
           <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
             <Button type="submit" variant="contained">
               {isEditable ? "Save" : "Edit"}

@@ -12,7 +12,8 @@ import BookDetailsPage from "./view/pages/Books/BookDetails";
 import SubscriberPage from "./view/pages/Subscribers/Subscribers";
 import TrusteePage from "./view/pages/Trustee/TrusteeRegistration";
 import DonationCollectionsPage from "./view/pages/Donation/DonationCollection";
-
+import EventListPage from "./view/pages/Event/EventList";
+import NewsListpage from "./view/pages/News/NewsList"
 import Login from "./view/pages/Login/Login";
 import Sidebar from "./view/components/SideBar/Sidebar";
 import Header from "./view/components/Header/AdminHeader";
@@ -62,20 +63,22 @@ function App() {
           }
         >
           <Route index element={<Dashboard />} />
-          <Route path="/dash" element={<Dashboard />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/book" element={<BookPage />} />
-          <Route path="/event" element={<EventPage />} />
-          <Route path="/donation" element={<DonationPage />} />
+          <Route path="/Books-and-Publications" element={<BookPage />} />
+          <Route path="/Events-&-Celebrations" element={<EventPage />} />
+          <Route path="/Donation and Support" element={<DonationPage />} />
           <Route path="/home" element={<Home />} />
           <Route path="/profile" element={<AdminProfile />} />
-          <Route path="/news" element={<Newspage />} />
+          <Route path="/News-&-Updates" element={<Newspage />} />
+          <Route path="/newslist" element={<NewsListpage />} />
           <Route path="/gallery" element={<GalleryPage />} />
-          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/Contact-&-Enquiries" element={<ContactPage />} />
           <Route path="/booklist" element={<BookListPage />} />
           <Route path="/bookdetails" element={<BookDetailsPage />} />
           <Route path="/subscriber" element={<SubscriberPage />} />
           <Route path="/trustee" element={<TrusteePage />} />
+          <Route path="/eventlist" element={<EventListPage />} />
           <Route
             path="/donationcollection"
             element={<DonationCollectionsPage />}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Drawer,
   List,
@@ -27,8 +27,7 @@ import {
   Menu as MenuIcon,
   Close as CloseIcon,
 } from "@mui/icons-material";
-import HomeIcon from "@mui/icons-material/Home";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useMediaQuery, useTheme } from "@mui/material";
 import sidelogo from "../../../assets/Images/logo.png";
 
@@ -37,42 +36,75 @@ const Sidebar = () => {
   const [activeChild, setActiveChild] = useState(null);
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-
+  const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const menuItems = [
-    { text: "Dashboard", icon: <Dashboard />, path: "/dash" },
-    // { text: "Home", icon: <HomeIcon />, path: "/home" },
+    { text: "Dashboard", icon: <Dashboard />, path: "/" },
     { text: "About", icon: <Info />, path: "/about" },
-    { text: "Events & Celebrations", icon: <EmojiEvents />, path: "/event" },
+    {
+      text: "Events & Celebrations",
+      icon: <EmojiEvents />,
+      path: "/Events-&-Celebrations",
+      subItems: [{ text: "Event List", path: "/eventlist" }],
+    },
     {
       text: "Donation and Support",
       icon: <VolunteerActivism />,
-      path: "/donation",
+      path: "/Donation-and-Support",
       subItems: [{ text: "Donation Collections", path: "/donationcollection" }],
     },
     {
       text: "Books and Publications",
       icon: <AutoStories />,
-      path: "/book",
-      subItems: [
-        { text: "Books List", path: "/booklist" },
-        // { text: "Books Details", path: "/bookdetails" },
-      ],
+      path: "/Books-and-Publications",
+      subItems: [{ text: "Books List", icon: <AutoStories />, path: "/booklist" }],
     },
-    { text: "News & Updates", icon: <BarChart />, path: "/news" },
+    {
+      text: "News & Updates",
+      icon: <BarChart />,
+      path: "/News-&-Updates",
+      subItems: [{ text: "News List", icon: <AutoStories />, path: "/newslist" }],
+    },
     { text: "Gallery", icon: <Collections />, path: "/gallery" },
     { text: "Trustees", icon: <Group />, path: "/trustee" },
-    { text: "Contact & Inquiries", icon: <ContactMail />, path: "/Contact" },
+    { text: "Contact & Enquiries", icon: <ContactMail />, path: "/Contact-&-Enquiries" },
     { text: "Subscribers", icon: <EmailSharp />, path: "/subscriber" },
   ];
 
+  useEffect(() => {
+    const currentPath = location.pathname;
+    let parentIndex = null;
+    let childIndex = null;
+    
+    menuItems.forEach((item, index) => {
+      if (currentPath === item.path) {
+        parentIndex = index;
+      } else if (item.subItems) {
+        item.subItems.forEach((subItem, subIdx) => {
+          if (currentPath.startsWith(subItem.path)) {
+            parentIndex = index;
+            childIndex = `${index}-${subIdx}`;
+          }
+        });
+      }
+    });
+
+    if (currentPath === "/") {
+      setActiveParent(0); // Highlight Dashboard
+    } else {
+      setActiveParent(parentIndex);
+      setActiveChild(childIndex);
+      setExpandedIndex(parentIndex); // Expand the active submenu
+    }
+  }, [location.pathname]);
+
   const handleParentClick = (index, item) => {
     if (item.subItems) {
-      setExpandedIndex(expandedIndex === index ? null : index); // Toggle dropdown
-      navigate(item.path); // Navigate to "Books and Publications" page
+      setExpandedIndex(expandedIndex === index ? null : index);
+      navigate(item.path);
     } else {
       setActiveParent(index);
       setExpandedIndex(null);
@@ -122,12 +154,8 @@ const Sidebar = () => {
         }}
       >
         <Box sx={{ textAlign: "center", pt: 0, pb: 0 }}>
-          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-            <img
-              src={sidelogo}
-              alt="Logo"
-              style={{ marginRight: "10px", height: "60px" }}
-            />
+          <Typography variant="h6" sx={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate("/")}>
+            <img src={sidelogo} alt="Logo" style={{ marginRight: "10px", height: "60px" }} />
           </Typography>
         </Box>
         <Divider />
@@ -138,13 +166,11 @@ const Sidebar = () => {
                 button
                 onClick={() => handleParentClick(index, item)}
                 sx={{
-                  backgroundColor: activeParent === index ? "" : "transparent",
+                  backgroundColor: activeParent === index ? "#a1c4ed" : "transparent",
                   "&:hover": { backgroundColor: "#a1c4ed" },
                 }}
               >
-                <ListItemIcon
-                  sx={{ color: activeParent === index ? "#1665c0" : "inherit" }}
-                >
+                <ListItemIcon sx={{ color: activeParent === index ? "#1665c0" : "inherit" }}>
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText
@@ -157,29 +183,19 @@ const Sidebar = () => {
                     },
                   }}
                 />
-                {item.subItems &&
-                  (expandedIndex === index ? <ExpandLess /> : <ExpandMore />)}
+                {item.subItems && (expandedIndex === index ? <ExpandLess /> : <ExpandMore />)}
               </ListItem>
               {item.subItems && (
-                <Collapse
-                  in={expandedIndex === index}
-                  timeout="auto"
-                  unmountOnExit
-                >
+                <Collapse in={expandedIndex === index} timeout="auto" unmountOnExit>
                   <List component="div" disablePadding>
                     {item.subItems.map((subItem, subIndex) => (
                       <ListItem
                         button
                         key={`${index}-${subIndex}`}
-                        onClick={() =>
-                          handleChildClick(index, subIndex, subItem)
-                        }
+                        onClick={() => handleChildClick(index, subIndex, subItem)}
                         sx={{
                           pl: 6,
-                          backgroundColor:
-                            activeChild === `${index}-${subIndex}`
-                              ? "#a1c4ed"
-                              : "transparent",
+                          backgroundColor: activeChild === `${index}-${subIndex}` ? "#a1c4ed" : "transparent",
                           "&:hover": { backgroundColor: "#a1c4ed" },
                         }}
                       >
@@ -187,14 +203,8 @@ const Sidebar = () => {
                           primary={subItem.text}
                           sx={{
                             "& .MuiTypography-root": {
-                              color:
-                                activeChild === `${index}-${subIndex}`
-                                  ? "#020202"
-                                  : "inherit",
-                              fontWeight:
-                                activeChild === `${index}-${subIndex}`
-                                  ? "bold"
-                                  : "normal",
+                              color: activeChild === `${index}-${subIndex}` ? "#020202" : "inherit",
+                              fontWeight: activeChild === `${index}-${subIndex}` ? "bold" : "normal",
                               fontSize: "14px",
                             },
                           }}

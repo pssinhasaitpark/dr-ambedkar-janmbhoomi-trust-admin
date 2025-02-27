@@ -13,6 +13,7 @@ export const fetchBooks = createAsyncThunk(
         author: book.author_name,
         description: book.description,
         images: book.images || [],
+        cover_image: book.cover_image || null,
       }));
     } catch (error) {
       return rejectWithValue(error.response ? error.response.data : error.message);
@@ -36,6 +37,7 @@ export const addBook = createAsyncThunk(
         author: book.author_name,
         description: book.description,
         images: book.images || [],
+        cover_image: book.cover_image || null,
       };
     } catch (error) {
       return rejectWithValue(error.response ? error.response.data : error.message);
@@ -59,6 +61,7 @@ export const updateBook = createAsyncThunk(
         author: book.author_name,
         description: book.description,
         images: book.images || [],
+        cover_image: book.cover_image || null,
       };
     } catch (error) {
       return rejectWithValue(error.response ? error.response.data : error.message);

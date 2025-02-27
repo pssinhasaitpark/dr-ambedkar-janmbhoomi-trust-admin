@@ -38,8 +38,8 @@ const TrusteeManagement = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({
     user_name: "",
-    first_name: "",
-    last_name: "",
+    full_name: "",
+    // last_name: "",
     email: "",
     mobile: "",
     password: "",
@@ -66,8 +66,8 @@ const TrusteeManagement = () => {
     setFormData(
       trustee || {
         user_name: "",
-        first_name: "",
-        last_name: "",
+        full_name: "",
+        // last_name: "",
         email: "",
         mobile: "",
         password: "",
@@ -85,8 +85,8 @@ const TrusteeManagement = () => {
     setImagePreview(null);
     setFormData({
       user_name: "",
-      first_name: "",
-      last_name: "",
+      full_name: "",
+      // last_name: "",
       email: "",
       mobile: "",
       password: "",
@@ -173,12 +173,12 @@ const TrusteeManagement = () => {
       <TableContainer component={Paper} style={{ marginTop: "20px" }}>
         <Table>
           <TableHead>
-            <TableRow>
+            <TableRow  sx={{ backgroundColor: "#3387e8" }}>
               <TableCell>
                 <b>User Name</b>
               </TableCell>
               <TableCell>
-                <b>Name</b>
+                <b>Full Name</b>
               </TableCell>
               <TableCell>
                 <b>Email</b>
@@ -205,7 +205,8 @@ const TrusteeManagement = () => {
               <TableRow key={trustee._id}>
                 <TableCell>{trustee.user_name}</TableCell>
                 <TableCell>
-                  {trustee.first_name} {trustee.last_name}
+                  {trustee.full_name} 
+                  {/* {trustee.last_name} */}
                 </TableCell>
                 <TableCell>{trustee.email}</TableCell>
                 <TableCell>{trustee.mobile}</TableCell>
@@ -260,20 +261,20 @@ const TrusteeManagement = () => {
           />
           <TextField
             margin="dense"
-            label="First Name"
-            name="first_name"
+            label="Full Name"
+            name="full_name"
             fullWidth
-            value={formData.first_name}
+            value={formData.full_name}
             onChange={handleChange}
           />
-          <TextField
+          {/* <TextField
             margin="dense"
             label="Last Name"
             name="last_name"
             fullWidth
             value={formData.last_name}
             onChange={handleChange}
-          />
+          /> */}
           <TextField
             margin="dense"
             label="Email"

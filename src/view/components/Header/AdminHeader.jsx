@@ -126,8 +126,9 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
+import { KeyboardArrowDown } from "@mui/icons-material";
 
-const Header = ({ onMenuClick }) => {
+const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
   const theme = useTheme();
@@ -187,7 +188,7 @@ const Header = ({ onMenuClick }) => {
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: { xs: 1, sm: 2 },
+            // gap: { xs: 1, sm: 2 },
             justifyContent: "flex-end",
           }}
         >
@@ -198,10 +199,15 @@ const Header = ({ onMenuClick }) => {
             alt="Admin"
             src="https://via.placeholder.com/150"
             sx={{
-              width: 32,
-              height: 32,
+              width: 40,
+              height: 40,
               cursor: "pointer",
             }}
+            onClick={handleMenuClick}
+          />
+           <KeyboardArrowDown
+            fontSize="small"
+            sx={{ cursor: "pointer" }}
             onClick={handleMenuClick}
           />
           <Menu

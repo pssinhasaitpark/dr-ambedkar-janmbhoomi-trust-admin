@@ -15,6 +15,9 @@ import booklistReducer from "../slice/booklistSlice";
 import subscribersReducer from "../slice/subscribersSlice";
 import trusteeReducer from "../slice/trusteeSlice";
 import donationCollectionReducer from "../slice/donationcollectionSlice";
+import eventlistReducer from "../slice/eventlistSlice";
+import newslistReducer from "../slice/newslistSlice";
+import dashboardReducer from "../slice/dashboardSlice";
 
 const store = configureStore({
   reducer: {
@@ -33,6 +36,9 @@ const store = configureStore({
     subscribers: subscribersReducer,
     trustee: trusteeReducer,
     donations: donationCollectionReducer,
+    eventlist: eventlistReducer,
+    newslist: newslistReducer,
+    dashboard: dashboardReducer,
 },
 });
 
