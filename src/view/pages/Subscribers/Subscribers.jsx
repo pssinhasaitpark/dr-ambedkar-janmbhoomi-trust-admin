@@ -49,23 +49,24 @@ function Subscribers() {
       sx={{
         mt: 2,
         p: 2,
-        borderRadius: 2,
-        boxShadow: 3,
+        // borderRadius: 2,
+        // boxShadow: 3,
         maxWidth: "95%",
         margin: "auto",
         overflowX: "auto",
       }}
     >
       <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold"}}>
-        Total Subscribers: {subscribers.length}
+        {/* Total Subscribers: {subscribers.length} */}
+        Subscribers
       </Typography>
       <Table sx={{ width: "100%" }}>
         <TableHead>
-          <TableRow>  
-              {/* sx={{ backgroundColor: "#f5f5f5" }} */}
-            <TableCell align="center" sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>#</TableCell>
+          <TableRow sx={{ backgroundColor: "#3387e8" }}>  
+           
+            <TableCell align="center" sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>No.</TableCell>
             <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Email</TableCell>
-            <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Created At</TableCell>
+            <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Date</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -73,7 +74,8 @@ function Subscribers() {
             <TableRow key={subscriber._id} >
               <TableCell align="center">{index + 1}</TableCell>
               <TableCell>{subscriber.email}</TableCell>
-              <TableCell>{new Date(subscriber.createdAt).toLocaleString()}</TableCell>
+              <TableCell>{new Date(subscriber.createdAt).toLocaleDateString()}</TableCell>
+
             </TableRow>
           ))}
         </TableBody>

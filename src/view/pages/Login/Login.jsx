@@ -46,7 +46,7 @@ function Login() {
   
         setTimeout(() => {
           if (user_role === "admin" || user_role === "super-admin") {
-            navigate("/dash"); // Admin/Super Admin Dashboard
+            navigate("/"); // Admin/Super Admin Dashboard
           }
         }, 1500);
       },

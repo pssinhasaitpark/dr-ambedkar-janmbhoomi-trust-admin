@@ -70,12 +70,12 @@ function DonationCollections() {
       </Typography>
       <Table sx={{ width: "100%" }}>
         <TableHead>
-          <TableRow>
+          <TableRow sx={{ backgroundColor: "#3387e8" }}>
             <TableCell
               align="center"
               sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}
             >
-              #
+              No.
             </TableCell>
             <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
               Full Name
@@ -90,9 +90,6 @@ function DonationCollections() {
               Amount
             </TableCell>
             <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
-              Event
-            </TableCell>
-            <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
               Created At
             </TableCell>
           </TableRow>
@@ -105,9 +102,8 @@ function DonationCollections() {
               <TableCell>{donation.email}</TableCell>
               <TableCell>{donation.phone}</TableCell>
               <TableCell>₹{donation.amount}</TableCell>
-              <TableCell>{donation.events}</TableCell>
               <TableCell>
-                {new Date(donation.createdAt).toLocaleString()}
+                {new Date(donation.createdAt).toLocaleDateString()}
               </TableCell>
             </TableRow>
           ))}
