@@ -20,6 +20,7 @@ import {
   DialogContent,
   DialogTitle,
   Tooltip,
+  TablePagination,
 } from "@mui/material";
 import {
   Table,
@@ -45,6 +46,8 @@ function NewsList() {
   const [expandedRows, setExpandedRows] = useState({});
   const [editingNews, setEditingNews] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [formData, setFormData] = useState({
     id: null,
     latest_news: "",
@@ -52,6 +55,15 @@ function NewsList() {
     description: "",
     images: [],
   });
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   useEffect(() => {
     dispatch(fetchNews());
@@ -195,7 +207,7 @@ function NewsList() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {news.map((newsItem) => (
+            {news.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((newsItem) => (
                 <TableRow key={newsItem.id}>
                   <TableCell>
                     <Typography
@@ -254,6 +266,17 @@ function NewsList() {
               ))}
             </TableBody>
           </Table>
+           <Box display="flex" justifyContent="center" width="100%" mt={2}>
+          <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={news.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+        </Box>
         </TableContainer>
         <Dialog
           open={isFormOpen}

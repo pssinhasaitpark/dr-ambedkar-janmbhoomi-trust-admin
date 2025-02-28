@@ -6,6 +6,7 @@ const initialState = {
   first_name: "",
   last_name: "",
   user_name: "",
+  user_role:"",
   email: "",
   mobile: "",
   loading: false,
@@ -45,6 +46,7 @@ const profileSlice = createSlice({
         state.first_name = action.payload.first_name;
         state.last_name = action.payload.last_name;
         state.user_name = action.payload.user_name;
+        state.user_role = action.payload.user_role;
         state.email = action.payload.email;
         state.mobile = action.payload.mobile;
       })

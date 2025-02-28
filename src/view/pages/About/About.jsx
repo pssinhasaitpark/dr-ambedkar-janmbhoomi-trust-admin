@@ -20,8 +20,6 @@ import {
 import debounce from "lodash.debounce";
 
 const About = () => {
- 
-
   const dispatch = useDispatch();
   const aboutData = useSelector((state) => state.about) || {};
   const editor = useRef(null);
@@ -98,7 +96,7 @@ const About = () => {
           })
         );
         setRemoveImages([]);
-        window.location.reload();
+        dispatch(fetchAboutData()); // Fetch latest data instead of reloading
       } catch (error) {
         console.error("Error saving/updating data: ", error);
       }
@@ -133,127 +131,92 @@ const About = () => {
             <CircularProgress />
           </Box>
         ) : (
-        <form onSubmit={handleEditSave}>
-          <TextField
-            fullWidth
-            label="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={!isEditable}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={!isEditable}
-            sx={{ mb: 2 }}
-          />
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Biography
-          </Typography>
-          {/* <JoditEditor
-            ref={editor}
-            value={biography}
-            config={{
-              readonly: !isEditable,
-              placeholder: "Write about biography...",
-              height: 400,
-              cleanOnPaste: false,
-              cleanOnChange: false,
-              toolbar: {
-                items: [
-                  "bold",
-                  "italic",
-                  "underline",
-                  "strikethrough",
-                  "eraser",
-                  "|",
-                  "font",
-                  "fontsize",
-                  "paragraph",
-                  "|",
-                  "align",
-                  "outdent",
-                  "indent",
-                  "|",
-                  "link",
-                  "image",
-                  "video",
-                  "table",
-                  "line",
-                  "code",
-                  "fullsize",
-                  "undo",
-                  "redo",
-                ],
-              },
-              uploader: {
-                insertImageAsBase64URI: true,
-                url: "/upload",
-                format: "json",
-              },
-            }}
-            style={{ width: "100%", minHeight: "200px" }}
-            onChange={debouncedEditorChange}
-            onBlur={(newContent) => setBiography(newContent?.trim() || "")}
-          /> */}
+          <form onSubmit={handleEditSave}>
+            <TextField
+              fullWidth
+              label="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              disabled={!isEditable}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={!isEditable}
+              sx={{ mb: 2 }}
+            />
+            <Typography variant="h6" sx={{ mt: 2 }}>
+              Biography
+            </Typography>
 
-<JoditEditor
+            <JoditEditor
+              ref={editor}
               value={biography}
-              onChange={debouncedEditorChange}
               onBlur={(newContent) => setBiography(newContent?.trim() || "")}
               config={{
                 readonly: !isEditable,
+                height: 300,
+                style: {
+                  overflow: "auto",
+                },
                 uploader: {
                   insertImageAsBase64URI: true,
                   url: "/upload",
                   format: "json",
                 },
               }}
+              style={{
+                maxHeight: "300px",
+                overflow: "auto",
+                border: "1px solid #ccc",
+                borderRadius: "5px",
+              }}
             />
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Upload Profile Images
-          </Typography>
-          {isEditable && (
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              style={{ marginBottom: "1rem" }}
-            />
-          )}
-          <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
-            {selectedImages.map((image, index) => (
-              <Box key={index} sx={{ position: "relative" }}>
-                <Avatar
-                  src={renderImageSource(image)}
-                  sx={{ width: 100, height: 100 }}
-                />
-                {isEditable && (
-                  <IconButton
-                    onClick={() => handleImageRemove(index)}
-                    sx={{
-                      position: "absolute",
-                      top: -10,
-                      right: -10,
-                      backgroundColor: "white",
-                    }}
-                  >
-                    <DeleteIcon color="error" />
-                  </IconButton>
-                )}
-              </Box>
-            ))}
-          </Stack>
-          <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-            <Button type="submit" variant="contained">
-              {isEditable ? "Save" : "Edit"}
-            </Button>
-          </Stack>
-        </form>
+
+            <Typography variant="h6" sx={{ mt: 2 }}>
+              Upload Profile Images
+            </Typography>
+            {isEditable && (
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+                style={{ marginBottom: "1rem" }}
+              />
+            )}
+            <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
+              {selectedImages.map((image, index) => (
+                <Box key={index} sx={{ position: "relative" }}>
+                  <Avatar
+                    src={renderImageSource(image)}
+                    sx={{ width: 100, height: 100 }}
+                  />
+                  {isEditable && (
+                    <IconButton
+                      onClick={() => handleImageRemove(index)}
+                      sx={{
+                        position: "absolute",
+                        top: -10,
+                        right: -10,
+                        backgroundColor: "white",
+                      }}
+                    >
+                      <DeleteIcon color="error" />
+                    </IconButton>
+                  )}
+                </Box>
+              ))}
+            </Stack>
+            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+              <Button type="submit" variant="contained">
+                {isEditable ? "Save" : "Edit"}
+              </Button>
+            </Stack>
+          </form>
         )}
       </Paper>
     </Box>

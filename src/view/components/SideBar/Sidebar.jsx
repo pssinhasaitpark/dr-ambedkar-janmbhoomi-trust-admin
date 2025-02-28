@@ -145,10 +145,10 @@ const Sidebar = () => {
         open={isMobile ? drawerOpen : true}
         onClose={toggleDrawer}
         sx={{
-          width: 240,
+          width: 280,
           flexShrink: 0,
           "& .MuiDrawer-paper": {
-            width: 240,
+            width: 280,
             boxSizing: "border-box",
           },
         }}
