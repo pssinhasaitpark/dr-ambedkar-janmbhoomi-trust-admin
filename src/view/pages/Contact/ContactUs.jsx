@@ -41,7 +41,7 @@ function ContactUs() {
   return (
     <TableContainer
       component={Paper}
-      sx={{ mt: 3, boxShadow: 3, borderRadius: 2 }}
+      sx={{ mt: 8, boxShadow: 3, borderRadius: 2 }}
     >
       <Typography variant="h5" sx={{ p: 2, fontWeight: "bold" }}>
         Contact Inquiries

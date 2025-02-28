@@ -8,6 +8,7 @@ import {
   Stack,
   IconButton,
   Avatar,
+  CircularProgress,
 } from "@mui/material";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
@@ -28,6 +29,22 @@ const Events = () => {
   const [selectedImages, setSelectedImages] = useState([]);
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
+
+
+  const [loading, setLoading] = useState(true); // Loading state
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true); // Set loading to true before fetching
+      await dispatch(fetchEventsData());
+
+      // Delay to ensure at least one complete circle is shown
+      setTimeout(() => {
+        setLoading(false); // Set loading to false after fetching
+      }, 500); // Adjust the delay as needed (500ms in this case)
+    };
+    fetchData();
+  }, [dispatch]);
 
   useEffect(() => {
     dispatch(fetchEventsData());
@@ -109,6 +126,18 @@ const Events = () => {
         {title}
       </Typography>
       <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
+        {loading ? ( // Show loading indicator while fetching
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "400px",
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
         <form onSubmit={handleEditSave}>
           <TextField
             fullWidth
@@ -241,6 +270,7 @@ const Events = () => {
             </Button>
           </Stack>
         </form>
+        )}
       </Paper>
     </Box>
   );

@@ -56,17 +56,18 @@ function DonationCollections() {
     <TableContainer
       component={Paper}
       sx={{
-        mt: 2,
-        p: 2,
+        mt: "60px", // Applying margin-top 60px
+        p: 5,
         borderRadius: 2,
         boxShadow: 3,
         maxWidth: "95%",
-        margin: "auto",
+     
         overflowX: "auto",
       }}
     >
       <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-        Total Donations: {donations.length}
+        Donations
+        {/* Total Donations: {donations.length} */}
       </Typography>
       <Table sx={{ width: "100%" }}>
         <TableHead>
@@ -90,7 +91,7 @@ function DonationCollections() {
               Amount
             </TableCell>
             <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
-              Created At
+              Date
             </TableCell>
           </TableRow>
         </TableHead>

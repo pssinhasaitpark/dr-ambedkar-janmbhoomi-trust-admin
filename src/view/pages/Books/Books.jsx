@@ -8,6 +8,7 @@ import {
   Stack,
   IconButton,
   Avatar,
+  CircularProgress,
 } from "@mui/material";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
@@ -24,11 +25,26 @@ const Books = () => {
   const editor = useRef(null);
 
   const [title, setTitle] = useState("Books");
-   const [name, setName] = useState("");
+  const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
+
+  const [loading, setLoading] = useState(true); // Loading state
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true); // Set loading to true before fetching
+      await dispatch(fetchBooksData());
+
+      // Delay to ensure at least one complete circle is shown
+      setTimeout(() => {
+        setLoading(false); // Set loading to false after fetching
+      }, 500); // Adjust the delay as needed (500ms in this case)
+    };
+    fetchData();
+  }, [dispatch]);
 
   useEffect(() => {
     dispatch(fetchBooksData());
@@ -109,28 +125,40 @@ const Books = () => {
         {title}
       </Typography>
       <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
-        <form onSubmit={handleEditSave}>
-          <TextField
-            fullWidth
-            label="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={!isEditable}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={!isEditable}
-            sx={{ mb: 2 }}
-          />
+        {loading ? ( // Show loading indicator while fetching
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "400px",
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
+          <form onSubmit={handleEditSave}>
+            <TextField
+              fullWidth
+              label="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              disabled={!isEditable}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={!isEditable}
+              sx={{ mb: 2 }}
+            />
 
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Book Description
-          </Typography>
-          <JoditEditor
+            <Typography variant="h6" sx={{ mt: 2 }}>
+              Book Description
+            </Typography>
+            <JoditEditor
             ref={editor}
             value={description}
             config={{
@@ -172,54 +200,70 @@ const Books = () => {
                 format: "json",
               },
             }}
+
+            
             style={{ width: "100%", minHeight: "200px" }}
             onChange={debouncedEditorChange}
             onBlur={(newContent) => setDescription(newContent?.trim() || "")}
           />
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Upload Book Cover
-          </Typography>
+            {/* <JoditEditor
+              value={description}
+              onChange={debouncedEditorChange}
+              config={{
+                readonly: !isEditable,
+                uploader: {
+                  insertImageAsBase64URI: true,
+                  url: "/upload",
+                  format: "json",
+                },
+              }}
+            /> */}
 
-          {isEditable && (
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              style={{ marginBottom: "1rem" }}
-            />
-          )}
+            <Typography variant="h6" sx={{ mt: 2 }}>
+              Upload Book Cover
+            </Typography>
 
-          <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
-            {selectedImages.map((image, index) => (
-              <Box key={index} sx={{ position: "relative" }}>
-                <Avatar
-                  src={renderImageSource(image)}
-                  sx={{ width: 100, height: 100 }}
-                />
-                {isEditable && (
-                  <IconButton
-                    onClick={() => handleImageRemove(index)}
-                    sx={{
-                      position: "absolute",
-                      top: -10,
-                      right: -10,
-                      backgroundColor: "white",
-                    }}
-                  >
-                    <DeleteIcon color="error" />
-                  </IconButton>
-                )}
-              </Box>
-            ))}
-          </Stack>
+            {isEditable && (
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+                style={{ marginBottom: "1rem" }}
+              />
+            )}
 
-          <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-            <Button type="submit" variant="contained">
-              {isEditable ? "Save" : "Edit"}
-            </Button>
-          </Stack>
-        </form>
+            <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
+              {selectedImages.map((image, index) => (
+                <Box key={index} sx={{ position: "relative" }}>
+                  <Avatar
+                    src={renderImageSource(image)}
+                    sx={{ width: 100, height: 100 }}
+                  />
+                  {isEditable && (
+                    <IconButton
+                      onClick={() => handleImageRemove(index)}
+                      sx={{
+                        position: "absolute",
+                        top: -10,
+                        right: -10,
+                        backgroundColor: "white",
+                      }}
+                    >
+                      <DeleteIcon color="error" />
+                    </IconButton>
+                  )}
+                </Box>
+              ))}
+            </Stack>
+
+            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+              <Button type="submit" variant="contained">
+                {isEditable ? "Save" : "Edit"}
+              </Button>
+            </Stack>
+          </form>
+        )}
       </Paper>
     </Box>
   );

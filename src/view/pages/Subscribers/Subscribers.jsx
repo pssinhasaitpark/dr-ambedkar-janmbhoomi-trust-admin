@@ -47,12 +47,12 @@ function Subscribers() {
     <TableContainer
       component={Paper}
       sx={{
-        mt: 2,
+        mt: 8,
         p: 2,
         // borderRadius: 2,
         // boxShadow: 3,
         maxWidth: "95%",
-        margin: "auto",
+        // margin: "auto",
         overflowX: "auto",
       }}
     >
