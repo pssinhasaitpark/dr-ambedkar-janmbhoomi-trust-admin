@@ -20,6 +20,8 @@ import {
   DialogContent,
   DialogTitle,
   Tooltip,
+  TablePagination,
+  CircularProgress,
 } from "@mui/material";
 import {
   Table,
@@ -40,10 +42,13 @@ import debounce from "lodash.debounce";
 
 function EventList() {
   const dispatch = useDispatch();
-  const { events, loading, error } = useSelector((state) => state.eventlist);
+  const { events, error } = useSelector((state) => state.eventlist);
   const [removeImages, setRemoveImages] = useState([]);
   const [editingEvent, setEditingEvent] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     id: null,
     event_title: "",
@@ -51,6 +56,30 @@ function EventList() {
     description: "",
     images: [],
   });
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true); // Set loading to true before fetching
+      await dispatch(fetchEvents());
+
+      // Delay to ensure at least one complete circle is shown
+      setTimeout(() => {
+        setLoading(false); // Set loading to false after fetching
+      }, 500); // Adjust the delay as needed (500ms in this case)
+    };
+    fetchData();
+  }, [dispatch]);
+  
+
 
   useEffect(() => {
     dispatch(fetchEvents());
@@ -152,6 +181,7 @@ function EventList() {
     }
   };
 
+
   return (
     <Container maxWidth="xlg" sx={{ mt: 8}}>
       <Box my={3}>
@@ -170,7 +200,16 @@ function EventList() {
             Add New Event
           </Button>
         </Box>
-
+        {loading ? (
+  <Box
+    display="flex"
+    justifyContent="center"
+    alignItems="center"
+    height="400px" // Adjust height to center vertically
+  >
+    <CircularProgress /> {/* Large, complete circular loader */}
+  </Box>
+) : (
         <TableContainer
           component={Paper}
           sx={{ borderRadius: 2, overflow: "hidden" }}
@@ -184,7 +223,7 @@ function EventList() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {events.map((event) => (
+            {events.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((event) => (
                 <TableRow key={event.id}>
                   <TableCell>{event.event_title}</TableCell>
                   <TableCell>{event.organized_by}</TableCell>
@@ -210,8 +249,19 @@ function EventList() {
               ))}
             </TableBody>
           </Table>
+                <Box display="flex" justifyContent="center" width="100%" mt={2}>
+                  <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={events.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                  />
+                </Box>
         </TableContainer>
-
+)}
         <Dialog
           open={isFormOpen}
           onClose={() => setIsFormOpen(false)}
@@ -308,9 +358,9 @@ function EventList() {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setIsFormOpen(false)}>Cancel</Button>
-            <Button variant="contained" onClick={handleSave}>
-              Save
-            </Button>
+            <Button variant="contained" onClick={handleSave} disabled={loading}>
+  {loading ? <CircularProgress size={24} /> : "Save"}
+</Button>
           </DialogActions>
         </Dialog>
       </Box>

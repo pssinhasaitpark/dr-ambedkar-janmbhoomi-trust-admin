@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect,useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDonations } from "../../redux/slice/donationcollectionSlice"; // Import the action
 import {
@@ -12,19 +12,45 @@ import {
   Typography,
   CircularProgress,
   Box,
+  TablePagination,
 } from "@mui/material";
 
 function DonationCollections() {
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const {
     data: donations,
-    loading,
     error,
   } = useSelector((state) => state.donations);
 
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   useEffect(() => {
-    dispatch(fetchDonations());
+    const fetchData = async () => {
+      setLoading(true); 
+      await dispatch(fetchDonations());
+
+      
+      setTimeout(() => {
+        setLoading(false); 
+      }, 500);
+    };
+    fetchData();
   }, [dispatch]);
+  
+
+  // useEffect(() => {
+  //   dispatch(fetchDonations());
+  // }, [dispatch]);
 
   if (loading)
     return (
@@ -53,6 +79,19 @@ function DonationCollections() {
     );
 
   return (
+  <Paper>
+          {loading ? ( // Show loading indicator while fetching
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "400px",
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          ) : (
     <TableContainer
       component={Paper}
       sx={{
@@ -96,7 +135,7 @@ function DonationCollections() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {donations.map((donation, index) => (
+        {donations.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((donation,index) => (
             <TableRow key={donation._id}>
               <TableCell align="center">{index + 1}</TableCell>
               <TableCell>{donation.full_name}</TableCell>
@@ -110,7 +149,20 @@ function DonationCollections() {
           ))}
         </TableBody>
       </Table>
+      <Box display="flex" justifyContent="center" width="100%" mt={2}>
+      <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={donations.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+       </Box>
     </TableContainer>
+      )}
+          </Paper>
   );
 }
 

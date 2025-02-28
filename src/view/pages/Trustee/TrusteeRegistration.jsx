@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Typography,
   MenuItem,
   Table,
   TableBody,
@@ -14,8 +15,10 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Box,
   IconButton,
   CircularProgress,
+  TablePagination,
 } from "@mui/material";
 import { Add, Edit, Delete } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
@@ -32,6 +35,8 @@ const TrusteeManagement = () => {
   const { trustees, loading, successMessage, error } = useSelector(
     (state) => state.trustee
   );
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -59,6 +64,16 @@ const TrusteeManagement = () => {
       }, 3000);
     }
   }, [successMessage, error, dispatch]);
+
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   const handleOpen = (trustee = null) => {
     setEditMode(!!trustee);
@@ -155,20 +170,38 @@ const TrusteeManagement = () => {
   };
 
   return (
-    <div style={{ padding: "20px", marginTop:"15px" }} >
-      <h2>Trustee Management</h2>
-      <Button
-        variant="contained"
-        startIcon={<Add />}
-        onClick={() => handleOpen()}
-      >
-        Add New Trustee
-      </Button>
+    <div style={{ padding: "20px", marginTop:"40px" }} >
 
-      {loading && <CircularProgress />}
-
-      {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={3}
+        >
+          <Typography variant="h6">Trustee Managment</Typography>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => handleOpen()}
+          >
+            Add New Trustee
+          </Button>
+        </Box>
+  <Paper>
+          {loading ? ( // Show loading indicator while fetching
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "400px",
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          ) : (
+      // {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
+      // {error && <p style={{ color: "red" }}>{error}</p>}
 
       <TableContainer component={Paper} style={{ marginTop: "20px" }}>
         <Table>
@@ -201,7 +234,7 @@ const TrusteeManagement = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {trustees.map((trustee) => (
+          {trustees.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((trustee) => (
               <TableRow key={trustee._id}>
                 <TableCell>{trustee.user_name}</TableCell>
                 <TableCell>
@@ -243,7 +276,20 @@ const TrusteeManagement = () => {
             ))}
           </TableBody>
         </Table>
+        <Box display="flex" justifyContent="center" width="100%" mt={2}>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={trustees.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+        </Box>
       </TableContainer>
+       )}
+              </Paper>
 
       {/* Dialog for Adding/Editing Trustees */}
       <Dialog open={open} onClose={handleClose}>
@@ -358,3 +404,5 @@ const TrusteeManagement = () => {
 };
 
 export default TrusteeManagement;
+
+

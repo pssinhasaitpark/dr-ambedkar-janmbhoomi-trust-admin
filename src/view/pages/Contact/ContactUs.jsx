@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchContactData } from "../../redux/slice/contactSlice";
 import {
@@ -9,20 +9,42 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Box,
   Typography,
   CircularProgress,
   Alert,
+  TablePagination,
+
 } from "@mui/material";
 
 function ContactUs() {
   const dispatch = useDispatch();
-
-  // Getting state from Redux store
-  const { contacts, loading, error } = useSelector((state) => state.contact);
+  const { contacts, error } = useSelector((state) => state.contact);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
-    dispatch(fetchContactData());
+    const fetchData = async () => {
+      setLoading(true); 
+      await dispatch(fetchContactData());
+
+      
+      setTimeout(() => {
+        setLoading(false); 
+      }, 500); 
+    };
+    fetchData();
   }, [dispatch]);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   if (loading)
     return (
@@ -39,87 +61,68 @@ function ContactUs() {
     );
 
   return (
-    <TableContainer
-      component={Paper}
-      sx={{ mt: 8, boxShadow: 3, borderRadius: 2 }}
-    >
+    <TableContainer component={Paper} sx={{ mt: 8, boxShadow: 3, borderRadius: 2 }}>
       <Typography variant="h5" sx={{ p: 2, fontWeight: "bold" }}>
         Contact Inquiries
       </Typography>
-
+  <Paper>
+          {loading ? ( // Show loading indicator while fetching
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "400px",
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          ) : (
       <Table>
         <TableHead>
-          <TableRow  sx={{ backgroundColor: "#3387e8" }}>
-            <TableCell>
-              <b>First Name</b>
-            </TableCell>
-            <TableCell>
-              <b>Last Name</b>
-            </TableCell>
-            <TableCell>
-              <b>Email</b>
-            </TableCell>
-            <TableCell>
-              <b>Contact No</b>
-            </TableCell>
-            <TableCell>
-              <b>Location</b>
-            </TableCell>
-            <TableCell>
-              <b>Date</b>
-            </TableCell>
+          <TableRow sx={{ backgroundColor: "#3387e8" }}>
+            <TableCell><b>First Name</b></TableCell>
+            <TableCell><b>Last Name</b></TableCell>
+            <TableCell><b>Email</b></TableCell>
+            <TableCell><b>Contact No</b></TableCell>
+            <TableCell><b>Location</b></TableCell>
+            <TableCell><b>Date</b></TableCell>
           </TableRow>
         </TableHead>
-        {/* <TableHead>
-          <TableRow sx={{ backgroundColor: "#1976d2" }}>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              First Name
-            </TableCell>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              Last Name
-            </TableCell>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              Email
-            </TableCell>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              Contact No
-            </TableCell>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              Location
-            </TableCell>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              Created At
-            </TableCell>
-          </TableRow>
-        </TableHead> */}
         <TableBody>
           {contacts.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} sx={{ textAlign: "center" }}>
+              <TableCell colSpan={6} sx={{ textAlign: "center" }}>
                 No contact inquiries found.
               </TableCell>
             </TableRow>
           ) : (
-            contacts.map((contact) => (
-              <TableRow
-                key={contact._id}
-
-                // sx={{ "&:nth-of-type(odd)": { backgroundColor: "#f5f5f5" } }}
-              >
+            contacts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((contact) => (
+              <TableRow key={contact._id}>
                 <TableCell>{contact.first_name}</TableCell>
                 <TableCell>{contact.last_name}</TableCell>
                 <TableCell>{contact.email}</TableCell>
                 <TableCell>{contact.phone_no}</TableCell>
                 <TableCell>{contact.location}</TableCell>
-
-                <TableCell>
-                  {new Date(contact.createdAt).toLocaleDateString()}
-                </TableCell>
+                <TableCell>{new Date(contact.createdAt).toLocaleDateString()}</TableCell>
               </TableRow>
             ))
           )}
         </TableBody>
       </Table>
+          )}
+                    </Paper>
+      <Box display="flex" justifyContent="center" width="100%" mt={2}>
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={contacts.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
+      </Box>
     </TableContainer>
   );
 }

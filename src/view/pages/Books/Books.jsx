@@ -31,24 +31,22 @@ const Books = () => {
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
 
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); // Set loading to true before fetching
+      setLoading(true);
       await dispatch(fetchBooksData());
-
-      // Delay to ensure at least one complete circle is shown
       setTimeout(() => {
-        setLoading(false); // Set loading to false after fetching
-      }, 500); // Adjust the delay as needed (500ms in this case)
+        setLoading(false);
+      }, 500); 
     };
     fetchData();
   }, [dispatch]);
 
-  useEffect(() => {
-    dispatch(fetchBooksData());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(fetchBooksData());
+  // }, [dispatch]);
 
   useEffect(() => {
     if (booksData) {
@@ -101,7 +99,7 @@ const Books = () => {
           })
         );
         setRemoveImages([]);
-        window.location.reload();
+        dispatch(fetchBooksData());
       } catch (error) {
         console.error("Error saving/updating data: ", error);
       }
@@ -158,7 +156,32 @@ const Books = () => {
             <Typography variant="h6" sx={{ mt: 2 }}>
               Book Description
             </Typography>
+
             <JoditEditor
+  ref={editor}
+  value={description}
+  onBlur={(newContent) => setDescription(newContent?.trim() || "")}
+  config={{
+    readonly: !isEditable,
+    height: 300,
+    style: {
+      overflow: "auto",
+    },
+    uploader: {
+      insertImageAsBase64URI: true,
+      url: "/upload",
+      format: "json",
+    },
+  }}
+  style={{
+    maxHeight: "300px", 
+    overflow: "auto",
+    border: "1px solid #ccc",
+    borderRadius: "5px",
+  }}
+/>
+
+            {/* <JoditEditor
             ref={editor}
             value={description}
             config={{
@@ -204,20 +227,8 @@ const Books = () => {
             
             style={{ width: "100%", minHeight: "200px" }}
             onChange={debouncedEditorChange}
-            onBlur={(newContent) => setDescription(newContent?.trim() || "")}
-          />
-            {/* <JoditEditor
-              value={description}
-              onChange={debouncedEditorChange}
-              config={{
-                readonly: !isEditable,
-                uploader: {
-                  insertImageAsBase64URI: true,
-                  url: "/upload",
-                  format: "json",
-                },
-              }}
-            /> */}
+           c
+          /> */}
 
             <Typography variant="h6" sx={{ mt: 2 }}>
               Upload Book Cover

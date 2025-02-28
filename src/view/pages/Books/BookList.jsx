@@ -20,6 +20,7 @@ import {
   DialogContent,
   DialogTitle,
   Tooltip,
+  TablePagination,
 } from "@mui/material";
 import {
   Table,
@@ -45,6 +46,8 @@ function BookList() {
   const [editingBook, setEditingBook] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [formData, setFormData] = useState({
     id: null,
     title: "",
@@ -53,6 +56,16 @@ function BookList() {
     images: [],
     cover_image: null,
   });
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
 
   useEffect(() => {
     dispatch(fetchBooks());
@@ -246,7 +259,7 @@ function BookList() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {books.map((book) => (
+            {books.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((book,index) => (
                 <TableRow key={book.id}>
                   <TableCell>{book.title}</TableCell>
                   <TableCell>{book.author}</TableCell>
@@ -266,6 +279,17 @@ function BookList() {
               ))}
             </TableBody>
           </Table>
+           <Box display="flex" justifyContent="center" width="100%" mt={2}>
+          <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={books.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+        </Box>
         </TableContainer>
         )}
 

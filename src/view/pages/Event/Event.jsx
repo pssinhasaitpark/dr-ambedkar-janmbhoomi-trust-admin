@@ -102,7 +102,7 @@ const Events = () => {
           })
         );
         setRemoveImages([]);
-        window.location.reload();
+        dispatch(fetchEventsData());
       } catch (error) {
         console.error("Error saving/updating data: ", error);
       }
@@ -159,15 +159,22 @@ const Events = () => {
           <Typography variant="h6" sx={{ mt: 2 }}>
             Event Description
           </Typography>
-          {/* <JoditEditor
-            ref={editor}
-            value={description}
-            config={{ readonly: !isEditable }}
-            onChange={(newContent) => setDescription(newContent?.trim() || "")}
-          /> */}
+          <JoditEditor
+  ref={editor}
+  value={description}
+  onBlur={(newContent) => setDescription(newContent?.trim() || "")}
+  config={{
+    readonly: !isEditable,
+    uploader: {
+      insertImageAsBase64URI: true,
+      url: "/upload",
+      format: "json",
+    },
+  }}
+/>
 
 
-<JoditEditor
+{/* <JoditEditor
   ref={editor}
   value={description}
   config={{
@@ -224,7 +231,7 @@ const Events = () => {
   style={{ width: "100%", minHeight: "200px" }}
   onChange={debouncedEditorChange}
   onBlur={(newContent) => setDescription(newContent?.trim() || "")}
-/>
+/> */}
 
           <Typography variant="h6" sx={{ mt: 2 }}>
             Upload Event Images
