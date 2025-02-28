@@ -8,6 +8,7 @@ import {
   Stack,
   IconButton,
   Avatar,
+  CircularProgress,
 } from "@mui/material";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
@@ -19,10 +20,11 @@ import {
 import debounce from "lodash.debounce";
 
 const About = () => {
+ 
+
   const dispatch = useDispatch();
   const aboutData = useSelector((state) => state.about) || {};
   const editor = useRef(null);
-
   const [title, setTitle] = useState("About");
   const [name, setName] = useState("");
   const [biography, setBiography] = useState("");
@@ -30,9 +32,24 @@ const About = () => {
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
 
+  const [loading, setLoading] = useState(true); // Loading state
+
   useEffect(() => {
-    dispatch(fetchAboutData());
+    const fetchData = async () => {
+      setLoading(true); // Set loading to true before fetching
+      await dispatch(fetchAboutData());
+
+      // Delay to ensure at least one complete circle is shown
+      setTimeout(() => {
+        setLoading(false); // Set loading to false after fetching
+      }, 500); // Adjust the delay as needed (500ms in this case)
+    };
+    fetchData();
   }, [dispatch]);
+
+  // useEffect(() => {
+  //   dispatch(fetchAboutData());
+  // }, [dispatch]);
 
   useEffect(() => {
     if (aboutData) {
@@ -104,6 +121,18 @@ const About = () => {
         {title}
       </Typography>
       <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
+        {loading ? ( // Show loading indicator while fetching
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "400px",
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
         <form onSubmit={handleEditSave}>
           <TextField
             fullWidth
@@ -124,7 +153,7 @@ const About = () => {
           <Typography variant="h6" sx={{ mt: 2 }}>
             Biography
           </Typography>
-          <JoditEditor
+          {/* <JoditEditor
             ref={editor}
             value={biography}
             config={{
@@ -169,7 +198,21 @@ const About = () => {
             style={{ width: "100%", minHeight: "200px" }}
             onChange={debouncedEditorChange}
             onBlur={(newContent) => setBiography(newContent?.trim() || "")}
-          />
+          /> */}
+
+<JoditEditor
+              value={biography}
+              onChange={debouncedEditorChange}
+              onBlur={(newContent) => setBiography(newContent?.trim() || "")}
+              config={{
+                readonly: !isEditable,
+                uploader: {
+                  insertImageAsBase64URI: true,
+                  url: "/upload",
+                  format: "json",
+                },
+              }}
+            />
           <Typography variant="h6" sx={{ mt: 2 }}>
             Upload Profile Images
           </Typography>
@@ -211,6 +254,7 @@ const About = () => {
             </Button>
           </Stack>
         </form>
+        )}
       </Paper>
     </Box>
   );

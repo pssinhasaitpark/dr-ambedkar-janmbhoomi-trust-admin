@@ -40,7 +40,7 @@ const Dashboard = () => {
   }, [dispatch]);
 
   return (
-    <Box sx={{ bgcolor: "#f4f6f8", minHeight: "100vh", pb: 4 }}>
+    <Box sx={{ bgcolor: "#f4f6f8", minHeight: "100vh", pb: 4 ,mt:7}}>
       {/* Banner Image */}
       <Box
         sx={{

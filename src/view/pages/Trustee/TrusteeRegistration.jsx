@@ -155,7 +155,7 @@ const TrusteeManagement = () => {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div style={{ padding: "20px", marginTop:"15px" }} >
       <h2>Trustee Management</h2>
       <Button
         variant="contained"

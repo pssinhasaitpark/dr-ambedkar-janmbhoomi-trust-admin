@@ -153,7 +153,7 @@ function EventList() {
   };
 
   return (
-    <Container maxWidth="xlg">
+    <Container maxWidth="xlg" sx={{ mt: 8}}>
       <Box my={3}>
         <Box
           display="flex"

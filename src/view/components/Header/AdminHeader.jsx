@@ -123,6 +123,7 @@ import {
   Menu,
   MenuItem,
   useMediaQuery,
+  Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
@@ -156,12 +157,14 @@ const Header = () => {
 
   return (
     <AppBar
-      position="static"
+      position="fixed"
       elevation={0}
       sx={{
         backgroundColor: "#fff",
         color: "#000",
         borderBottom: "1px solid #e0e0e0",
+        marginTop:"1px",
+        minHeight:"69px"
       }}
     >
       <Toolbar
@@ -171,17 +174,21 @@ const Header = () => {
           px: { xs: 1, sm: 2 },
         }}
       >
-        {/* Title */}
-        <Box
-          sx={{
-            fontWeight: "bold",
-            fontSize: { xs: "14px", sm: "18px" },
-            textAlign: "center",
-            flexGrow: 1,
-          }}
-        >
-          Dr Ambedkar Janmbhoomi trust
-        </Box>
+        <div style={{ flexGrow: 1, textAlign: "center", paddingLeft: "260px" }}>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: "bold",
+              fontSize: { xs: "14px", sm: "18px" },
+              color: "#3B0089",
+            }}
+         
+
+          >
+            Dr Ambedkar Janmbhoomi trust
+          </Typography>
+        </div>
+
 
         {/* Right Side */}
         <Box

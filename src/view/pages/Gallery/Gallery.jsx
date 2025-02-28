@@ -7,6 +7,7 @@ import {
   Stack,
   IconButton,
   Avatar,
+  CircularProgress,
 } from "@mui/material";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
@@ -24,7 +25,7 @@ const Gallery = () => {
   // Separate Refs for Editors
   const infoEditorRef = useRef(null);
   const descriptionEditorRef = useRef(null);
-
+  const [loading, setLoading] = useState(true); // Loading state
   const [gallery_info, setGalleryInfo] = useState("Gallery");
   const [gallery_description, setGalleryDescription] = useState("");
   const [media, setMedia] = useState({
@@ -42,8 +43,21 @@ const Gallery = () => {
   ).current;
 
   useEffect(() => {
-    dispatch(fetchGalleryData());
+    const fetchData = async () => {
+      setLoading(true);
+      await dispatch(fetchGalleryData());
+ 
+      setTimeout(() => {
+        setLoading(false); 
+      }, 500); 
+    };
+    fetchData();
   }, [dispatch]);
+
+
+  // useEffect(() => {
+  //   dispatch(fetchGalleryData());
+  // }, [dispatch]);
 
   useEffect(() => {
     if (galleryData) {
@@ -96,6 +110,18 @@ const Gallery = () => {
     <Box>
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>Gallery</Typography>
       <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
+        {loading ? ( // Show loading indicator while fetching
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "400px",
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
         <form onSubmit={handleEditSave}>
           {/* Gallery Info */}
           <Typography variant="h6" sx={{ mt: 2 }}>Gallery Info</Typography>
@@ -176,6 +202,7 @@ const Gallery = () => {
             </Button>
           </Stack>
         </form>
+        )}
       </Paper>
     </Box>
   );
