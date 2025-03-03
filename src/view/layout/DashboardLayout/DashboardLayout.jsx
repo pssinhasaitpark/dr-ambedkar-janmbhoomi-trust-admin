@@ -15,6 +15,8 @@ import SubscriberPage from "../../pages/Subscribers/Subscribers";
 import TrusteePage from "../../pages/Trustee/TrusteeRegistration";
 import DonationCollectionsPage from "../../pages/Donation/DonationCollection";
 import EventListPage from "../../pages/Event/EventList";
+import TestimonialsPage from "../../pages/Testimonials/Testimonials";
+import SocialMediaPage from "../../pages/SocialMedia/SocialMedia";
 
 import Home from "../../pages/Home/Home";
 import Dashboard from "../../pages/Dashboard/Dashboard";
@@ -40,6 +42,8 @@ const DashboardLayout = () => {
         <Route path="/trustee" element={<TrusteePage />} />
         <Route path="/eventlist" element={<EventListPage />} />
         <Route path="/donationcollection" element={<DonationCollectionsPage />} />
+        <Route path="/testimonials" element={<TestimonialsPage />} />
+        <Route path="/socialmedia" element={<SocialMediaPage />} />
       </Routes>
     </>
   );

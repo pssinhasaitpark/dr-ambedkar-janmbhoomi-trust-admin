@@ -21,6 +21,7 @@ import {
   DialogTitle,
   Tooltip,
   TablePagination,
+  CircularProgress,
 } from "@mui/material";
 import {
   Table,
@@ -41,13 +42,14 @@ import debounce from "lodash.debounce";
 
 function NewsList() {
   const dispatch = useDispatch();
-  const { news, loading, error } = useSelector((state) => state.newslist);
+  const { news,error } = useSelector((state) => state.newslist);
   const [removeImages, setRemoveImages] = useState([]);
   const [expandedRows, setExpandedRows] = useState({});
   const [editingNews, setEditingNews] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     id: null,
     latest_news: "",
@@ -65,9 +67,23 @@ function NewsList() {
     setPage(0);
   };
 
-  useEffect(() => {
-    dispatch(fetchNews());
-  }, [dispatch]);
+
+    useEffect(() => {
+      const fetchData = async () => {
+        setLoading(true);
+        await dispatch(fetchNews());
+  
+        
+        setTimeout(() => {
+          setLoading(false);
+        }, 500); 
+      };
+      fetchData();
+    }, [dispatch]);
+
+  // useEffect(() => {
+  //   dispatch(fetchNews());
+  // }, [dispatch]);
 
   const handleAddNew = () => {
     setEditingNews(null);
@@ -171,7 +187,20 @@ function NewsList() {
 
   return (
     <Container maxWidth="xlg" sx={{ mt: 8}}>
+
       <Box my={3}>
+
+           {loading ? (
+                <Box
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  height="400px"
+                >
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <>
         <Box
           display="flex"
           justifyContent="space-between"
@@ -209,7 +238,7 @@ function NewsList() {
             <TableBody>
             {news.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((newsItem) => (
                 <TableRow key={newsItem.id}>
-                  <TableCell>
+                  {/* <TableCell>
                     <Typography
                       sx={{
                         wordWrap: "break-word",
@@ -220,8 +249,28 @@ function NewsList() {
                     >
                       {newsItem.headline}
                     </Typography>
-                  </TableCell>
+                  </TableCell> */}
 
+                  <TableCell>
+                    <Typography
+                      variant="body1"
+                      sx={{ maxWidth: "200px", display: "inline" }}
+                    >
+                      {expandedRows[newsItem.id] ||
+                      newsItem.headline.length <= 50
+                        ? newsItem.headline
+                        : `${newsItem.headline.substring(0, 50)}...`}
+                    </Typography>
+                    {newsItem.headline.length > 50 && (
+                      <Button
+                        size="small"
+                        onClick={() => toggleReadMore(newsItem.id)}
+                        sx={{ textTransform: "none", color: "#007BFF" }}
+                      >
+                        {expandedRows[newsItem.id] ? "Read Less" : "Read More"}
+                      </Button>
+                      )}
+                  </TableCell>
                   <TableCell>
                     <Typography
                       variant="body1"
@@ -240,7 +289,7 @@ function NewsList() {
                       >
                         {expandedRows[newsItem.id] ? "Read Less" : "Read More"}
                       </Button>
-                    )}
+                      )}
                   </TableCell>
                   <TableCell align="right">
                     <Tooltip title="Edit">
@@ -278,6 +327,9 @@ function NewsList() {
         />
         </Box>
         </TableContainer>
+    
+        </>
+    )}
         <Dialog
           open={isFormOpen}
           onClose={() => setIsFormOpen(false)}

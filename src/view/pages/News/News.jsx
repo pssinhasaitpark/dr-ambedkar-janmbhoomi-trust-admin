@@ -8,6 +8,7 @@ import {
   Stack,
   IconButton,
   Avatar,
+  CircularProgress,
 } from "@mui/material";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
@@ -29,10 +30,23 @@ const News = () => {
   const [selectedImages, setSelectedImages] = useState([]);
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    dispatch(fetchNewsData());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(fetchNewsData());
+  // }, [dispatch]);
+
+    useEffect(() => {
+      const fetchData = async () => {
+        setLoading(true);
+        await dispatch(fetchNewsData());
+   
+        setTimeout(() => {
+          setLoading(false); 
+        }, 500); 
+      };
+      fetchData();
+    }, [dispatch]);
 
   useEffect(() => {
     if (newsData) {
@@ -85,7 +99,7 @@ const News = () => {
           })
         );
         setRemoveImages([]);
-        window.location.reload();
+       dispatch(fetchNewsData()); 
       } catch (error) {
         console.error("Error saving/updating data: ", error);
       }
@@ -108,7 +122,19 @@ const News = () => {
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
         {title}
       </Typography>
-      <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
+      <Paper sx={{ p: 3, borderRadius: 0, boxShadow: 0 }}>
+           {loading ? ( 
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      height: "400px",
+                    }}
+                  >
+                    <CircularProgress />
+                  </Box>
+                ) : (
         <form onSubmit={handleEditSave}>
           <TextField
             fullWidth
@@ -220,7 +246,9 @@ const News = () => {
             </Button>
           </Stack>
         </form>
+          )}
       </Paper>
+
     </Box>
   );
 };

@@ -122,10 +122,10 @@ const Events = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
+      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold",mt:8  }}>
         {title}
       </Typography>
-      <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
+      <Paper sx={{ p: 3, borderRadius: 0, boxShadow: 0 }}>
         {loading ? ( // Show loading indicator while fetching
           <Box
             sx={{

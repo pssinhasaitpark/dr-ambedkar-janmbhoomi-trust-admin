@@ -21,6 +21,7 @@ import {
   DialogTitle,
   Tooltip,
   TablePagination,
+  CircularProgress,
 } from "@mui/material";
 import {
   Table,
@@ -41,13 +42,14 @@ import debounce from "lodash.debounce";
 
 function BookList() {
   const dispatch = useDispatch();
-  const { books, loading, error } = useSelector((state) => state.booklist);
+  const { books, error } = useSelector((state) => state.booklist);
   const [removeImages, setRemoveImages] = useState([]); 
   const [editingBook, setEditingBook] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     id: null,
     title: "",
@@ -65,11 +67,22 @@ function BookList() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
-
   useEffect(() => {
-    dispatch(fetchBooks());
+    const fetchData = async () => {
+      setLoading(true);
+      await dispatch(fetchBooks());
+
+      
+      setTimeout(() => {
+        setLoading(false);
+      }, 500); 
+    };
+    fetchData();
   }, [dispatch]);
+
+  // useEffect(() => {
+  //   dispatch(fetchBooks());
+  // }, [dispatch]);
 
   const handleAddNew = () => {
     setEditingBook(null);
@@ -210,6 +223,18 @@ function BookList() {
   return (
     <Container maxWidth="xlg" sx={{ mt: 8}}>
       <Box my={3}>
+          {loading ? (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="400px"
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <>
+
         <Box
           display="flex"
           justifyContent="space-between"
@@ -251,6 +276,11 @@ function BookList() {
                     Author
                   </Typography>
                 </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    Book Image
+                  </Typography>
+                </TableCell>
                 <TableCell align="right">
                   <Typography variant="subtitle1" fontWeight="medium">
                     Actions
@@ -263,6 +293,24 @@ function BookList() {
                 <TableRow key={book.id}>
                   <TableCell>{book.title}</TableCell>
                   <TableCell>{book.author}</TableCell>
+                    <TableCell>
+                                            {book.cover_image && book.cover_image.length > 0 ? (
+                                              <img
+                                                src={book.cover_image} // Fetch the first image from array
+                                                alt="Book"
+                                                style={{
+                                                  width: 60,
+                                                  height: 60,
+                                                  objectFit: "cover",
+                                                  borderRadius: "5px",
+                                                }}
+                                              />
+                                            ) : (
+                                              <Typography variant="body2" color="text.secondary">
+                                                No Image
+                                              </Typography>
+                                            )}
+                                          </TableCell>
                   <TableCell align="right">
                     <Tooltip title="Edit">
                       <IconButton color="primary" onClick={() => handleEdit(book)} size="small">
@@ -291,8 +339,10 @@ function BookList() {
         />
         </Box>
         </TableContainer>
-        )}
-
+    
+          )}
+          </>
+    )}
         <Dialog
           open={isFormOpen}
           onClose={() => setIsFormOpen(false)}

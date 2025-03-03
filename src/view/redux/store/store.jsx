@@ -18,6 +18,8 @@ import donationCollectionReducer from "../slice/donationcollectionSlice";
 import eventlistReducer from "../slice/eventlistSlice";
 import newslistReducer from "../slice/newslistSlice";
 import dashboardReducer from "../slice/dashboardSlice";
+import testimonialReducer from "../slice/testimonialSlice";
+import socialMediaReducer from "../slice/socialMediaSlice";
 
 const store = configureStore({
   reducer: {
@@ -39,6 +41,8 @@ const store = configureStore({
     eventlist: eventlistReducer,
     newslist: newslistReducer,
     dashboard: dashboardReducer,
+    testimonials: testimonialReducer,
+    socialMedia: socialMediaReducer,
 },
 });
 

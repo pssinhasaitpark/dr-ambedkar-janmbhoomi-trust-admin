@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Snackbar, Alert } from "@mui/material";
 import {
   Button,
   Dialog,
@@ -41,10 +42,10 @@ const TrusteeManagement = () => {
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [showLoader, setShowLoader] = useState(true);
   const [formData, setFormData] = useState({
     user_name: "",
     full_name: "",
-    // last_name: "",
     email: "",
     mobile: "",
     password: "",
@@ -52,6 +53,11 @@ const TrusteeManagement = () => {
     user_role: "trustees",
     image: null,
   });
+
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   useEffect(() => {
     dispatch(fetchTrustees());
@@ -65,6 +71,25 @@ const TrusteeManagement = () => {
     }
   }, [successMessage, error, dispatch]);
 
+  useEffect(() => {
+      const timer = setTimeout(() => {
+        setShowLoader(false);
+      }, 1000); 
+  
+      return () => clearTimeout(timer);
+    }, []);
+  
+    if (loading || showLoader)
+      return (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="50vh"
+        >
+          <CircularProgress />
+        </Box>
+      );
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -82,7 +107,6 @@ const TrusteeManagement = () => {
       trustee || {
         user_name: "",
         full_name: "",
-        // last_name: "",
         email: "",
         mobile: "",
         password: "",
@@ -101,7 +125,6 @@ const TrusteeManagement = () => {
     setFormData({
       user_name: "",
       full_name: "",
-      // last_name: "",
       email: "",
       mobile: "",
       password: "",
@@ -131,36 +154,40 @@ const TrusteeManagement = () => {
   };
 
   const handleSubmit = () => {
-    // console.log("Form Data Before Appending to FormData:", formData);
-
     const data = new FormData();
 
     Object.keys(formData).forEach((key) => {
       if (["_id", "createdAt", "updatedAt", "__v"].includes(key)) {
-        // console.log(`Skipping ${key} field: ${formData[key]}`);
+        // Skip these fields
       } else if (
         key === "image" &&
         typeof formData[key] === "string" &&
         formData[key].startsWith("http")
       ) {
-        // console.log(`Skipping image field since it's a URL: ${formData[key]}`);
+        // Skip image field if it's a URL
       } else {
         data.append(key, formData[key]);
       }
     });
 
-    // console.log("Final FormData Content Before Dispatch:");
-    // for (let pair of data.entries()) {
-    //   console.log(pair[0], pair[1]);
-    // }
-
-    if (editMode) {
-      dispatch(updateTrustee({ _id: formData._id, updatedData: data }));
-    } else {
-      dispatch(registerTrustee(data));
-    }
-
-    handleClose();
+    const action = editMode ? updateTrustee : registerTrustee;
+    dispatch(action(editMode ? { _id: formData._id, updatedData: data } : data))
+      .then(() => {
+        setSnackbarMessage(
+          editMode
+            ? "Trustee updated successfully!"
+            : "Trustee added successfully!"
+        );
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+        // Do not close the form here
+      })
+      .catch((err) => {
+        setSnackbarMessage(err.message || "An error occurred!");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+        // Do not close the form here
+      });
   };
 
   const handleDelete = (_id) => {
@@ -170,126 +197,127 @@ const TrusteeManagement = () => {
   };
 
   return (
-    <div style={{ padding: "20px", marginTop:"40px" }} >
-
+    <div style={{ padding: "20px", marginTop: "40px" }}>
       <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={3}
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={3}
+      >
+        <Typography variant="h6">Trustee Management</Typography>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => handleOpen()}
         >
-          <Typography variant="h6">Trustee Managment</Typography>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => handleOpen()}
-          >
-            Add New Trustee
-          </Button>
-        </Box>
-  <Paper>
-          {loading ? ( // Show loading indicator while fetching
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "400px",
-              }}
-            >
-              <CircularProgress />
+          Add New Trustee
+        </Button>
+      </Box>
+  
+          <TableContainer component={Paper} style={{ marginTop: "20px" }}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: "#3387e8" }}>
+                  <TableCell>
+                    <b>User Name</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Full Name</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Email</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Mobile</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Designation</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Role</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Image</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Actions</b>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {trustees
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((trustee) => (
+                    <TableRow key={trustee._id}>
+                      <TableCell>{trustee.user_name}</TableCell>
+                      <TableCell>{trustee.full_name}</TableCell>
+                      <TableCell>{trustee.email}</TableCell>
+                      <TableCell>{trustee.mobile}</TableCell>
+                      <TableCell>{trustee.designations}</TableCell>
+                      <TableCell>{trustee.user_role}</TableCell>
+                      <TableCell>
+                        {trustee.image && (
+                          <img
+                            src={trustee.image}
+                            alt="Trustee"
+                            style={{
+                              width: "50px",
+                              height: "50px",
+                              borderRadius: "50%",
+                            }}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <IconButton
+                          onClick={() => handleOpen(trustee)}
+                          color="primary"
+                        >
+                          <Edit />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => handleDelete(trustee._id)}
+                          color="error"
+                        >
+                          <Delete />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+            <Box display="flex" justifyContent="center" width="100%" mt={2}>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={trustees.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
             </Box>
-          ) : (
-      // {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
-      // {error && <p style={{ color: "red" }}>{error}</p>}
+          </TableContainer>
 
-      <TableContainer component={Paper} style={{ marginTop: "20px" }}>
-        <Table>
-          <TableHead>
-            <TableRow  sx={{ backgroundColor: "#3387e8" }}>
-              <TableCell>
-                <b>User Name</b>
-              </TableCell>
-              <TableCell>
-                <b>Full Name</b>
-              </TableCell>
-              <TableCell>
-                <b>Email</b>
-              </TableCell>
-              <TableCell>
-                <b>Mobile</b>
-              </TableCell>
-              <TableCell>
-                <b>Designation</b>
-              </TableCell>
-              <TableCell>
-                <b>Role</b>
-              </TableCell>
-              <TableCell>
-                <b>Image</b>
-              </TableCell>
-              <TableCell>
-                <b>Actions</b>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-          {trustees.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((trustee) => (
-              <TableRow key={trustee._id}>
-                <TableCell>{trustee.user_name}</TableCell>
-                <TableCell>
-                  {trustee.full_name} 
-                  {/* {trustee.last_name} */}
-                </TableCell>
-                <TableCell>{trustee.email}</TableCell>
-                <TableCell>{trustee.mobile}</TableCell>
-                <TableCell>{trustee.designations}</TableCell>
-                <TableCell>{trustee.user_role}</TableCell>
-                <TableCell>
-                  {trustee.image && (
-                    <img
-                      src={trustee.image}
-                      alt="Trustee"
-                      style={{
-                        width: "50px",
-                        height: "50px",
-                        borderRadius: "50%",
-                      }}
-                    />
-                  )}
-                </TableCell>
-                <TableCell>
-                  <IconButton
-                    onClick={() => handleOpen(trustee)}
-                    color="primary"
-                  >
-                    <Edit />
-                  </IconButton>
-                  <IconButton
-                    onClick={() => handleDelete(trustee._id)}
-                    color="error"
-                  >
-                    <Delete />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <Box display="flex" justifyContent="center" width="100%" mt={2}>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={trustees.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-        </Box>
-      </TableContainer>
-       )}
-              </Paper>
+      {/* Snackbar for success/error messages */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={null}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }} // Positioning the Snackbar
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          action={
+            <Button color="inherit" onClick={() => setSnackbarOpen(false)}>
+              Close
+            </Button>
+          }
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
 
       {/* Dialog for Adding/Editing Trustees */}
       <Dialog open={open} onClose={handleClose}>
@@ -299,7 +327,7 @@ const TrusteeManagement = () => {
         <DialogContent>
           <TextField
             margin="dense"
-            label="User Name"
+            label="User  Name"
             name="user_name"
             fullWidth
             value={formData.user_name}
@@ -313,14 +341,6 @@ const TrusteeManagement = () => {
             value={formData.full_name}
             onChange={handleChange}
           />
-          {/* <TextField
-            margin="dense"
-            label="Last Name"
-            name="last_name"
-            fullWidth
-            value={formData.last_name}
-            onChange={handleChange}
-          /> */}
           <TextField
             margin="dense"
             label="Email"
@@ -358,7 +378,7 @@ const TrusteeManagement = () => {
           {/* User Role Dropdown */}
           <TextField
             margin="dense"
-            label="User Role"
+            label="User  Role"
             name="user_role"
             fullWidth
             select
@@ -366,7 +386,7 @@ const TrusteeManagement = () => {
             onChange={handleChange}
           >
             <MenuItem value="trustees">Trustee</MenuItem>
-            <MenuItem value="user">User</MenuItem>
+            <MenuItem value="user">User </MenuItem>
           </TextField>
 
           {/* Image Upload & Preview */}
@@ -404,5 +424,3 @@ const TrusteeManagement = () => {
 };
 
 export default TrusteeManagement;
-
-
