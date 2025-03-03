@@ -68,21 +68,14 @@ function EventList() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); // Set loading to true before fetching
+      setLoading(true);
       await dispatch(fetchEvents());
 
-      // Delay to ensure at least one complete circle is shown
       setTimeout(() => {
-        setLoading(false); // Set loading to false after fetching
-      }, 500); // Adjust the delay as needed (500ms in this case)
+        setLoading(false);
+      }, 500);
     };
     fetchData();
-  }, [dispatch]);
-  
-
-
-  useEffect(() => {
-    dispatch(fetchEvents());
   }, [dispatch]);
 
   const handleAddNew = () => {
@@ -181,87 +174,126 @@ function EventList() {
     }
   };
 
-
   return (
-    <Container maxWidth="xlg" sx={{ mt: 8}}>
+    <Container maxWidth="xlg" sx={{ mt: 10 }}>
       <Box my={3}>
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={3}
-        >
-          <Typography variant="h6">Manage Events</Typography>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={handleAddNew}
-          >
-            Add New Event
-          </Button>
-        </Box>
         {loading ? (
-  <Box
-    display="flex"
-    justifyContent="center"
-    alignItems="center"
-    height="400px" // Adjust height to center vertically
-  >
-    <CircularProgress /> {/* Large, complete circular loader */}
-  </Box>
-) : (
-        <TableContainer
-          component={Paper}
-          sx={{ borderRadius: 2, overflow: "hidden" }}
-        >
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: "#3387e8" }}>
-                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Event Title</TableCell>
-                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Organized By</TableCell>
-                <TableCell align="right" sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-            {events.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((event) => (
-                <TableRow key={event.id}>
-                  <TableCell>{event.event_title}</TableCell>
-                  <TableCell>{event.organized_by}</TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Edit">
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleEdit(event)}
-                      >
-                        <Edit />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDeleteConfirm(event.id)}
-                      >
-                        <Delete />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-                <Box display="flex" justifyContent="center" width="100%" mt={2}>
-                  <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
-                    component="div"
-                    count={events.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                  />
-                </Box>
-        </TableContainer>
-)}
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            height="400px"
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={3}
+            >
+              <Typography variant="h6">Manage Events</Typography>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={handleAddNew}
+              >
+                Add New Event
+              </Button>
+            </Box>
+            <TableContainer
+              component={Paper}
+              sx={{ borderRadius: 2, overflow: "hidden" }}
+            >
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "#3387e8" }}>
+                    <TableCell
+                      sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}
+                    >
+                      Event Title
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}
+                    >
+                      Organized By
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}
+                    >
+                      Event Image
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}
+                    >
+                      Actions
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {events
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((event) => (
+                      <TableRow key={event.id}>
+                        <TableCell>{event.event_title}</TableCell>
+                        <TableCell>{event.organized_by}</TableCell>
+                        <TableCell>
+                          {event.images && event.images.length > 0 ? (
+                            <img
+                              src={event.images[0]} // Fetch the first image from array
+                              alt="Event"
+                              style={{
+                                width: 60,
+                                height: 60,
+                                objectFit: "cover",
+                                borderRadius: "5px",
+                              }}
+                            />
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              No Image
+                            </Typography>
+                          )}
+                        </TableCell>
+                        <TableCell align="right">
+                          <Tooltip title="Edit">
+                            <IconButton
+                              color="primary"
+                              onClick={() => handleEdit(event)}
+                            >
+                              <Edit />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <IconButton
+                              color="error"
+                              onClick={() => handleDeleteConfirm(event.id)}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Tooltip>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+              <Box display="flex" justifyContent="center" width="100%" mt={2}>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  component="div"
+                  count={events.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </Box>
+            </TableContainer>
+          </>
+        )}
         <Dialog
           open={isFormOpen}
           onClose={() => setIsFormOpen(false)}
@@ -359,8 +391,8 @@ function EventList() {
           <DialogActions>
             <Button onClick={() => setIsFormOpen(false)}>Cancel</Button>
             <Button variant="contained" onClick={handleSave} disabled={loading}>
-  {loading ? <CircularProgress size={24} /> : "Save"}
-</Button>
+              {loading ? <CircularProgress size={24} /> : "Save"}
+            </Button>
           </DialogActions>
         </Dialog>
       </Box>

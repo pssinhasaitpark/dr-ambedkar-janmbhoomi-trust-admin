@@ -23,6 +23,8 @@ import Dashboard from "./view/pages/Dashboard/Dashboard";
 import PrivateRoute from "./view/routes/PrivateRoute";
 import DashboardLayout from "./view/layout/DashboardLayout/DashboardLayout";
 import AdminProfile from "./view/pages/Profile/Profile";
+import TestimonialsPage from "./view/pages/Testimonials/Testimonials";
+import SocialMediaPage from "./view/pages/SocialMedia/SocialMedia";
 
 function AppLayout({ children }) {
   const location = useLocation();
@@ -67,7 +69,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/Books-and-Publications" element={<BookPage />} />
           <Route path="/Events-&-Celebrations" element={<EventPage />} />
-          <Route path="/Donation and Support" element={<DonationPage />} />
+          <Route path="/Donation-and-Support" element={<DonationPage />} />
           <Route path="/home" element={<Home />} />
           <Route path="/profile" element={<AdminProfile />} />
           <Route path="/News-&-Updates" element={<Newspage />} />
@@ -79,6 +81,8 @@ function App() {
           <Route path="/subscriber" element={<SubscriberPage />} />
           <Route path="/trustee" element={<TrusteePage />} />
           <Route path="/eventlist" element={<EventListPage />} />
+          <Route path="/testimonials" element={<TestimonialsPage />} />
+          <Route path="/socialmedia" element={<SocialMediaPage />} />
           <Route
             path="/donationcollection"
             element={<DonationCollectionsPage />}

@@ -53,11 +53,11 @@ const Dashboard = () => {
       />
 
       {/* Header Section */}
-      <Box sx={{ display: "flex", alignItems: "center", p: 4 }}>
+      {/* <Box sx={{ display: "flex", alignItems: "center", p: 4 }}>
         <Typography variant="h4" fontWeight="bold" sx={{ color: "#333" }}>
           Admin Dashboard - Dr Ambedkar Janmbhoomi trust
         </Typography>
-      </Box>
+      </Box> */}
 
       {/* Error Message */}
       {error && (
@@ -67,7 +67,7 @@ const Dashboard = () => {
       )}
 
       {/* Dynamic Stats Section */}
-      <Box sx={{ px: 4, mb: 4 }}>
+      <Box sx={{ px: 4, mb: 4, mt:2 }}>
         <Grid container spacing={3}>
           {[
             {

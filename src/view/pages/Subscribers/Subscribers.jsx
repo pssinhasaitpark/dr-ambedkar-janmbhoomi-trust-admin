@@ -18,13 +18,34 @@ import {
 function Subscribers() {
   const dispatch = useDispatch();
   const { data: subscribers, loading, error } = useSelector((state) => state.subscribers);
-
+  const [showLoader, setShowLoader] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     dispatch(fetchSubscribers());
   }, [dispatch]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000); 
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading || showLoader)
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -35,12 +56,12 @@ function Subscribers() {
     setPage(0);
   };
 
-  if (loading)
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
-        <CircularProgress />
-      </Box>
-    );
+  // if (loading)
+  //   return (
+  //     <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+  //       <CircularProgress />
+  //     </Box>
+  //   );
 
   if (error)
     return (
@@ -57,18 +78,21 @@ function Subscribers() {
     );
 
   return (
+    <>
+     <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold",mt:8 }}>
+        Subscribers
+      </Typography>
+
     <TableContainer
       component={Paper}
       sx={{
-        mt: 8,
-        p: 2,
-        maxWidth: "95%",
+        mt: 2,
+        p: 0,
+        maxWidth: "100%",
         overflowX: "auto",
       }}
     >
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-        Subscribers
-      </Typography>
+     
       <Table sx={{ width: "100%" }}>
         <TableHead>
           <TableRow sx={{ backgroundColor: "#3387e8" }}>
@@ -101,6 +125,7 @@ function Subscribers() {
         />
       </Box>
     </TableContainer>
+    </>
   );
 }
 

@@ -25,7 +25,7 @@ export const addEvent = createAsyncThunk(
   "eventlist/addEvent",
   async (eventData, { rejectWithValue }) => {
     try {
-      const response = await api.post("/events", eventData, {
+      const response = await api.post("/eventlist", eventData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       const event = response.data;

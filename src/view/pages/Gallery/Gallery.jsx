@@ -109,8 +109,8 @@ const Gallery = () => {
   return (
     <Box>
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>Gallery</Typography>
-      <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
-        {loading ? ( // Show loading indicator while fetching
+      <Paper sx={{ p: 3, borderRadius: 0, boxShadow: 0 }}>
+        {loading ? ( 
           <Box
             sx={{
               display: "flex",

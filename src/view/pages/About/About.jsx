@@ -30,17 +30,17 @@ const About = () => {
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
 
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); // Set loading to true before fetching
+      setLoading(true); 
       await dispatch(fetchAboutData());
 
-      // Delay to ensure at least one complete circle is shown
+   
       setTimeout(() => {
-        setLoading(false); // Set loading to false after fetching
-      }, 500); // Adjust the delay as needed (500ms in this case)
+        setLoading(false);
+      }, 500); 
     };
     fetchData();
   }, [dispatch]);
@@ -96,7 +96,7 @@ const About = () => {
           })
         );
         setRemoveImages([]);
-        dispatch(fetchAboutData()); // Fetch latest data instead of reloading
+        dispatch(fetchAboutData()); 
       } catch (error) {
         console.error("Error saving/updating data: ", error);
       }
@@ -115,11 +115,11 @@ const About = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
+      <Typography variant="h4" sx={{ mb: 1, fontWeight: "bold",mt:8 ,pl:3 }}>
         {title}
       </Typography>
-      <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
-        {loading ? ( // Show loading indicator while fetching
+      <Paper sx={{ p: 3, borderRadius: 0, boxShadow: 0 }}>
+        {loading ? (
           <Box
             sx={{
               display: "flex",

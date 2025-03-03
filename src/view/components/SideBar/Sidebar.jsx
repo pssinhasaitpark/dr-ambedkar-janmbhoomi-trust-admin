@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   Drawer,
   List,
-  ListItem,
   ListItemIcon,
   ListItemText,
   Typography,
@@ -24,9 +23,12 @@ import {
   ContactMail,
   EmailSharp,
   Group,
+  RateReview,
+  LinkSharp,
   Menu as MenuIcon,
   Close as CloseIcon,
 } from "@mui/icons-material";
+import { Link } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useMediaQuery, useTheme } from "@mui/material";
 import sidelogo from "../../../assets/Images/logo.png";
@@ -48,7 +50,7 @@ const Sidebar = () => {
       text: "Events & Celebrations",
       icon: <EmojiEvents />,
       path: "/Events-&-Celebrations",
-      subItems: [{ text: "Event List", path: "/eventlist" }],
+      subItems: [{ text: "Event List",  icon: <EmojiEvents />,path: "/eventlist" }],
     },
     {
       text: "Donation and Support",
@@ -60,25 +62,30 @@ const Sidebar = () => {
       text: "Books and Publications",
       icon: <AutoStories />,
       path: "/Books-and-Publications",
-      subItems: [{ text: "Books List", icon: <AutoStories />, path: "/booklist" }],
+      subItems: [{ text: "Books List", path: "/booklist" }],
     },
     {
-      text: "News & Updates",
+      text: "News List",
       icon: <BarChart />,
-      path: "/News-&-Updates",
-      subItems: [{ text: "News List", icon: <AutoStories />, path: "/newslist" }],
+      path: "/newslist",
     },
     { text: "Gallery", icon: <Collections />, path: "/gallery" },
     { text: "Trustees", icon: <Group />, path: "/trustee" },
-    { text: "Contact & Enquiries", icon: <ContactMail />, path: "/Contact-&-Enquiries" },
+    {
+      text: "Contact & Enquiries",
+      icon: <ContactMail />,
+      path: "/Contact-&-Enquiries",
+    },
     { text: "Subscribers", icon: <EmailSharp />, path: "/subscriber" },
+    { text: "Testimonials", icon: <RateReview />, path: "/testimonials" },
+    { text: "SocialMedia", icon: <LinkSharp />, path: "/socialmedia" },
   ];
 
   useEffect(() => {
     const currentPath = location.pathname;
     let parentIndex = null;
     let childIndex = null;
-    
+
     menuItems.forEach((item, index) => {
       if (currentPath === item.path) {
         parentIndex = index;
@@ -154,62 +161,90 @@ const Sidebar = () => {
         }}
       >
         <Box sx={{ textAlign: "center", pt: 0, pb: 0 }}>
-          <Typography variant="h6" sx={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate("/")}>
-            <img src={sidelogo} alt="Logo" style={{ marginRight: "10px", height: "60px" }} />
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: "bold", cursor: "pointer" }}
+            onClick={() => navigate("/")}
+          >
+            <img
+              src={sidelogo}
+              alt="Logo"
+              style={{ marginRight: "10px", height: "60px" }}
+            />
           </Typography>
         </Box>
         <Divider />
         <List>
           {menuItems.map((item, index) => (
             <React.Fragment key={index}>
-              <ListItem
-                button
+              <Link
+                to={item.path || "#"}
                 onClick={() => handleParentClick(index, item)}
-                sx={{
-                  backgroundColor: activeParent === index ? "#a1c4ed" : "transparent",
-                  "&:hover": { backgroundColor: "#a1c4ed" },
+                style={{
+                  textDecoration: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "10px 16px",
+                  backgroundColor:
+                    activeParent === index ? "#a1c4ed" : "transparent",
+                  color: activeParent === index ? "#020202" : "inherit",
+                  fontWeight: activeParent === index ? "bold" : "normal",
+                  fontSize: "15px",
                 }}
               >
-                <ListItemIcon sx={{ color: activeParent === index ? "#1665c0" : "inherit" }}>
+                <ListItemIcon
+                  sx={{ color: activeParent === index ? "#1665c0" : "inherit" }}
+                >
                   {item.icon}
                 </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{
-                    "& .MuiTypography-root": {
-                      color: activeParent === index ? "#020202" : "inherit",
-                      fontWeight: activeParent === index ? "bold" : "normal",
-                      fontSize: "15px",
-                    },
-                  }}
-                />
-                {item.subItems && (expandedIndex === index ? <ExpandLess /> : <ExpandMore />)}
-              </ListItem>
+                <ListItemText primary={item.text} />
+                {item.subItems &&
+                  (expandedIndex === index ? <ExpandLess /> : <ExpandMore />)}
+              </Link>
               {item.subItems && (
-                <Collapse in={expandedIndex === index} timeout="auto" unmountOnExit>
+                <Collapse
+                  in={expandedIndex === index}
+                  timeout="auto"
+                  unmountOnExit
+                >
                   <List component="div" disablePadding>
                     {item.subItems.map((subItem, subIndex) => (
-                      <ListItem
-                        button
+                      <Link
+                        to={subItem.path || "#"}
                         key={`${index}-${subIndex}`}
-                        onClick={() => handleChildClick(index, subIndex, subItem)}
-                        sx={{
-                          pl: 6,
-                          backgroundColor: activeChild === `${index}-${subIndex}` ? "#a1c4ed" : "transparent",
-                          "&:hover": { backgroundColor: "#a1c4ed" },
+                        onClick={() =>
+                          handleChildClick(index, subIndex, subItem)
+                        }
+                        style={{
+                          textDecoration: "none",
+                          display: "flex",
+                          padding: "10px 16px",
+                          paddingLeft: "16px",
+                          backgroundColor:
+                            activeChild === `${index}-${subIndex}`
+                              ? "#a1c4ed"
+                              : "transparent",
+                          color:
+                            activeChild === `${index}-${subIndex}`
+                              ? "#020202"
+                              : "inherit",
+                          fontWeight:
+                            activeChild === `${index}-${subIndex}`
+                              ? "bold"
+                              : "normal",
+                          fontSize: "14px",
                         }}
                       >
-                        <ListItemText
-                          primary={subItem.text}
+                        <ListItemIcon
                           sx={{
-                            "& .MuiTypography-root": {
-                              color: activeChild === `${index}-${subIndex}` ? "#020202" : "inherit",
-                              fontWeight: activeChild === `${index}-${subIndex}` ? "bold" : "normal",
-                              fontSize: "14px",
-                            },
+                            color:
+                              activeParent === index ? "#020202" : "inherit",
                           }}
-                        />
-                      </ListItem>
+                        >
+                          {item.icon}
+                        </ListItemIcon>
+                        <ListItemText primary={subItem.text} />
+                      </Link>
                     ))}
                   </List>
                 </Collapse>

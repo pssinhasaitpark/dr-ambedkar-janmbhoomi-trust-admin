@@ -19,23 +19,49 @@ import {
 
 function ContactUs() {
   const dispatch = useDispatch();
-  const { contacts, error } = useSelector((state) => state.contact);
-  const [loading, setLoading] = useState(true);
+  const { contacts,loading, error } = useSelector((state) => state.contact);
+  const [showLoader, setShowLoader] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true); 
-      await dispatch(fetchContactData());
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     setLoading(true); 
+  //     await dispatch(fetchContactData());
 
       
-      setTimeout(() => {
-        setLoading(false); 
-      }, 500); 
-    };
-    fetchData();
+  //     setTimeout(() => {
+  //       setLoading(false); 
+  //     }, 500); 
+  //   };
+  //   fetchData();
+  // }, [dispatch]);
+  
+  useEffect(() => {
+    dispatch(fetchContactData());
   }, [dispatch]);
+
+   useEffect(() => {
+      const timer = setTimeout(() => {
+        setShowLoader(false);
+      }, 1000); 
+  
+      return () => clearTimeout(timer);
+    }, []);
+  
+    if (loading || showLoader)
+      return (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="50vh"
+        >
+          <CircularProgress />
+        </Box>
+      );
+
+
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -61,23 +87,14 @@ function ContactUs() {
     );
 
   return (
-    <TableContainer component={Paper} sx={{ mt: 8, boxShadow: 3, borderRadius: 2 }}>
-      <Typography variant="h5" sx={{ p: 2, fontWeight: "bold" }}>
+    <>
+       <Typography variant="h5" sx={{mb:2, fontWeight: "bold",mt:8, }}>
         Contact Inquiries
       </Typography>
-  <Paper>
-          {loading ? ( // Show loading indicator while fetching
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "400px",
-              }}
-            >
-              <CircularProgress />
-            </Box>
-          ) : (
+
+    <TableContainer component={Paper} sx={{ mt: 0, boxShadow: 3, borderRadius: 2 }}>
+   
+ 
       <Table>
         <TableHead>
           <TableRow sx={{ backgroundColor: "#3387e8" }}>
@@ -110,8 +127,8 @@ function ContactUs() {
           )}
         </TableBody>
       </Table>
-          )}
-                    </Paper>
+
+                  
       <Box display="flex" justifyContent="center" width="100%" mt={2}>
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
@@ -123,7 +140,9 @@ function ContactUs() {
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
       </Box>
+      
     </TableContainer>
+    </>
   );
 }
 

@@ -81,7 +81,7 @@ const Donation = () => {
           })
         );
         setRemoveImages([]);
-        // window.location.reload();
+          dispatch(fetchDonationData()); 
       } catch (error) {
         console.error("Error saving/updating data: ", error);
       }
@@ -100,7 +100,7 @@ const Donation = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
+      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold",mt:8  }}>
         {title}
       </Typography>
       <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
@@ -125,66 +125,32 @@ const Donation = () => {
           <Typography variant="h6" sx={{ mt: 2 }}>
             Donation Description
           </Typography>
-          <JoditEditor
-            ref={editor}
-            value={description}
-            config={{
-              readonly: !isEditable,
-              placeholder: "Write about donation details...",
-              height: 400,
-              cleanOnPaste: false,
-              cleanOnChange: false,
-              toolbarSticky: true,
-              toolbarAdaptive: false,
 
-              // Custom styling for border box around paragraphs
-              contentStyle: `
-      p {
-        border: 1px solid #ccc;  /* Light gray border */
-        padding: 12px;           /* Add padding inside the box */
-        margin-bottom: 10px;     /* Space between boxes */
-        border-radius: 5px;      /* Rounded corners */
-        background-color: #f9f9f9; /* Light background for contrast */
-      }
-    `,
 
-              toolbar: {
-                items: [
-                  "bold",
-                  "italic",
-                  "underline",
-                  "strikethrough",
-                  "eraser",
-                  "|",
-                  "font",
-                  "fontsize",
-                  "paragraph",
-                  "|",
-                  "align",
-                  "outdent",
-                  "indent",
-                  "|",
-                  "link",
-                  "image",
-                  "video",
-                  "table",
-                  "line",
-                  "code",
-                  "fullsize",
-                  "undo",
-                  "redo",
-                ],
-              },
-              uploader: {
-                insertImageAsBase64URI: true,
-                url: "/upload",
-                format: "json",
-              },
-            }}
-            style={{ width: "100%", minHeight: "200px" }}
-            onChange={debouncedEditorChange}
-            onBlur={(newContent) => setDescription(newContent?.trim() || "")}
-          />
+
+           <JoditEditor
+              ref={editor}
+              value={description}
+              onBlur={(newContent) => setDescription(newContent?.trim() || "")}
+              config={{
+                readonly: !isEditable,
+                height: 300,
+                style: {
+                  overflow: "auto",
+                },
+                uploader: {
+                  insertImageAsBase64URI: true,
+                  url: "/upload",
+                  format: "json",
+                },
+              }}
+              style={{
+                maxHeight: "300px",
+                overflow: "auto",
+                border: "1px solid #ccc",
+                borderRadius: "5px",
+              }}
+            />
 
           <Typography variant="h6" sx={{ mt: 2 }}>
             Upload Donation Images
