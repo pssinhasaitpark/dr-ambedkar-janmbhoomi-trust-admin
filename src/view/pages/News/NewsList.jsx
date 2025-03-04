@@ -42,7 +42,7 @@ import debounce from "lodash.debounce";
 
 function NewsList() {
   const dispatch = useDispatch();
-  const { news,error } = useSelector((state) => state.newslist);
+  const { news} = useSelector((state) => state.newslist);
   const [removeImages, setRemoveImages] = useState([]);
   const [expandedRows, setExpandedRows] = useState({});
   const [editingNews, setEditingNews] = useState(null);
@@ -50,6 +50,8 @@ function NewsList() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+const [newsToDelete, setNewsToDelete] = useState(null);
   const [formData, setFormData] = useState({
     id: null,
     latest_news: "",
@@ -81,9 +83,6 @@ function NewsList() {
       fetchData();
     }, [dispatch]);
 
-  // useEffect(() => {
-  //   dispatch(fetchNews());
-  // }, [dispatch]);
 
   const handleAddNew = () => {
     setEditingNews(null);
@@ -103,17 +102,26 @@ function NewsList() {
     setIsFormOpen(true);
   };
 
-  const handleDeleteConfirm = async (id) => {
-    if (window.confirm("Are you sure you want to delete this news?")) {
+  const handleDeleteConfirm = (id) => {
+    setNewsToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+  
+  const handleDelete = async () => {
+    if (newsToDelete) {
       try {
-        await dispatch(deleteNews(id)).unwrap();
-        alert("News deleted successfully");
+        await dispatch(deleteNews(newsToDelete)).unwrap();
+        setDeleteDialogOpen(false);
+        setNewsToDelete(null);
       } catch (error) {
         console.error("Error deleting news:", error);
         alert("Failed to delete the news. Please try again.");
       }
     }
   };
+
+
+
 
   const handleSave = async () => {
     if (!formData.headline.trim() || !formData.latest_news.trim()) {
@@ -186,9 +194,8 @@ function NewsList() {
   };
 
   return (
-    <Container maxWidth="xlg" sx={{ mt: 8}}>
-
-      <Box my={3}>
+    <Container maxWidth="xlg" sx={{ mt: 8, p: 0 }} disableGutters>
+      <Box my={3} >
 
            {loading ? (
                 <Box
@@ -206,6 +213,7 @@ function NewsList() {
           justifyContent="space-between"
           alignItems="center"
           mb={3}
+    
         >
           <Typography variant="h6">Manage News</Typography>
           <Button
@@ -238,19 +246,6 @@ function NewsList() {
             <TableBody>
             {news.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((newsItem) => (
                 <TableRow key={newsItem.id}>
-                  {/* <TableCell>
-                    <Typography
-                      sx={{
-                        wordWrap: "break-word",
-                        whiteSpace: "normal",
-                        overflowWrap: "break-word",
-                        maxWidth: "200px", // Adjust as needed
-                      }}
-                    >
-                      {newsItem.headline}
-                    </Typography>
-                  </TableCell> */}
-
                   <TableCell>
                     <Typography
                       variant="body1"
@@ -327,8 +322,21 @@ function NewsList() {
         />
         </Box>
         </TableContainer>
-    
+        <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+  <DialogTitle>Confirm Deletion</DialogTitle>
+  <DialogContent>
+    <Typography>Are you sure you want to delete this news?</Typography>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+    <Button onClick={handleDelete} color="error" variant="contained">
+      Delete
+    </Button>
+  </DialogActions>
+</Dialog>
+
         </>
+        
     )}
         <Dialog
           open={isFormOpen}

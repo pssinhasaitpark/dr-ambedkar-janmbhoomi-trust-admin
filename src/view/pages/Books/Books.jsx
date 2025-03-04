@@ -44,10 +44,6 @@ const Books = () => {
     fetchData();
   }, [dispatch]);
 
-  // useEffect(() => {
-  //   dispatch(fetchBooksData());
-  // }, [dispatch]);
-
   useEffect(() => {
     if (booksData) {
       setTitle(booksData.title || "Books");
@@ -119,11 +115,11 @@ const Books = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold",mt:8 }}>
+      <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold",mt:8 }}>
         {title}
       </Typography>
-      <Paper sx={{ p: 3, borderRadius: 0, boxShadow: 0 }}>
-        {loading ? ( // Show loading indicator while fetching
+      <Paper sx={{ p: 0, borderRadius: 0, boxShadow: 0 }}>
+        {loading ? ( 
           <Box
             sx={{
               display: "flex",

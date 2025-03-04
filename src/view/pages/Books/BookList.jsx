@@ -43,13 +43,15 @@ import debounce from "lodash.debounce";
 function BookList() {
   const dispatch = useDispatch();
   const { books, error } = useSelector((state) => state.booklist);
-  const [removeImages, setRemoveImages] = useState([]); 
+  const [removeImages, setRemoveImages] = useState([]);
   const [editingBook, setEditingBook] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [bookToDelete, setBookToDelete] = useState(null);
   const [formData, setFormData] = useState({
     id: null,
     title: "",
@@ -72,17 +74,12 @@ function BookList() {
       setLoading(true);
       await dispatch(fetchBooks());
 
-      
       setTimeout(() => {
         setLoading(false);
-      }, 500); 
+      }, 500);
     };
     fetchData();
   }, [dispatch]);
-
-  // useEffect(() => {
-  //   dispatch(fetchBooks());
-  // }, [dispatch]);
 
   const handleAddNew = () => {
     setEditingBook(null);
@@ -103,23 +100,17 @@ function BookList() {
     setIsFormOpen(true);
   };
 
-  const handleDeleteConfirm = async (id) => {
-    if (window.confirm("Are you sure you want to delete this book?")) {
-      try {
-        await dispatch(deleteBook(id)).unwrap(); // Ensure delete action completes
-        alert("Book deleted successfully");
-      } catch (error) {
-        console.error("Error deleting book:", error);
-        alert("Failed to delete the book. Please try again.");
-      }
-    }
+  const handleDeleteConfirm = (id) => {
+    setBookToDelete(id);
+    setDeleteDialogOpen(true);
   };
 
   const handleDelete = async () => {
-    if (confirmDelete) {
+    if (bookToDelete) {
       try {
-        await dispatch(deleteBook(confirmDelete)).unwrap();
-        setConfirmDelete(null);
+        await dispatch(deleteBook(bookToDelete)).unwrap();
+        setDeleteDialogOpen(false);
+        setBookToDelete(null);
       } catch (error) {
         console.error("Error deleting book:", error);
         alert("Failed to delete the book. Please try again.");
@@ -142,24 +133,15 @@ function BookList() {
       formDataToSend.append("cover_image", formData.cover_image);
     }
 
-
     // Append images correctly
     formData.images.forEach((image) => {
       if (image instanceof File) {
         formDataToSend.append("images", image);
       }
     });
-
-      // Send removed images array
-  // if (removeImages.length > 0) {
-  //   removeImages.forEach((imageUrl) => {
-  //     formDataToSend.append("removeImages[]", imageUrl); 
-  //   });
-  // }
-  if (removeImages.length > 0) {
-    formDataToSend.append("removeImages", JSON.stringify(removeImages)); // Convert to string
-  }
-  
+    if (removeImages.length > 0) {
+      formDataToSend.append("removeImages", JSON.stringify(removeImages));
+    }
 
     try {
       if (editingBook) {
@@ -199,150 +181,182 @@ function BookList() {
     }));
   };
 
-  // const handleRemoveImage = (index) => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     images: prev.images.filter((_, i) => i !== index),
-  //   }));
-  // };
-
   const handleRemoveImage = (index) => {
     const imageToRemove = formData.images[index];
-  
+
     setFormData((prev) => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index),
     }));
-  
+
     // If the image is from the backend (string URL), store it in `removeImages`
     if (typeof imageToRemove === "string") {
       setRemoveImages((prev) => [...prev, imageToRemove]);
     }
   };
-  
+
   return (
-    <Container maxWidth="xlg" sx={{ mt: 8}}>
+    <Container maxWidth="xlg" sx={{ mt: 8, p: 0 }} disableGutters>
       <Box my={3}>
-          {loading ? (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          height="400px"
-        >
-          <CircularProgress />
-        </Box>
-      ) : (
-        <>
-
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={3}
-        >
-          <Typography variant="h6">Manage Books</Typography>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={handleAddNew}
+        {loading ? (
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            height="400px"
           >
-            Add New Book
-          </Button>
-        </Box>
-
-        {loading && <Typography>Loading...</Typography>}
-        {error && <Typography color="error">{error}</Typography>}
-
-        {books.length === 0 ? (
-          <Paper sx={{ p: 4, textAlign: "center", borderRadius: 2 }}>
-            <Typography variant="h6" color="text.secondary">
-              No books available
-            </Typography>
-          </Paper>
+            <CircularProgress />
+          </Box>
         ) : (
+          <>
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={3}
+            >
+              <Typography variant="h6">Manage Books</Typography>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={handleAddNew}
+              >
+                Add New Book
+              </Button>
+            </Box>
 
-          <TableContainer component={Paper} sx={{ borderRadius: 2, overflow: "hidden" }}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: "#3387e8"}}>
-                <TableCell>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Title
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Author
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Book Image
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Actions
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-            {books.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((book,index) => (
-                <TableRow key={book.id}>
-                  <TableCell>{book.title}</TableCell>
-                  <TableCell>{book.author}</TableCell>
-                    <TableCell>
-                                            {book.cover_image && book.cover_image.length > 0 ? (
-                                              <img
-                                                src={book.cover_image} // Fetch the first image from array
-                                                alt="Book"
-                                                style={{
-                                                  width: 60,
-                                                  height: 60,
-                                                  objectFit: "cover",
-                                                  borderRadius: "5px",
-                                                }}
-                                              />
-                                            ) : (
-                                              <Typography variant="body2" color="text.secondary">
-                                                No Image
-                                              </Typography>
-                                            )}
-                                          </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Edit">
-                      <IconButton color="primary" onClick={() => handleEdit(book)} size="small">
-                        <Edit />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton color="error" onClick={() => handleDeleteConfirm(book.id)} size="small">
-                        <Delete />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-           <Box display="flex" justifyContent="center" width="100%" mt={2}>
-          <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={books.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-        </Box>
-        </TableContainer>
-    
-          )}
+            {loading && <Typography>Loading...</Typography>}
+            {error && <Typography color="error">{error}</Typography>}
+
+            {books.length === 0 ? (
+              <Paper sx={{ p: 4, textAlign: "center", borderRadius: 2 }}>
+                <Typography variant="h6" color="text.secondary">
+                  No books available
+                </Typography>
+              </Paper>
+            ) : (
+              <TableContainer
+                component={Paper}
+                sx={{overflow: "hidden" }}
+              >
+                <Table>
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: "#3387e8" }}>
+                      <TableCell>
+                        <Typography variant="subtitle1" fontWeight="medium">
+                          Title
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="subtitle1" fontWeight="medium">
+                          Author
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="subtitle1" fontWeight="medium">
+                          Book Image
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="subtitle1" fontWeight="medium">
+                          Actions
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {books
+                      .slice(
+                        page * rowsPerPage,
+                        page * rowsPerPage + rowsPerPage
+                      )
+                      .map((book, index) => (
+                        <TableRow key={book.id}>
+                          <TableCell>{book.title}</TableCell>
+                          <TableCell>{book.author}</TableCell>
+                          <TableCell>
+                            {book.cover_image && book.cover_image.length > 0 ? (
+                              <img
+                                src={book.cover_image} // Fetch the first image from array
+                                alt="Book"
+                                style={{
+                                  width: 60,
+                                  height: 60,
+                                  objectFit: "cover",
+                                  borderRadius: "5px",
+                                }}
+                              />
+                            ) : (
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                No Image
+                              </Typography>
+                            )}
+                          </TableCell>
+                          <TableCell align="right">
+                            <Tooltip title="Edit">
+                              <IconButton
+                                color="primary"
+                                onClick={() => handleEdit(book)}
+                                size="small"
+                              >
+                                <Edit />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete">
+                              <IconButton
+                                color="error"
+                                onClick={() => handleDeleteConfirm(book.id)}
+                                size="small"
+                              >
+                                <Delete />
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+                <Box display="flex" justifyContent="center" width="100%" mt={2}>
+                  <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={books.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                  />
+                </Box>
+              </TableContainer>
+            )}
+            <Dialog
+              open={deleteDialogOpen}
+              onClose={() => setDeleteDialogOpen(false)}
+            >
+              <DialogTitle>Confirm Deletion</DialogTitle>
+              <DialogContent>
+                <Typography>
+                  Are you sure you want to delete this book?
+                </Typography>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setDeleteDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDelete}
+                  color="error"
+                  variant="contained"
+                >
+                  Delete
+                </Button>
+              </DialogActions>
+            </Dialog>
           </>
-    )}
+        )}
         <Dialog
           open={isFormOpen}
           onClose={() => setIsFormOpen(false)}
@@ -388,14 +402,32 @@ function BookList() {
               value={formData.description}
               onChange={debouncedHandleChange}
             />
-             <Typography variant="subtitle1">Cover Image:</Typography>
-            <Button component="label" variant="contained" startIcon={<ImageIcon />}>
+            <Typography variant="subtitle1">Cover Image:</Typography>
+            <Button
+              component="label"
+              variant="contained"
+              startIcon={<ImageIcon />}
+            >
               Select Cover Image
-              <input type="file" hidden accept="image/*" onChange={handleCoverImageChange} />
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={handleCoverImageChange}
+              />
             </Button>
             {formData.cover_image && (
               <Box mt={2}>
-                <img src={formData.cover_image instanceof File ? URL.createObjectURL(formData.cover_image) : formData.cover_image} alt="Cover" width="100" height="100" />
+                <img
+                  src={
+                    formData.cover_image instanceof File
+                      ? URL.createObjectURL(formData.cover_image)
+                      : formData.cover_image
+                  }
+                  alt="Cover"
+                  width="100"
+                  height="100"
+                />
               </Box>
             )}
 

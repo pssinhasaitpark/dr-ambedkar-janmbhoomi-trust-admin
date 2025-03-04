@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchTestimonialsData } from "../../redux/slice/testimonialSlice";
+import {
+  fetchTestimonialsData,
+  deleteTestimonialsData,
+} from "../../redux/slice/testimonialSlice";
 import {
   Table,
   TableBody,
@@ -14,16 +17,27 @@ import {
   CircularProgress,
   Alert,
   TablePagination,
+  Tooltip,
+  IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Button,
 } from "@mui/material";
+import { Delete } from "@mui/icons-material";
 
 function Testimonials() {
   const dispatch = useDispatch();
   const { testimonials, loading, error } = useSelector(
     (state) => state.testimonials
   );
+  const [expandedRows, setExpandedRows] = useState({});
   const [showLoader, setShowLoader] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedTestimonialId, setSelectedTestimonialId] = useState(null);
 
   useEffect(() => {
     dispatch(fetchTestimonialsData());
@@ -33,7 +47,6 @@ function Testimonials() {
     const timer = setTimeout(() => {
       setShowLoader(false);
     }, 1000);
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -57,12 +70,41 @@ function Testimonials() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
   if (error)
     return (
       <Alert severity="error" style={{ margin: "20px" }}>
         {error}
       </Alert>
     );
+
+  const handleOpenDialog = (id) => {
+    setSelectedTestimonialId(id);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedTestimonialId(null);
+  };
+
+  const handleDelete = async () => {
+    if (selectedTestimonialId) {
+      try {
+        await dispatch(deleteTestimonialsData(selectedTestimonialId)).unwrap();
+      } catch (error) {
+        console.error("Error deleting testimonial:", error);
+        alert("Failed to delete the testimonial. Please try again.");
+      }
+      handleCloseDialog();
+    }
+  };
+  const toggleReadMore = (id) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   return (
     <>
@@ -72,7 +114,7 @@ function Testimonials() {
 
       <TableContainer
         component={Paper}
-        sx={{ mt: 0, boxShadow: 3, borderRadius: 2 }}
+        sx={{ mt: 0, boxShadow: 0, borderRadius: 0 }}
       >
         <Paper>
           <Table>
@@ -90,12 +132,15 @@ function Testimonials() {
                 <TableCell>
                   <b>Date</b>
                 </TableCell>
+                <TableCell>
+                  <b>Action</b>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {testimonials.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} sx={{ textAlign: "center" }}>
+                  <TableCell colSpan={5} sx={{ textAlign: "center" }}>
                     No testimonials found.
                   </TableCell>
                 </TableRow>
@@ -104,7 +149,42 @@ function Testimonials() {
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((testimonial) => (
                     <TableRow key={testimonial._id}>
-                      <TableCell>{testimonial.description}</TableCell>
+                      {/* <TableCell>{testimonial.description}</TableCell> */}
+                      <TableCell>
+                        <Box
+                          sx={{
+                            maxWidth: 700, // Set a fixed width for consistency
+                            maxHeight: expandedRows[testimonial._id]
+                              ? "none"
+                              : 60, // Fixed height when collapsed
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "-webkit-box",
+                            WebkitLineClamp: expandedRows[testimonial._id]
+                              ? "none"
+                              : 2, // Show 3 lines before "Read More"
+                            WebkitBoxOrient: "vertical",
+                          }}
+                        >
+                          {testimonial.description}
+                        </Box>
+                        {testimonial.description.length > 150 && (
+                          <Button
+                            size="small"
+                            onClick={() => toggleReadMore(testimonial._id)}
+                            sx={{
+                              textTransform: "none",
+                              color: "#007BFF",
+                              display: "block",
+                            }}
+                          >
+                            {expandedRows[testimonial._id]
+                              ? "Read Less"
+                              : "Read More"}
+                          </Button>
+                        )}
+                      </TableCell>
+
                       <TableCell>
                         {testimonial.case_studies.map((image, index) => (
                           <img
@@ -121,7 +201,6 @@ function Testimonials() {
                           />
                         ))}
                       </TableCell>
-
                       <TableCell>
                         {testimonial.stories.map((image, index) => (
                           <img
@@ -141,6 +220,17 @@ function Testimonials() {
                       <TableCell>
                         {new Date(testimonial.createdAt).toLocaleDateString()}
                       </TableCell>
+                      <TableCell>
+                        <Tooltip title="Delete">
+                          <IconButton
+                            color="error"
+                            onClick={() => handleOpenDialog(testimonial._id)}
+                            size="small"
+                          >
+                            <Delete />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
                     </TableRow>
                   ))
               )}
@@ -159,6 +249,22 @@ function Testimonials() {
           />
         </Box>
       </TableContainer>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete this testimonial?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

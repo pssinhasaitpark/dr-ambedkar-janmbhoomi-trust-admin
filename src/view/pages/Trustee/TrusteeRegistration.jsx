@@ -38,7 +38,8 @@ const TrusteeManagement = () => {
   );
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
+  const [designationFilter, setDesignationFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState(""); // New state for search query
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
@@ -72,24 +73,24 @@ const TrusteeManagement = () => {
   }, [successMessage, error, dispatch]);
 
   useEffect(() => {
-      const timer = setTimeout(() => {
-        setShowLoader(false);
-      }, 1000); 
-  
-      return () => clearTimeout(timer);
-    }, []);
-  
-    if (loading || showLoader)
-      return (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          height="50vh"
-        >
-          <CircularProgress />
-        </Box>
-      );
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading || showLoader)
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -196,8 +197,20 @@ const TrusteeManagement = () => {
     }
   };
 
+  const filteredTrustees = trustees.filter((trustee) => {
+    const matchesDesignation = designationFilter
+      ? trustee.designations === designationFilter
+      : true;
+
+    const matchesSearchQuery = trustee.full_name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase()); // Corrected line
+
+    return matchesDesignation && matchesSearchQuery;
+  });
+
   return (
-    <div style={{ padding: "20px", marginTop: "40px" }}>
+    <div style={{ padding: "4px", marginTop: "80px" }}>
       <Box
         display="flex"
         justifyContent="space-between"
@@ -213,91 +226,113 @@ const TrusteeManagement = () => {
           Add New Trustee
         </Button>
       </Box>
-  
-          <TableContainer component={Paper} style={{ marginTop: "20px" }}>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: "#3387e8" }}>
+
+      <Box display="flex" justifyContent="space-between" mb={3}>
+        <TextField
+          select
+          label="Filter by Designation"
+          value={designationFilter}
+          onChange={(e) => setDesignationFilter(e.target.value)}
+          style={{ width: "200px", marginRight: "20px" }}
+        >
+          <MenuItem value="">All</MenuItem>
+          <MenuItem value="Management">Management</MenuItem>
+          <MenuItem value="Developer">Developer</MenuItem>
+        </TextField>
+
+        {/* Search Bar */}
+        <TextField
+          label="Search by Full Name"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{ width: "300px" }}
+        />
+      </Box>
+
+      <TableContainer component={Paper} style={{ marginTop: "20px" }}>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: "#3387e8" }}>
+              <TableCell>
+                <b>User Name</b>
+              </TableCell>
+              <TableCell>
+                <b>Full Name</b>
+              </TableCell>
+              <TableCell>
+                <b>Email</b>
+              </TableCell>
+              <TableCell>
+                <b>Mobile</b>
+              </TableCell>
+              <TableCell>
+                <b>Designation</b>
+              </TableCell>
+              <TableCell>
+                <b>Role</b>
+              </TableCell>
+              <TableCell>
+                <b>Image</b>
+              </TableCell>
+              <TableCell>
+                <b>Actions</b>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredTrustees
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((trustee) => (
+                <TableRow key={trustee._id}>
+                  <TableCell>{trustee.user_name}</TableCell>
+                  <TableCell>{trustee.full_name}</TableCell>
+                  <TableCell>{trustee.email}</TableCell>
+                  <TableCell>{trustee.mobile}</TableCell>
+                  <TableCell>{trustee.designations}</TableCell>
+                  <TableCell>{trustee.user_role}</TableCell>
                   <TableCell>
-                    <b>User Name</b>
+                    {trustee.image && (
+                      <img
+                        src={trustee.image}
+                        alt="Trustee"
+                        style={{
+                          width: "50px",
+                          height: "50px",
+                          borderRadius: "50%",
+                        }}
+                      />
+                    )}
                   </TableCell>
                   <TableCell>
-                    <b>Full Name</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Email</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Mobile</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Designation</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Role</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Image</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Actions</b>
+                    <IconButton
+                      onClick={() => handleOpen(trustee)}
+                      color="primary"
+                    >
+                      <Edit />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => handleDelete(trustee._id)}
+                      color="error"
+                    >
+                      <Delete />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {trustees
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((trustee) => (
-                    <TableRow key={trustee._id}>
-                      <TableCell>{trustee.user_name}</TableCell>
-                      <TableCell>{trustee.full_name}</TableCell>
-                      <TableCell>{trustee.email}</TableCell>
-                      <TableCell>{trustee.mobile}</TableCell>
-                      <TableCell>{trustee.designations}</TableCell>
-                      <TableCell>{trustee.user_role}</TableCell>
-                      <TableCell>
-                        {trustee.image && (
-                          <img
-                            src={trustee.image}
-                            alt="Trustee"
-                            style={{
-                              width: "50px",
-                              height: "50px",
-                              borderRadius: "50%",
-                            }}
-                          />
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <IconButton
-                          onClick={() => handleOpen(trustee)}
-                          color="primary"
-                        >
-                          <Edit />
-                        </IconButton>
-                        <IconButton
-                          onClick={() => handleDelete(trustee._id)}
-                          color="error"
-                        >
-                          <Delete />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-            <Box display="flex" justifyContent="center" width="100%" mt={2}>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={trustees.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-            </Box>
-          </TableContainer>
+              ))}
+          </TableBody>
+        </Table>
+        <Box display="flex" justifyContent="center" width="100%" mt={2}>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredTrustees.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Box>
+      </TableContainer>
 
       {/* Snackbar for success/error messages */}
       <Snackbar
@@ -327,7 +362,7 @@ const TrusteeManagement = () => {
         <DialogContent>
           <TextField
             margin="dense"
-            label="User  Name"
+            label="User    Name"
             name="user_name"
             fullWidth
             value={formData.user_name}
@@ -371,14 +406,17 @@ const TrusteeManagement = () => {
             label="Designation"
             name="designations"
             fullWidth
+            select
             value={formData.designations}
             onChange={handleChange}
-          />
-
+          >
+            <MenuItem value="Management">Management</MenuItem>
+            <MenuItem value="Developer">Developer</MenuItem>
+          </TextField>
           {/* User Role Dropdown */}
           <TextField
             margin="dense"
-            label="User  Role"
+            label="User    Role"
             name="user_role"
             fullWidth
             select
@@ -386,7 +424,6 @@ const TrusteeManagement = () => {
             onChange={handleChange}
           >
             <MenuItem value="trustees">Trustee</MenuItem>
-            <MenuItem value="user">User </MenuItem>
           </TextField>
 
           {/* Image Upload & Preview */}

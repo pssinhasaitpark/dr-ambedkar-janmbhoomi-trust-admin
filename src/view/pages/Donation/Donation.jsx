@@ -100,10 +100,10 @@ const Donation = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold",mt:8  }}>
+    <Typography variant="h5" sx={{ p:0, mb: 1, fontWeight: "bold",mt:8 }}>
         {title}
       </Typography>
-      <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
+      <Paper sx={{ p: 0, borderRadius: 0, boxShadow: 0 }}>
         <form onSubmit={handleEditSave}>
           <TextField
             fullWidth

@@ -19,6 +19,20 @@ export const fetchTestimonialsData = createAsyncThunk(
   }
 );
 
+export const deleteTestimonialsData = createAsyncThunk(
+  "testimonials/deleteTestimonialsData",
+  async (id, { rejectWithValue }) => {
+    try {
+      await api.delete(`/user/testimonials/${id}`); // No need to return response
+      return id; // Return only the deleted testimonial ID
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+
+
 const testimonialSlice = createSlice({
   name: "testimonials",
   initialState,
@@ -34,6 +48,19 @@ const testimonialSlice = createSlice({
         state.testimonials = action.payload; // Store testimonials data
       })
       .addCase(fetchTestimonialsData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteTestimonialsData.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteTestimonialsData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.testimonials = state.testimonials.filter(
+          (testimonial) => testimonial._id !== action.payload
+        ); // Remove the deleted testimonial
+      })
+      .addCase(deleteTestimonialsData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
