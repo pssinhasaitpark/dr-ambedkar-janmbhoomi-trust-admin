@@ -32,7 +32,7 @@ function Login() {
       onSuccess: (response) => {
         const { encryptedToken, user_role } = response.data;
   
-        if (user_role === "user") {
+        if (user_role === "user" || user_role === "trustees" ) {
           toast.error("Access denied! Only admins can log in.", {
             position: "top-right",
           });

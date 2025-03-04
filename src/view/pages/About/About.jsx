@@ -45,10 +45,6 @@ const About = () => {
     fetchData();
   }, [dispatch]);
 
-  // useEffect(() => {
-  //   dispatch(fetchAboutData());
-  // }, [dispatch]);
-
   useEffect(() => {
     if (aboutData) {
       setTitle(aboutData.title || "About");
@@ -115,10 +111,10 @@ const About = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 1, fontWeight: "bold",mt:8 ,pl:3 }}>
+      <Typography variant="h5" sx={{ mb: 1, fontWeight: "bold",mt:8 }}>
         {title}
       </Typography>
-      <Paper sx={{ p: 3, borderRadius: 0, boxShadow: 0 }}>
+      <Paper sx={{ p: 0, borderRadius: 0, boxShadow: 0 }}>
         {loading ? (
           <Box
             sx={{
@@ -153,28 +149,72 @@ const About = () => {
             </Typography>
 
             <JoditEditor
-              ref={editor}
-              value={biography}
-              onBlur={(newContent) => setBiography(newContent?.trim() || "")}
-              config={{
-                readonly: !isEditable,
-                height: 300,
-                style: {
-                  overflow: "auto",
-                },
-                uploader: {
-                  insertImageAsBase64URI: true,
-                  url: "/upload",
-                  format: "json",
-                },
-              }}
-              style={{
-                maxHeight: "300px",
-                overflow: "auto",
-                border: "1px solid #ccc",
-                borderRadius: "5px",
-              }}
-            />
+  ref={editor}
+  value={biography}
+  onBlur={(newContent) => setBiography(newContent?.trim() || "")}
+  config={{
+    readonly: !isEditable,
+    height: 300,
+    uploader: {
+      insertImageAsBase64URI: true,
+      url: "/upload",
+      format: "json",
+    },
+    events: {
+      paste: function (event) {
+        if (!editor?.current?.editor) return;
+
+        const joditEditor = editor.current.editor;
+
+        // Check if clipboardData is available
+        if (event.clipboardData) {
+          event.preventDefault(); // Prevent default paste behavior
+          const text = event.clipboardData.getData("text/plain");
+
+          // Use Jodit's selection API
+          if (joditEditor.s.insertHTML) {
+            joditEditor.s.insertHTML(text);
+          } else {
+            document.execCommand("insertText", false, text);
+          }
+
+          // Prevent scroll jump
+          setTimeout(() => joditEditor.s.focus(), 0);
+        }
+      },
+
+      keydown: function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault(); // Prevent default behavior
+
+          if (!editor?.current?.editor) return;
+          const joditEditor = editor.current.editor;
+
+          // Insert a single line break, not extra spaces
+          joditEditor.s.insertHTML("<br>");
+
+          // Prevent scroll jump
+          setTimeout(() => joditEditor.s.focus(), 0);
+        }
+      },
+    },
+  }}
+  style={{
+    maxHeight: "300px",
+    overflowY: "auto",
+    border: "1px solid #ccc",
+    borderRadius: "5px",
+  }}
+/>
+
+
+
+
+
+
+
+
+
 
             <Typography variant="h6" sx={{ mt: 2 }}>
               Upload Profile Images

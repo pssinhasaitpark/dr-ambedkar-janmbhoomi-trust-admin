@@ -31,17 +31,17 @@ const Events = () => {
   const [isEditable, setIsEditable] = useState(false);
 
 
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); // Set loading to true before fetching
+      setLoading(true);
       await dispatch(fetchEventsData());
 
-      // Delay to ensure at least one complete circle is shown
+      
       setTimeout(() => {
-        setLoading(false); // Set loading to false after fetching
-      }, 500); // Adjust the delay as needed (500ms in this case)
+        setLoading(false);
+      }, 500);
     };
     fetchData();
   }, [dispatch]);
@@ -122,11 +122,11 @@ const Events = () => {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold",mt:8  }}>
+     <Typography variant="h5" sx={{ mb: 1, fontWeight: "bold",mt:8}}>
         {title}
       </Typography>
-      <Paper sx={{ p: 3, borderRadius: 0, boxShadow: 0 }}>
-        {loading ? ( // Show loading indicator while fetching
+      <Paper sx={{ p: 0, borderRadius: 0, boxShadow: 0 }}>
+        {loading ? ( 
           <Box
             sx={{
               display: "flex",

@@ -38,9 +38,9 @@ const Gallery = () => {
   const [isEditable, setIsEditable] = useState(false);
 
   // Debounce the description state update
-  const debouncedSetGalleryDescription = useRef(
-    debounce((content) => setGalleryDescription(content), 1000)
-  ).current;
+  // const debouncedSetGalleryDescription = useRef(
+  //   debounce((content) => setGalleryDescription(content), 1000)
+  // ).current;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,10 +54,6 @@ const Gallery = () => {
     fetchData();
   }, [dispatch]);
 
-
-  // useEffect(() => {
-  //   dispatch(fetchGalleryData());
-  // }, [dispatch]);
 
   useEffect(() => {
     if (galleryData) {
@@ -134,7 +130,7 @@ const Gallery = () => {
 
           {/* Gallery Description */}
           <Typography variant="h6" sx={{ mt: 2 }}>Gallery Description</Typography>
-          <JoditEditor
+          {/* <JoditEditor
             ref={descriptionEditorRef}
             value={gallery_description}
             config={{
@@ -144,6 +140,12 @@ const Gallery = () => {
             }}
             onChange={(newContent) => debouncedSetGalleryDescription(newContent)}
             onBlur={(newContent) => setGalleryDescription(newContent?.trim() || "")}
+          /> */}
+           <JoditEditor
+            ref={infoEditorRef}
+            value={gallery_description}
+            config={{ readonly: !isEditable, placeholder: "Enter gallery info..." }}
+            onBlur={(newContent) => setGalleryDescription(newContent?.trim() || "Gallery")}
           />
 
           {/* Media Upload */}

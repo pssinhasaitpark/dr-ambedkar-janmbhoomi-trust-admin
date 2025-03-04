@@ -42,13 +42,15 @@ import debounce from "lodash.debounce";
 
 function EventList() {
   const dispatch = useDispatch();
-  const { events, error } = useSelector((state) => state.eventlist);
+  const { events } = useSelector((state) => state.eventlist);
   const [removeImages, setRemoveImages] = useState([]);
   const [editingEvent, setEditingEvent] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [loading, setLoading] = useState(true);
+    const [openDialog, setOpenDialog] = useState(false);
+   const [selectedEventId, setselectedEventId] = useState(null);
   const [formData, setFormData] = useState({
     id: null,
     event_title: "",
@@ -96,17 +98,26 @@ function EventList() {
     setIsFormOpen(true);
   };
 
-  const handleDeleteConfirm = async (id) => {
-    if (window.confirm("Are you sure you want to delete this event?")) {
-      try {
-        await dispatch(deleteEvent(id)).unwrap();
-        alert("Event deleted successfully");
-      } catch (error) {
-        console.error("Error deleting event:", error);
-        alert("Failed to delete the event. Please try again.");
-      }
-    }
+  const handleOpenDialog = (id) => {
+    setselectedEventId(id);
+    setOpenDialog(true);
   };
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setselectedEventId(null);
+  };
+
+    const handleDelete = async () => {
+      if (selectedEventId) {
+        try {
+          await dispatch(deleteEvent(selectedEventId)).unwrap();
+        } catch (error) {
+          console.error("Error deleting testimonial:", error);
+          alert("Failed to delete the testimonial. Please try again.");
+        }
+        handleCloseDialog();
+      }
+    };
 
   const handleSave = async () => {
     if (!formData.event_title.trim() || !formData.organized_by.trim()) {
@@ -148,12 +159,13 @@ function EventList() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const debouncedHandleChange = useCallback(
-    debounce((content) => {
-      setFormData((prev) => ({ ...prev, description: content }));
-    }, 500),
-    []
-  );
+ const debouncedHandleChange = useCallback(
+  debounce((content) => {
+    setFormData((prev) => ({ ...prev, description: content }));
+  }, 500),
+  [setFormData] // Added dependency
+);
+
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -175,7 +187,7 @@ function EventList() {
   };
 
   return (
-    <Container maxWidth="xlg" sx={{ mt: 10 }}>
+     <Container maxWidth="xlg" sx={{ mt: 8, p: 0 }} disableGutters>
       <Box my={3}>
         {loading ? (
           <Box
@@ -270,7 +282,7 @@ function EventList() {
                           <Tooltip title="Delete">
                             <IconButton
                               color="error"
-                              onClick={() => handleDeleteConfirm(event.id)}
+                              onClick={() => handleOpenDialog(event.id)}
                             >
                               <Delete />
                             </IconButton>
@@ -292,6 +304,20 @@ function EventList() {
                 />
               </Box>
             </TableContainer>
+             <Dialog open={openDialog} onClose={handleCloseDialog}>
+                    <DialogTitle>Confirm Deletion</DialogTitle>
+                    <DialogContent>
+                      Are you sure you want to delete this Event?
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={handleCloseDialog} color="primary">
+                        Cancel
+                      </Button>
+                      <Button onClick={handleDelete} color="error" autoFocus>
+                        Delete
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
           </>
         )}
         <Dialog
@@ -366,7 +392,7 @@ function EventList() {
                           ? URL.createObjectURL(image)
                           : image
                       }
-                      alt={"book-img-${index}"}
+                      alt={`book-img-${index}`}
                       width="100%"
                       height="100%"
                       style={{ borderRadius: 8, objectFit: "cover" }}

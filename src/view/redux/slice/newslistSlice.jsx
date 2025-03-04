@@ -71,7 +71,7 @@ export const deleteNews = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       await api.delete(`/news/${id}`);
-      return id; // Return the deleted news ID
+      return id; 
     } catch (error) {
       return rejectWithValue(error.response ? error.response.data : error.message);
     }
