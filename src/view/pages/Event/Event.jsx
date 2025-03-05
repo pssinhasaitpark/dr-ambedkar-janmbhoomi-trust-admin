@@ -17,11 +17,12 @@ import {
   fetchEventsData,
   saveEventsToBackend,
 } from "../../redux/slice/eventSlice";
-import debounce from "lodash.debounce";
+
 const Events = () => {
   const dispatch = useDispatch();
   const eventsData = useSelector((state) => state.events) || {};
   const editor = useRef(null);
+  const descriptionRef = useRef(""); // Store real-time content without re-renders
 
   const [title, setTitle] = useState("Events");
   const [name, setName] = useState("");
@@ -29,16 +30,12 @@ const Events = () => {
   const [selectedImages, setSelectedImages] = useState([]);
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
-
-
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       await dispatch(fetchEventsData());
-
-      
       setTimeout(() => {
         setLoading(false);
       }, 500);
@@ -47,25 +44,14 @@ const Events = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    dispatch(fetchEventsData());
-  }, [dispatch]);
-
-  useEffect(() => {
     if (eventsData) {
       setTitle(eventsData.title || "Events");
       setName(eventsData.name || "");
       setDescription(eventsData.description || "");
+      descriptionRef.current = eventsData.description || ""; // Initialize ref with existing data
       setSelectedImages(eventsData.images || []);
     }
   }, [eventsData]);
-
-  // Fixed: Added memoized dependency array for debounce
-  const debouncedEditorChange = useCallback(
-    debounce((newContent) => {
-      setDescription(newContent);
-    }, 3000),
-    []
-  );
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -86,10 +72,13 @@ const Events = () => {
     e.preventDefault();
 
     if (isEditable) {
+      const descriptionContent =
+        descriptionRef.current || "No description provided"; //  Get latest content from ref
+
       const eventsDataToSend = {
         title,
         name,
-        description: description?.trim() || "No description provided",
+        description: descriptionContent,
         images: selectedImages,
         removeImages: removeImages.length > 0 ? removeImages : [],
       };
@@ -101,8 +90,11 @@ const Events = () => {
             eventsData: eventsDataToSend,
           })
         );
+        const updatedData = await dispatch(fetchEventsData()).unwrap();
+        setDescription(updatedData.description || descriptionContent); // ✅ Update state with saved data
+        descriptionRef.current = updatedData.description || descriptionContent; // ✅ Sync ref with saved data
         setRemoveImages([]);
-        dispatch(fetchEventsData());
+        // dispatch(fetchEventsData());
       } catch (error) {
         console.error("Error saving/updating data: ", error);
       }
@@ -122,11 +114,11 @@ const Events = () => {
 
   return (
     <Box>
-     <Typography variant="h5" sx={{ mb: 1, fontWeight: "bold",mt:8}}>
+      <Typography variant="h5" sx={{ mb: 1, fontWeight: "bold", mt: 8 }}>
         {title}
       </Typography>
       <Paper sx={{ p: 0, borderRadius: 0, boxShadow: 0 }}>
-        {loading ? ( 
+        {loading ? (
           <Box
             sx={{
               display: "flex",
@@ -138,43 +130,53 @@ const Events = () => {
             <CircularProgress />
           </Box>
         ) : (
-        <form onSubmit={handleEditSave}>
-          <TextField
-            fullWidth
-            label="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={!isEditable}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={!isEditable}
-            sx={{ mb: 2 }}
-          />
+          <form onSubmit={handleEditSave}>
+            <TextField
+              fullWidth
+              label="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              disabled={!isEditable}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={!isEditable}
+              sx={{ mb: 2 }}
+            />
 
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Event Description
-          </Typography>
-          <JoditEditor
-  ref={editor}
-  value={description}
-  onBlur={(newContent) => setDescription(newContent?.trim() || "")}
-  config={{
-    readonly: !isEditable,
-    uploader: {
-      insertImageAsBase64URI: true,
-      url: "/upload",
-      format: "json",
-    },
-  }}
-/>
+            <Typography variant="h6" sx={{ mt: 2 }}>
+              Event Description
+            </Typography>
 
+            <JoditEditor
+              ref={editor}
+              value={description}
+              config={{
+                readonly: !isEditable,
+                height: 300,
+                uploader: {
+                  insertImageAsBase64URI: true, // Enables drag-and-drop image upload as base64
+                },
+                filebrowser: {
+                  ajax: {
+                    url: "/upload", // Change this if you have a backend API to store images
+                  },
+                },
+                image: {
+                  openOnDblClick: true,
+                  editSrc: true,
+                  allowDragAndDropFileToEditor: true, // Enables dragging images into the editor
+                },
+                toolbarSticky: false,
+              }}
+              onChange={(newContent) => (descriptionRef.current = newContent)}
+            />
 
-{/* <JoditEditor
+            {/* <JoditEditor
   ref={editor}
   value={description}
   config={{
@@ -233,50 +235,50 @@ const Events = () => {
   onBlur={(newContent) => setDescription(newContent?.trim() || "")}
 /> */}
 
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Upload Event Images
-          </Typography>
+            <Typography variant="h6" sx={{ mt: 2 }}>
+              Upload Event Images
+            </Typography>
 
-          {isEditable && (
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              style={{ marginBottom: "1rem" }}
-            />
-          )}
+            {isEditable && (
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+                style={{ marginBottom: "1rem" }}
+              />
+            )}
 
-          <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
-            {selectedImages.map((image, index) => (
-              <Box key={index} sx={{ position: "relative" }}>
-                <Avatar
-                  src={renderImageSource(image)}
-                  sx={{ width: 100, height: 100 }}
-                />
-                {isEditable && (
-                  <IconButton
-                    onClick={() => handleImageRemove(index)}
-                    sx={{
-                      position: "absolute",
-                      top: -10,
-                      right: -10,
-                      backgroundColor: "white",
-                    }}
-                  >
-                    <DeleteIcon color="error" />
-                  </IconButton>
-                )}
-              </Box>
-            ))}
-          </Stack>
+            <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
+              {selectedImages.map((image, index) => (
+                <Box key={index} sx={{ position: "relative" }}>
+                  <Avatar
+                    src={renderImageSource(image)}
+                    sx={{ width: 100, height: 100 }}
+                  />
+                  {isEditable && (
+                    <IconButton
+                      onClick={() => handleImageRemove(index)}
+                      sx={{
+                        position: "absolute",
+                        top: -10,
+                        right: -10,
+                        backgroundColor: "white",
+                      }}
+                    >
+                      <DeleteIcon color="error" />
+                    </IconButton>
+                  )}
+                </Box>
+              ))}
+            </Stack>
 
-          <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-            <Button type="submit" variant="contained">
-              {isEditable ? "Save" : "Edit"}
-            </Button>
-          </Stack>
-        </form>
+            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+              <Button type="submit" variant="contained">
+                {isEditable ? "Save" : "Edit"}
+              </Button>
+            </Stack>
+          </form>
         )}
       </Paper>
     </Box>

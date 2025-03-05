@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState,useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchEvents,
@@ -58,6 +58,7 @@ function EventList() {
     description: "",
     images: [],
   });
+    const editorRef = useRef(null);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -184,6 +185,12 @@ function EventList() {
     if (typeof imageToRemove === "string") {
       setRemoveImages((prev) => [...prev, imageToRemove]);
     }
+  };
+  const config = {
+    toolbarInline: false, // Disables inline toolbar
+    showXPathInStatusbar: false, // Hides XPath in the status bar
+    showCharsCounter: false, // Hides character counter
+    disablePlugins: "inlinePopup", // Disables inline popups
   };
 
   return (
@@ -359,8 +366,24 @@ function EventList() {
               Description:
             </Typography>
             <JoditEditor
+              ref={editorRef} // Pass the ref to the editor
               value={formData.description}
-              onChange={debouncedHandleChange}
+              onChange={(content) => {
+                setFormData((prev) => ({ ...prev, description: content }));
+              }}
+              onPaste={(event) => {
+                // Prevent default paste behavior
+                event.preventDefault();
+
+                // Get the pasted data
+                const text = (event.clipboardData || window.clipboardData).getData('text');
+
+                // Insert the text at the current cursor position
+                const editor = editorRef.current;
+                if (editor) {
+                  editor.selection.insertHTML(text);
+                }
+              }}
             />
             <Box sx={{ mt: 2 }}>
               <Typography variant="subtitle1">Upload Images:</Typography>

@@ -23,7 +23,7 @@ const Books = () => {
   const dispatch = useDispatch();
   const booksData = useSelector((state) => state.books) || {};
   const editor = useRef(null);
-
+ const descriptionRef = useRef(""); // Store real-time content without re-renders
   const [title, setTitle] = useState("Books");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -49,16 +49,17 @@ const Books = () => {
       setTitle(booksData.title || "Books");
       setName(booksData.name || "");
       setDescription(booksData.description || "");
+      descriptionRef.current = booksData.description || ""; // Initialize ref with existing data
       setSelectedImages(booksData.images || []);
     }
   }, [booksData]);
 
-  const debouncedEditorChange = useCallback(
-    debounce((newContent) => {
-      setDescription(newContent);
-    }, 3000),
-    []
-  );
+  // const debouncedEditorChange = useCallback(
+  //   debounce((newContent) => {
+  //     setDescription(newContent);
+  //   }, 3000),
+  //   []
+  // );
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -79,10 +80,12 @@ const Books = () => {
     e.preventDefault();
 
     if (isEditable) {
+      const descriptionContent = descriptionRef.current || "No description provided"; //  Get latest content from ref
+
       const booksDataToSend = {
         title,
         name,
-        description: description?.trim() || "No description provided",
+        description: descriptionContent,
         images: selectedImages,
         removeImages: removeImages.length > 0 ? removeImages : [],
       };
@@ -94,8 +97,11 @@ const Books = () => {
             booksData: booksDataToSend,
           })
         );
+         const updatedData = await dispatch(fetchBooksData()).unwrap();
+                 setDescription(updatedData.description || descriptionContent); // Update state with saved data
+                 descriptionRef.current = updatedData.description || descriptionContent; //  Sync ref with saved data
         setRemoveImages([]);
-        dispatch(fetchBooksData());
+        // dispatch(fetchBooksData());
       } catch (error) {
         console.error("Error saving/updating data: ", error);
       }
@@ -154,77 +160,29 @@ const Books = () => {
             </Typography>
 
             <JoditEditor
-  ref={editor}
-  value={description}
-  onBlur={(newContent) => setDescription(newContent?.trim() || "")}
-  config={{
-    readonly: !isEditable,
-    height: 300,
-    style: {
-      overflow: "auto",
-    },
-    uploader: {
-      insertImageAsBase64URI: true,
-      url: "/upload",
-      format: "json",
-    },
-  }}
-  style={{
-    maxHeight: "300px", 
-    overflow: "auto",
-    border: "1px solid #ccc",
-    borderRadius: "5px",
-  }}
-/>
+              ref={editor}
+              value={description}
+              config={{
+                readonly: !isEditable,
+                height: 500,
+                uploader: {
+                  insertImageAsBase64URI: true, //  Enables drag-and-drop image upload as base64
+                },
+                filebrowser: {
+                  ajax: {
+                    url: "/upload", // Change this if you have a backend API to store images
+                  },
+                },
+                image: {
+                  openOnDblClick: true,
+                  editSrc: true,
+                  allowDragAndDropFileToEditor: true, // Enables dragging images into the editor
+                },
+                toolbarSticky: false,
+              }}
+              onChange={(newContent) => (descriptionRef.current = newContent)}
+            />
 
-            {/* <JoditEditor
-            ref={editor}
-            value={description}
-            config={{
-              readonly: !isEditable,
-              placeholder: "Write about the book...",
-              height: 400,
-              cleanOnPaste: false,
-              cleanOnChange: false,
-              toolbar: {
-                items: [
-                  "bold",
-                  "italic",
-                  "underline",
-                  "strikethrough",
-                  "eraser",
-                  "|",
-                  "font",
-                  "fontsize",
-                  "paragraph",
-                  "|",
-                  "align",
-                  "outdent",
-                  "indent",
-                  "|",
-                  "link",
-                  "image",
-                  "video",
-                  "table",
-                  "line",
-                  "code",
-                  "fullsize",
-                  "undo",
-                  "redo",
-                ],
-              },
-              uploader: {
-                insertImageAsBase64URI: true,
-                url: "/upload",
-                format: "json",
-              },
-            }}
-
-            
-            style={{ width: "100%", minHeight: "200px" }}
-            onChange={debouncedEditorChange}
-           c
-          /> */}
 
             <Typography variant="h6" sx={{ mt: 2 }}>
               Upload Book Cover
