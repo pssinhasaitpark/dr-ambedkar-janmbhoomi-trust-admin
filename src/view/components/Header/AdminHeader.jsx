@@ -70,7 +70,7 @@ const Header = () => {
          
 
           >
-            Dr Ambedkar Janmbhoomi trust
+            Dr Ambedkar Janmbhoomi Trust
           </Typography>
         </div>
 

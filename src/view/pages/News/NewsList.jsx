@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchNews,
@@ -42,7 +42,7 @@ import debounce from "lodash.debounce";
 
 function NewsList() {
   const dispatch = useDispatch();
-  const { news} = useSelector((state) => state.newslist);
+  const { news } = useSelector((state) => state.newslist);
   const [removeImages, setRemoveImages] = useState([]);
   const [expandedRows, setExpandedRows] = useState({});
   const [editingNews, setEditingNews] = useState(null);
@@ -51,7 +51,7 @@ function NewsList() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-const [newsToDelete, setNewsToDelete] = useState(null);
+  const [newsToDelete, setNewsToDelete] = useState(null);
   const [formData, setFormData] = useState({
     id: null,
     latest_news: "",
@@ -59,6 +59,8 @@ const [newsToDelete, setNewsToDelete] = useState(null);
     description: "",
     images: [],
   });
+
+  const editorRef = useRef(null);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -69,20 +71,16 @@ const [newsToDelete, setNewsToDelete] = useState(null);
     setPage(0);
   };
 
-
-    useEffect(() => {
-      const fetchData = async () => {
-        setLoading(true);
-        await dispatch(fetchNews());
-  
-        
-        setTimeout(() => {
-          setLoading(false);
-        }, 500); 
-      };
-      fetchData();
-    }, [dispatch]);
-
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      await dispatch(fetchNews());
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
+    };
+    fetchData();
+  }, [dispatch]);
 
   const handleAddNew = () => {
     setEditingNews(null);
@@ -106,7 +104,7 @@ const [newsToDelete, setNewsToDelete] = useState(null);
     setNewsToDelete(id);
     setDeleteDialogOpen(true);
   };
-  
+
   const handleDelete = async () => {
     if (newsToDelete) {
       try {
@@ -119,9 +117,6 @@ const [newsToDelete, setNewsToDelete] = useState(null);
       }
     }
   };
-
-
-
 
   const handleSave = async () => {
     if (!formData.headline.trim() || !formData.latest_news.trim()) {
@@ -186,158 +181,157 @@ const [newsToDelete, setNewsToDelete] = useState(null);
       setRemoveImages((prev) => [...prev, imageToRemove]);
     }
   };
+
   const toggleReadMore = (id) => {
     setExpandedRows((prev) => ({
       ...prev,
-      [id]: !prev[id], // Toggle state for the row
+      [id]: !prev[id], 
     }));
   };
 
   return (
     <Container maxWidth="xlg" sx={{ mt: 8, p: 0 }} disableGutters>
-      <Box my={3} >
-
-           {loading ? (
-                <Box
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  height="400px"
-                >
-                  <CircularProgress />
-                </Box>
-              ) : (
-                <>
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={3}
-    
-        >
-          <Typography variant="h6">Manage News</Typography>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={handleAddNew}
+      <Box my={3}>
+        {loading ? (
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            height="400px"
           >
-            Add News
-          </Button>
-        </Box>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={3}
+            >
+              <Typography variant="h6">Manage News</Typography>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={handleAddNew}
+              >
+                Add News
+              </Button>
+            </Box>
 
-        <TableContainer
-          component={Paper}
-          sx={{ borderRadius: 2, overflow: "hidden" }}
-        >
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: "#3387e8" }}>
-                <TableCell>
-                  <Typography variant="subtitle1">Headline</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="subtitle1">Latest News</Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="subtitle1">Actions</Typography>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-            {news.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((newsItem) => (
-                <TableRow key={newsItem.id}>
-                  <TableCell>
-                    <Typography
-                      variant="body1"
-                      sx={{ maxWidth: "200px", display: "inline" }}
-                    >
-                      {expandedRows[newsItem.id] ||
-                      newsItem.headline.length <= 50
-                        ? newsItem.headline
-                        : `${newsItem.headline.substring(0, 50)}...`}
-                    </Typography>
-                    {newsItem.headline.length > 50 && (
-                      <Button
-                        size="small"
-                        onClick={() => toggleReadMore(newsItem.id)}
-                        sx={{ textTransform: "none", color: "#007BFF" }}
-                      >
-                        {expandedRows[newsItem.id] ? "Read Less" : "Read More"}
-                      </Button>
-                      )}
-                  </TableCell>
-                  <TableCell>
-                    <Typography
-                      variant="body1"
-                      sx={{ maxWidth: "200px", display: "inline" }}
-                    >
-                      {expandedRows[newsItem.id] ||
-                      newsItem.latest_news.length <= 50
-                        ? newsItem.latest_news
-                        : `${newsItem.latest_news.substring(0, 50)}...`}
-                    </Typography>
-                    {newsItem.latest_news.length > 50 && (
-                      <Button
-                        size="small"
-                        onClick={() => toggleReadMore(newsItem.id)}
-                        sx={{ textTransform: "none", color: "#007BFF" }}
-                      >
-                        {expandedRows[newsItem.id] ? "Read Less" : "Read More"}
-                      </Button>
-                      )}
-                  </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Edit">
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleEdit(newsItem)}
-                        size="small"
-                      >
-                        <Edit />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDeleteConfirm(newsItem.id)}
-                        size="small"
-                      >
-                        <Delete />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-           <Box display="flex" justifyContent="center" width="100%" mt={2}>
-          <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={news.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-        </Box>
-        </TableContainer>
-        <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-  <DialogTitle>Confirm Deletion</DialogTitle>
-  <DialogContent>
-    <Typography>Are you sure you want to delete this news?</Typography>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-    <Button onClick={handleDelete} color="error" variant="contained">
-      Delete
-    </Button>
-  </DialogActions>
-</Dialog>
-
-        </>
-        
-    )}
+            <TableContainer
+              component={Paper}
+              sx={{ borderRadius: 2, overflow: "hidden" }}
+            >
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "#3387e8" }}>
+                    <TableCell>
+                      <Typography variant="subtitle1">Headline</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="subtitle1">Latest News</Typography>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Typography variant="subtitle1">Actions</Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {news
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((newsItem) => (
+                      <TableRow key={newsItem.id}>
+                        <TableCell>
+                          <Typography
+                            variant="body1"
+                            sx={{ maxWidth: "200px", display: "inline" }}
+                          >
+                            {expandedRows[newsItem.id] ||
+                            newsItem.headline.length <= 50
+                              ? newsItem.headline
+                              : `${newsItem.headline.substring(0, 50)}...`}
+                          </Typography>
+                          {newsItem.headline.length > 50 && (
+                            <Button
+                              size="small"
+                              onClick={() => toggleReadMore(newsItem.id)}
+                              sx={{ textTransform: "none", color: "#007BFF" }}
+                            >
+                              {expandedRows[newsItem.id] ? "Read Less" : "Read More"}
+                            </Button>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Typography
+                            variant="body1"
+                            sx={{ maxWidth: "200px", display: "inline" }}
+                          >
+                            {expandedRows[newsItem.id] ||
+                            newsItem.latest_news.length <= 50
+                              ? newsItem.latest_news
+                              : `${newsItem.latest_news.substring(0, 50)}...`}
+                          </Typography>
+                          {newsItem.latest_news.length > 50 && (
+                            <Button
+                              size="small"
+                              onClick={() => toggleReadMore(newsItem.id)}
+                              sx={{ textTransform: "none", color: "#007BFF" }}
+                            >
+                              {expandedRows[newsItem.id] ? "Read Less" : "Read More"}
+                            </Button>
+                          )}
+                        </TableCell>
+                        <TableCell align="right">
+                          <Tooltip title="Edit">
+                            <IconButton
+                              color="primary"
+                              onClick={() => handleEdit(newsItem)}
+                              size="small"
+                            >
+                              <Edit />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <IconButton
+                              color="error"
+                              onClick={() => handleDeleteConfirm(newsItem.id)}
+                              size="small"
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Tooltip>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+              <Box display="flex" justifyContent="center" width="100%" mt={2}>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  component="div"
+                  count={news.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </Box>
+            </TableContainer>
+            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+              <DialogContent>
+                <Typography>Are you sure you want to delete this news?</Typography>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleDelete} color="error" variant="contained">
+                  Delete
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </>
+        )}
         <Dialog
           open={isFormOpen}
           onClose={() => setIsFormOpen(false)}
@@ -357,7 +351,7 @@ const [newsToDelete, setNewsToDelete] = useState(null);
           <DialogContent dividers>
             <TextField
               fullWidth
-              label="Latest_News"
+              label="Latest News"
               name="latest_news"
               value={formData.latest_news}
               onChange={handleChange}
@@ -380,8 +374,24 @@ const [newsToDelete, setNewsToDelete] = useState(null);
               Description:
             </Typography>
             <JoditEditor
+              ref={editorRef} // Pass the ref to the editor
               value={formData.description}
-              onChange={debouncedHandleChange}
+              onChange={(content) => {
+                setFormData((prev) => ({ ...prev, description: content }));
+              }}
+              onPaste={(event) => {
+                // Prevent default paste behavior
+                event.preventDefault();
+
+                // Get the pasted data
+                const text = (event.clipboardData || window.clipboardData).getData('text');
+
+                // Insert the text at the current cursor position
+                const editor = editorRef.current;
+                if (editor) {
+                  editor.selection.insertHTML(text);
+                }
+              }}
             />
 
             <Box sx={{ mt: 2 }}>
@@ -414,7 +424,7 @@ const [newsToDelete, setNewsToDelete] = useState(null);
                           ? URL.createObjectURL(image)
                           : image
                       }
-                      alt={"book-img-${index}"}
+                      alt={`image-${index}`}
                       width="100%"
                       height="100%"
                       style={{ borderRadius: 8, objectFit: "cover" }}

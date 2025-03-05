@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback,useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchBooks,
@@ -60,6 +60,7 @@ function BookList() {
     images: [],
     cover_image: null,
   });
+  const editorRef = useRef(null);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -127,13 +128,12 @@ function BookList() {
     const formDataToSend = new FormData();
     formDataToSend.append("book_title", formData.title);
     formDataToSend.append("author_name", formData.author);
-    formDataToSend.append("description", formData.description);
+    formDataToSend.append("description", formData.description); 
 
     if (formData.cover_image instanceof File) {
       formDataToSend.append("cover_image", formData.cover_image);
     }
 
-    // Append images correctly
     formData.images.forEach((image) => {
       if (image instanceof File) {
         formDataToSend.append("images", image);
@@ -153,7 +153,7 @@ function BookList() {
       }
 
       setIsFormOpen(false);
-      window.location.reload(); // Reload page after save/update
+      window.location.reload(); 
     } catch (error) {
       console.error("Error saving book:", error);
     }
@@ -399,8 +399,24 @@ function BookList() {
               Description:
             </Typography>
             <JoditEditor
+              ref={editorRef} // Pass the ref to the editor
               value={formData.description}
-              onChange={debouncedHandleChange}
+              onChange={(content) => {
+                setFormData((prev) => ({ ...prev, description: content }));
+              }}
+              onPaste={(event) => {
+                // Prevent default paste behavior
+                event.preventDefault();
+
+                // Get the pasted data
+                const text = (event.clipboardData || window.clipboardData).getData('text');
+
+                // Insert the text at the current cursor position
+                const editor = editorRef.current;
+                if (editor) {
+                  editor.selection.insertHTML(text);
+                }
+              }}
             />
             <Typography variant="subtitle1">Cover Image:</Typography>
             <Button

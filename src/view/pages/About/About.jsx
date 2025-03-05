@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -17,55 +17,52 @@ import {
   fetchAboutData,
   saveAboutToBackend,
 } from "../../redux/slice/aboutSlice";
-import debounce from "lodash.debounce";
 
 const About = () => {
   const dispatch = useDispatch();
   const aboutData = useSelector((state) => state.about) || {};
+
   const editor = useRef(null);
+  const biographyRef = useRef(""); // ✅ Store real-time content without re-renders
+
   const [title, setTitle] = useState("About");
   const [name, setName] = useState("");
   const [biography, setBiography] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
-
   const [loading, setLoading] = useState(true);
 
+  // Fetch about data on mount
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); 
+      setLoading(true);
       await dispatch(fetchAboutData());
-
-   
       setTimeout(() => {
         setLoading(false);
-      }, 500); 
+      }, 500);
     };
     fetchData();
   }, [dispatch]);
 
+  // Populate state when data is available
   useEffect(() => {
     if (aboutData) {
       setTitle(aboutData.title || "About");
       setName(aboutData.name || "");
       setBiography(aboutData.biography || "");
+      biographyRef.current = aboutData.biography || ""; // ✅ Initialize ref with existing data
       setSelectedImages(aboutData.images || []);
     }
   }, [aboutData]);
 
-  const debouncedEditorChange = useCallback(
-    debounce((newContent) => {
-      setBiography(newContent);
-    }, 3000),
-    []
-  );
-
+  // Handle image upload
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
     setSelectedImages([...selectedImages, ...files]);
   };
 
+  // Handle image removal
   const handleImageRemove = (index) => {
     const imageToRemove = selectedImages[index];
     if (typeof imageToRemove === "string") {
@@ -74,16 +71,21 @@ const About = () => {
     setSelectedImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
+  // Handle edit/save functionality
   const handleEditSave = async (e) => {
     e.preventDefault();
+
     if (isEditable) {
+      const biographyContent = biographyRef.current || "No biography provided"; // ✅ Get latest content from ref
+
       const aboutDataToSend = {
         title,
         name,
-        biography: biography?.trim() || "No biography provided",
+        biography: biographyContent,
         images: selectedImages,
         removeImages: removeImages.length > 0 ? removeImages : [],
       };
+
       try {
         await dispatch(
           saveAboutToBackend({
@@ -91,15 +93,20 @@ const About = () => {
             aboutData: aboutDataToSend,
           })
         );
+
+        const updatedData = await dispatch(fetchAboutData()).unwrap();
+        setBiography(updatedData.biography || biographyContent); // ✅ Update state with saved data
+        biographyRef.current = updatedData.biography || biographyContent; // ✅ Sync ref with saved data
         setRemoveImages([]);
-        dispatch(fetchAboutData()); 
       } catch (error) {
         console.error("Error saving/updating data: ", error);
       }
     }
+
     setIsEditable(!isEditable);
   };
 
+  // Render image source
   const renderImageSource = (image) => {
     if (image instanceof File) {
       return URL.createObjectURL(image);
@@ -111,7 +118,7 @@ const About = () => {
 
   return (
     <Box>
-      <Typography variant="h5" sx={{ mb: 1, fontWeight: "bold",mt:8 }}>
+      <Typography variant="h5" sx={{ mb: 1, fontWeight: "bold", mt: 8 }}>
         {title}
       </Typography>
       <Paper sx={{ p: 0, borderRadius: 0, boxShadow: 0 }}>
@@ -149,72 +156,28 @@ const About = () => {
             </Typography>
 
             <JoditEditor
-  ref={editor}
-  value={biography}
-  onBlur={(newContent) => setBiography(newContent?.trim() || "")}
-  config={{
-    readonly: !isEditable,
-    height: 300,
-    uploader: {
-      insertImageAsBase64URI: true,
-      url: "/upload",
-      format: "json",
-    },
-    events: {
-      paste: function (event) {
-        if (!editor?.current?.editor) return;
-
-        const joditEditor = editor.current.editor;
-
-        // Check if clipboardData is available
-        if (event.clipboardData) {
-          event.preventDefault(); // Prevent default paste behavior
-          const text = event.clipboardData.getData("text/plain");
-
-          // Use Jodit's selection API
-          if (joditEditor.s.insertHTML) {
-            joditEditor.s.insertHTML(text);
-          } else {
-            document.execCommand("insertText", false, text);
-          }
-
-          // Prevent scroll jump
-          setTimeout(() => joditEditor.s.focus(), 0);
-        }
-      },
-
-      keydown: function (event) {
-        if (event.key === "Enter") {
-          event.preventDefault(); // Prevent default behavior
-
-          if (!editor?.current?.editor) return;
-          const joditEditor = editor.current.editor;
-
-          // Insert a single line break, not extra spaces
-          joditEditor.s.insertHTML("<br>");
-
-          // Prevent scroll jump
-          setTimeout(() => joditEditor.s.focus(), 0);
-        }
-      },
-    },
-  }}
-  style={{
-    maxHeight: "300px",
-    overflowY: "auto",
-    border: "1px solid #ccc",
-    borderRadius: "5px",
-  }}
-/>
-
-
-
-
-
-
-
-
-
+              ref={editor}
+              value={biography}
+              config={{
+                readonly: !isEditable,
+                height: 300,
+                uploader: {
+                  insertImageAsBase64URI: true, // ✅ Enables drag-and-drop image upload as base64
+                },
+                filebrowser: {
+                  ajax: {
+                    url: "/upload", // Change this if you have a backend API to store images
+                  },
+                },
+                image: {
+                  openOnDblClick: true,
+                  editSrc: true,
+                  allowDragAndDropFileToEditor: true, // ✅ Enables dragging images into the editor
+                },
+                toolbarSticky: false,
+              }}
+              onChange={(newContent) => (biographyRef.current = newContent)}
+            />
 
             <Typography variant="h6" sx={{ mt: 2 }}>
               Upload Profile Images
@@ -251,6 +214,7 @@ const About = () => {
                 </Box>
               ))}
             </Stack>
+
             <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
               <Button type="submit" variant="contained">
                 {isEditable ? "Save" : "Edit"}
