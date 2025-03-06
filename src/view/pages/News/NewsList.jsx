@@ -149,7 +149,8 @@ function NewsList() {
       }
 
       setIsFormOpen(false);
-      window.location.reload();
+      // window.location.reload();
+      dispatch(fetchNews());
     } catch (error) {
       console.error("Error saving news:", error);
     }
@@ -185,7 +186,7 @@ function NewsList() {
   const toggleReadMore = (id) => {
     setExpandedRows((prev) => ({
       ...prev,
-      [id]: !prev[id], 
+      [id]: !prev[id],
     }));
   };
 
@@ -247,18 +248,20 @@ function NewsList() {
                             variant="body1"
                             sx={{ maxWidth: "200px", display: "inline" }}
                           >
-                            {expandedRows[newsItem.id] ||
-                            newsItem.headline.length <= 50
-                              ? newsItem.headline
-                              : `${newsItem.headline.substring(0, 50)}...`}
+                            {expandedRows[newsItem?.id] ||
+                            newsItem?.headline?.length <= 50
+                              ? newsItem?.headline
+                              : `${newsItem?.headline?.substring(0, 50)}...`}
                           </Typography>
-                          {newsItem.headline.length > 50 && (
+                          {newsItem?.headline?.length > 50 && (
                             <Button
                               size="small"
-                              onClick={() => toggleReadMore(newsItem.id)}
+                              onClick={() => toggleReadMore(newsItem?.id)}
                               sx={{ textTransform: "none", color: "#007BFF" }}
                             >
-                              {expandedRows[newsItem.id] ? "Read Less" : "Read More"}
+                              {expandedRows[newsItem?.id]
+                                ? "Read Less"
+                                : "Read More"}
                             </Button>
                           )}
                         </TableCell>
@@ -267,21 +270,24 @@ function NewsList() {
                             variant="body1"
                             sx={{ maxWidth: "200px", display: "inline" }}
                           >
-                            {expandedRows[newsItem.id] ||
-                            newsItem.latest_news.length <= 50
-                              ? newsItem.latest_news
-                              : `${newsItem.latest_news.substring(0, 50)}...`}
+                            {expandedRows[newsItem?.id] ||
+                            newsItem?.latest_news?.length <= 50
+                              ? newsItem?.latest_news
+                              : `${newsItem?.latest_news?.substring(0, 50)}...`}
                           </Typography>
-                          {newsItem.latest_news.length > 50 && (
+                          {newsItem?.latest_news?.length > 50 && (
                             <Button
                               size="small"
-                              onClick={() => toggleReadMore(newsItem.id)}
+                              onClick={() => toggleReadMore(newsItem?.id)}
                               sx={{ textTransform: "none", color: "#007BFF" }}
                             >
-                              {expandedRows[newsItem.id] ? "Read Less" : "Read More"}
+                              {expandedRows[newsItem?.id]
+                                ? "Read Less"
+                                : "Read More"}
                             </Button>
                           )}
                         </TableCell>
+
                         <TableCell align="right">
                           <Tooltip title="Edit">
                             <IconButton
@@ -318,14 +324,25 @@ function NewsList() {
                 />
               </Box>
             </TableContainer>
-            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+            <Dialog
+              open={deleteDialogOpen}
+              onClose={() => setDeleteDialogOpen(false)}
+            >
               <DialogTitle>Confirm Deletion</DialogTitle>
               <DialogContent>
-                <Typography>Are you sure you want to delete this news?</Typography>
+                <Typography>
+                  Are you sure you want to delete this news?
+                </Typography>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleDelete} color="error" variant="contained">
+                <Button onClick={() => setDeleteDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDelete}
+                  color="error"
+                  variant="contained"
+                >
                   Delete
                 </Button>
               </DialogActions>
@@ -384,7 +401,9 @@ function NewsList() {
                 event.preventDefault();
 
                 // Get the pasted data
-                const text = (event.clipboardData || window.clipboardData).getData('text');
+                const text = (
+                  event.clipboardData || window.clipboardData
+                ).getData("text");
 
                 // Insert the text at the current cursor position
                 const editor = editorRef.current;

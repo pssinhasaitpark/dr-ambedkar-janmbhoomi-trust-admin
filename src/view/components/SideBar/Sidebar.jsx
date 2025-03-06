@@ -137,9 +137,9 @@ const Sidebar = () => {
           sx={{
             position: "absolute",
             top: "10px",
+            left:"10px",
             zIndex: 1300,
-            right: drawerOpen ? "10px" : "inherit",
-            left: drawerOpen ? "inherit" : "10px",
+         
           }}
         >
           {drawerOpen ? <CloseIcon /> : <MenuIcon />}

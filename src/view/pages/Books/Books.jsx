@@ -9,6 +9,7 @@ import {
   IconButton,
   Avatar,
   CircularProgress,
+  Modal,
 } from "@mui/material";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
@@ -30,7 +31,8 @@ const Books = () => {
   const [selectedImages, setSelectedImages] = useState([]);
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
-
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [openModal, setOpenModal] = useState(false); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -53,13 +55,6 @@ const Books = () => {
       setSelectedImages(booksData.images || []);
     }
   }, [booksData]);
-
-  // const debouncedEditorChange = useCallback(
-  //   debounce((newContent) => {
-  //     setDescription(newContent);
-  //   }, 3000),
-  //   []
-  // );
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -119,6 +114,16 @@ const Books = () => {
     return "";
   };
 
+  const handleImageClick = (image) => {
+    setSelectedImage(image);
+    setOpenModal(true);
+  };
+
+  // Close modal
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedImage(null);
+  };
   return (
     <Box>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold",mt:8 }}>
@@ -166,17 +171,17 @@ const Books = () => {
                 readonly: !isEditable,
                 height: 500,
                 uploader: {
-                  insertImageAsBase64URI: true, //  Enables drag-and-drop image upload as base64
+                  insertImageAsBase64URI: true, 
                 },
                 filebrowser: {
                   ajax: {
-                    url: "/upload", // Change this if you have a backend API to store images
+                    url: "/upload", 
                   },
                 },
                 image: {
                   openOnDblClick: true,
                   editSrc: true,
-                  allowDragAndDropFileToEditor: true, // Enables dragging images into the editor
+                  allowDragAndDropFileToEditor: true, 
                 },
                 toolbarSticky: false,
               }}
@@ -204,6 +209,7 @@ const Books = () => {
                   <Avatar
                     src={renderImageSource(image)}
                     sx={{ width: 100, height: 100 }}
+                    onClick={() => handleImageClick(renderImageSource(image))}
                   />
                   {isEditable && (
                     <IconButton
@@ -230,6 +236,37 @@ const Books = () => {
           </form>
         )}
       </Paper>
+      <Modal
+        open={openModal}
+        onClose={handleCloseModal}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Box
+          sx={{
+            width: "50%",
+            height: "50%",
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 0,
+            p: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {selectedImage && (
+            <img
+              src={selectedImage}
+              alt="Full view"
+              style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+            />
+          )}
+        </Box>
+      </Modal>
     </Box>
   );
 };

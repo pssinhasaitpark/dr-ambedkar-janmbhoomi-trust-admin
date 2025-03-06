@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback,useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { SlideshowLightbox } from "lightbox.js-react";
 import {
   fetchBooks,
   addBook,
@@ -276,8 +277,9 @@ function BookList() {
                           <TableCell>{book.author}</TableCell>
                           <TableCell>
                             {book.cover_image && book.cover_image.length > 0 ? (
+                                 <SlideshowLightbox>
                               <img
-                                src={book.cover_image} // Fetch the first image from array
+                                src={book.cover_image} 
                                 alt="Book"
                                 style={{
                                   width: 60,
@@ -286,6 +288,7 @@ function BookList() {
                                   borderRadius: "5px",
                                 }}
                               />
+                              </SlideshowLightbox>
                             ) : (
                               <Typography
                                 variant="body2"
@@ -399,19 +402,15 @@ function BookList() {
               Description:
             </Typography>
             <JoditEditor
-              ref={editorRef} // Pass the ref to the editor
+              ref={editorRef} 
               value={formData.description}
               onChange={(content) => {
                 setFormData((prev) => ({ ...prev, description: content }));
               }}
               onPaste={(event) => {
-                // Prevent default paste behavior
-                event.preventDefault();
-
-                // Get the pasted data
+               
+                event.preventDefault();     
                 const text = (event.clipboardData || window.clipboardData).getData('text');
-
-                // Insert the text at the current cursor position
                 const editor = editorRef.current;
                 if (editor) {
                   editor.selection.insertHTML(text);

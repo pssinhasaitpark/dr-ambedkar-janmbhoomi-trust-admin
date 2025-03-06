@@ -52,13 +52,6 @@ const Dashboard = () => {
         }}
       />
 
-      {/* Header Section */}
-      {/* <Box sx={{ display: "flex", alignItems: "center", p: 4 }}>
-        <Typography variant="h4" fontWeight="bold" sx={{ color: "#333" }}>
-          Admin Dashboard - Dr Ambedkar Janmbhoomi trust
-        </Typography>
-      </Box> */}
-
       {/* Error Message */}
       {error && (
         <Alert severity="error" sx={{ mx: 4, mb: 2 }}>
@@ -127,7 +120,7 @@ const Dashboard = () => {
   <Typography variant="h6" fontWeight="bold" sx={{ mt: 3 }}>
     Key Achievements
   </Typography>
-  <List>
+  <List   sx={{ listStyleType: "disc" }}>
     {[
       "Architect of the Indian Constitution",
       "First Law Minister of India",
@@ -136,7 +129,7 @@ const Dashboard = () => {
       "Founded the Scheduled Castes Federation and later the Republican Party of India",
       "Led the Dalit Buddhist Movement and embraced Buddhism in 1956",
     ].map((achievement, index) => (
-      <ListItem key={index}>
+      <ListItem sx={{ display: "list-item" }} key={index}>
         <ListItemText primary={achievement} />
       </ListItem>
     ))}

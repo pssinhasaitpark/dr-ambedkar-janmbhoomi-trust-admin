@@ -372,13 +372,8 @@ function EventList() {
                 setFormData((prev) => ({ ...prev, description: content }));
               }}
               onPaste={(event) => {
-                // Prevent default paste behavior
                 event.preventDefault();
-
-                // Get the pasted data
                 const text = (event.clipboardData || window.clipboardData).getData('text');
-
-                // Insert the text at the current cursor position
                 const editor = editorRef.current;
                 if (editor) {
                   editor.selection.insertHTML(text);
