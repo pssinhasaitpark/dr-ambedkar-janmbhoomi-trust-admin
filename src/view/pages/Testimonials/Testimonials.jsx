@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { initLightboxJS, SlideshowLightbox } from "lightbox.js-react";
 import {
   fetchTestimonialsData,
   deleteTestimonialsData,
@@ -153,16 +154,16 @@ function Testimonials() {
                       <TableCell>
                         <Box
                           sx={{
-                            maxWidth: 700, // Set a fixed width for consistency
+                            maxWidth: 700,
                             maxHeight: expandedRows[testimonial._id]
                               ? "none"
-                              : 60, // Fixed height when collapsed
+                              : 60, 
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             display: "-webkit-box",
                             WebkitLineClamp: expandedRows[testimonial._id]
                               ? "none"
-                              : 2, // Show 3 lines before "Read More"
+                              : 2,
                             WebkitBoxOrient: "vertical",
                           }}
                         >
@@ -187,6 +188,7 @@ function Testimonials() {
 
                       <TableCell>
                         {testimonial.case_studies.map((image, index) => (
+                          <SlideshowLightbox>
                           <img
                             key={index}
                             src={image}
@@ -199,10 +201,12 @@ function Testimonials() {
                               borderRadius: "50%",
                             }}
                           />
+                          </SlideshowLightbox>
                         ))}
                       </TableCell>
                       <TableCell>
                         {testimonial.stories.map((image, index) => (
+                            <SlideshowLightbox>
                           <img
                             key={index}
                             src={image}
@@ -214,7 +218,9 @@ function Testimonials() {
                               marginRight: 5,
                               borderRadius: "50%",
                             }}
+                         
                           />
+                             </SlideshowLightbox>
                         ))}
                       </TableCell>
                       <TableCell>

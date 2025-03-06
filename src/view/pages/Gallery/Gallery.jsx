@@ -22,10 +22,10 @@ const Gallery = () => {
   const dispatch = useDispatch();
   const galleryData = useSelector((state) => state.gallery) || {};
 
-  const infoEditorRef = useRef(""); // Gallery Info Ref
-  const descriptionEditorRef = useRef(""); // Gallery Description Ref
+  const infoEditorRef = useRef(""); 
+  const descriptionEditorRef = useRef(""); 
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); 
   const [gallery_info, setGalleryInfo] = useState("Gallery");
   const [gallery_description, setGalleryDescription] = useState("");
   const [media, setMedia] = useState({
@@ -36,25 +36,28 @@ const Gallery = () => {
   });
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({});
-  const [selectedImage, setSelectedImage] = useState(null); // State for selected image
-  const [openModal, setOpenModal] = useState(false); // State for modal visibility
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [openModal, setOpenModal] = useState(false); 
 
+  // Fetch gallery data on component mount
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       await dispatch(fetchGalleryData());
-      setTimeout(() => {
-        setLoading(false);
-      }, 500);
+      setLoading(false);
     };
     fetchData();
   }, [dispatch]);
 
+  // Update local state when gallery data changes
   useEffect(() => {
     if (galleryData) {
       setGalleryInfo(galleryData.gallery_info || "Gallery");
       setGalleryDescription(galleryData.gallery_description || "");
+
+      infoEditorRef.current = galleryData.gallery_info || "";
+      descriptionEditorRef.current = galleryData.gallery_description || "";
+
       setMedia({
         birthplace_media: galleryData.birthplace_media || [],
         events_media: galleryData.events_media || [],
@@ -64,10 +67,11 @@ const Gallery = () => {
     }
   }, [galleryData]);
 
+  // Handle save/edit action
   const handleEditSave = async (e) => {
     e.preventDefault();
     if (isEditable) {
-      const infoContent = infoEditorRef.current || "No Info provided";
+      const infoContent = infoEditorRef.current || "No Info provided"; 
       const descriptionContent = descriptionEditorRef.current || "No description provided";
 
       const galleryDataToSend = {
@@ -85,9 +89,14 @@ const Gallery = () => {
           })
         );
 
+        // Fetch updated data after saving
         const updatedData = await dispatch(fetchGalleryData()).unwrap();
         setGalleryInfo(updatedData.gallery_info || infoContent);
         setGalleryDescription(updatedData.gallery_description || descriptionContent);
+
+        infoEditorRef.current = updatedData.gallery_info || infoContent;
+        descriptionEditorRef.current = updatedData.gallery_description || descriptionContent;
+
         setRemoveImages([]);
       } catch (error) {
         console.error("Error saving/updating data: ", error);
@@ -96,6 +105,7 @@ const Gallery = () => {
     setIsEditable(!isEditable);
   };
 
+  // Render image source based on type
   const renderImageSource = (image) => {
     if (image instanceof File) {
       return URL.createObjectURL(image);
@@ -105,28 +115,16 @@ const Gallery = () => {
     return "";
   };
 
+  // Handle image click to open modal
   const handleImageClick = (image) => {
     setSelectedImage(image);
     setOpenModal(true);
   };
 
+  // Close modal
   const handleCloseModal = () => {
     setOpenModal(false);
     setSelectedImage(null);
-  };
-
-  const handleViewMore = (category) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [category]: true,
-    }));
-  };
-
-  const handleViewLess = (category) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [category]: false,
-    }));
   };
 
   return (
@@ -134,7 +132,7 @@ const Gallery = () => {
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
         Gallery
       </Typography>
-      <Paper sx={{ p: 3, borderRadius: 0, boxShadow: 0 }}>
+      <Paper sx={{ p: 0, borderRadius: 0, boxShadow: 0 }}>
         {loading ? (
           <Box
             sx={{
@@ -148,7 +146,6 @@ const Gallery = () => {
           </Box>
         ) : (
           <form onSubmit={handleEditSave}>
-            {/* Gallery Info */}
             <Typography variant="h6" sx={{ mt: 2 }}>
               Gallery Info
             </Typography>
@@ -177,7 +174,6 @@ const Gallery = () => {
               onChange={(newContent) => (infoEditorRef.current = newContent)}
             />
 
-            {/* Gallery Description */}
             <Typography variant="h6" sx={{ mt: 2 }}>
               Gallery Description
             </Typography>
@@ -206,7 +202,6 @@ const Gallery = () => {
               onChange={(newContent) => (descriptionEditorRef.current = newContent)}
             />
 
-            {/* Media Upload */}
             {Object.keys(media).map((category) => (
               <Box key={category} sx={{ mt: 3 }}>
                 <Typography variant="h6">{category.replace("_", " ")}</Typography>
@@ -219,59 +214,46 @@ const Gallery = () => {
                       const files = Array.from(event.target.files);
                       setMedia((prev) => ({
                         ...prev,
-                        [category]: [...prev[category], ...files],
+                        [category]: [...files, ...prev[category]],
                       }));
                     }}
                   />
                 )}
                 <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
-                  {media[category]
-                    .slice(0, expandedSections[category] ? media[category].length : 5)
-                    .map((image, index) => (
-                      <Box key={index} sx={{ position: "relative" }}>
-                        <Avatar
-                          src={renderImageSource(image)}
-                          sx={{ width: 100, height: 100, cursor: "pointer" }}
-                          onClick={() => handleImageClick(renderImageSource(image))}
-                        />
-                        {isEditable && (
-                          <IconButton
-                            onClick={() => {
-                              if (typeof media[category][index] === "string") {
-                                setRemoveImages((prev) => [...prev, media[category][index]]);
-                              }
-                              setMedia((prev) => ({
-                                ...prev,
-                                [category]: prev[category].filter((_, i) => i !== index),
-                              }));
-                            }}
-                            sx={{
-                              position: "absolute",
-                              top: -10,
-                              right: -10,
-                              backgroundColor: "white",
-                            }}
-                          >
-                            <DeleteIcon color="error" />
-                          </IconButton>
-                        )}
-                      </Box>
-                    ))}
+                  {media[category].map((image, index) => (
+                    <Box key={index} sx={{ position: "relative" }}>
+                      <Avatar
+                        src={renderImageSource(image)}
+                        sx={{ width: 100, height: 100 }}
+                        onClick={() => handleImageClick(renderImageSource(image))}
+                      />
+                      {isEditable && (
+                        <IconButton
+                          onClick={() => {
+                            if (typeof media[category][index] === "string") {
+                              setRemoveImages((prev) => [...prev, media[category][index]]);
+                            }
+                            setMedia((prev) => ({
+                              ...prev,
+                              [category]: prev[category].filter((_, i) => i !== index),
+                            }));
+                          }}
+                          sx={{
+                            position: "absolute",
+                            top: -10,
+                            right: -10,
+                            backgroundColor: "white",
+                          }}
+                        >
+                          <DeleteIcon color="error" />
+                        </IconButton>
+                      )}
+                    </Box>
+                  ))}
                 </Stack>
-                {media[category].length > 5 && !expandedSections[category] && (
-                  <Button onClick={() => handleViewMore(category)} sx={{ mt: 2 }}>
-                    View More
-                  </Button>
-                )}
-                {expandedSections[category] && (
-                  <Button onClick={() => handleViewLess(category)} sx={{ mt: 2 }}>
-                    View Less
-                  </Button>
-                )}
               </Box>
             ))}
 
-            {/* Save/Edit Button */}
             <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
               <Button type="submit" variant="contained">
                 {isEditable ? "Save" : "Edit"}
@@ -280,8 +262,6 @@ const Gallery = () => {
           </form>
         )}
       </Paper>
-
-      {/* Modal for Full Image View */}
       <Modal
         open={openModal}
         onClose={handleCloseModal}

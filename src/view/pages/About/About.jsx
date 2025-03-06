@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+
 import {
   Box,
   Typography,
@@ -9,6 +10,7 @@ import {
   IconButton,
   Avatar,
   CircularProgress,
+  Modal,
 } from "@mui/material";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
@@ -23,7 +25,7 @@ const About = () => {
   const aboutData = useSelector((state) => state.about) || {};
 
   const editor = useRef(null);
-  const biographyRef = useRef(""); // ✅ Store real-time content without re-renders
+  const biographyRef = useRef(""); 
 
   const [title, setTitle] = useState("About");
   const [name, setName] = useState("");
@@ -32,7 +34,8 @@ const About = () => {
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
   const [loading, setLoading] = useState(true);
-
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [openModal, setOpenModal] = useState(false); 
   // Fetch about data on mount
   useEffect(() => {
     const fetchData = async () => {
@@ -45,24 +48,24 @@ const About = () => {
     fetchData();
   }, [dispatch]);
 
-  // Populate state when data is available
+
   useEffect(() => {
     if (aboutData) {
       setTitle(aboutData.title || "About");
       setName(aboutData.name || "");
       setBiography(aboutData.biography || "");
-      biographyRef.current = aboutData.biography || ""; // ✅ Initialize ref with existing data
+      biographyRef.current = aboutData.biography || "";
       setSelectedImages(aboutData.images || []);
     }
   }, [aboutData]);
 
-  // Handle image upload
+  
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
     setSelectedImages([...selectedImages, ...files]);
   };
 
-  // Handle image removal
+  
   const handleImageRemove = (index) => {
     const imageToRemove = selectedImages[index];
     if (typeof imageToRemove === "string") {
@@ -76,7 +79,7 @@ const About = () => {
     e.preventDefault();
 
     if (isEditable) {
-      const biographyContent = biographyRef.current || "No biography provided"; // ✅ Get latest content from ref
+      const biographyContent = biographyRef.current || "No biography provided"; 
 
       const aboutDataToSend = {
         title,
@@ -95,8 +98,8 @@ const About = () => {
         );
 
         const updatedData = await dispatch(fetchAboutData()).unwrap();
-        setBiography(updatedData.biography || biographyContent); // ✅ Update state with saved data
-        biographyRef.current = updatedData.biography || biographyContent; // ✅ Sync ref with saved data
+        setBiography(updatedData.biography || biographyContent);
+        biographyRef.current = updatedData.biography || biographyContent; 
         setRemoveImages([]);
       } catch (error) {
         console.error("Error saving/updating data: ", error);
@@ -114,6 +117,16 @@ const About = () => {
       return image;
     }
     return "";
+  };
+  const handleImageClick = (image) => {
+    setSelectedImage(image);
+    setOpenModal(true);
+  };
+
+  // Close modal
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedImage(null);
   };
 
   return (
@@ -162,17 +175,17 @@ const About = () => {
                 readonly: !isEditable,
                 height: 300,
                 uploader: {
-                  insertImageAsBase64URI: true, // ✅ Enables drag-and-drop image upload as base64
+                  insertImageAsBase64URI: true, 
                 },
                 filebrowser: {
                   ajax: {
-                    url: "/upload", // Change this if you have a backend API to store images
+                    url: "/upload", 
                   },
                 },
                 image: {
                   openOnDblClick: true,
                   editSrc: true,
-                  allowDragAndDropFileToEditor: true, // ✅ Enables dragging images into the editor
+                  allowDragAndDropFileToEditor: true, 
                 },
                 toolbarSticky: false,
               }}
@@ -193,10 +206,12 @@ const About = () => {
             )}
             <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
               {selectedImages.map((image, index) => (
+       
                 <Box key={index} sx={{ position: "relative" }}>
                   <Avatar
                     src={renderImageSource(image)}
                     sx={{ width: 100, height: 100 }}
+                    onClick={() => handleImageClick(renderImageSource(image))}
                   />
                   {isEditable && (
                     <IconButton
@@ -212,6 +227,7 @@ const About = () => {
                     </IconButton>
                   )}
                 </Box>
+          
               ))}
             </Stack>
 
@@ -223,6 +239,37 @@ const About = () => {
           </form>
         )}
       </Paper>
+      <Modal
+        open={openModal}
+        onClose={handleCloseModal}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Box
+          sx={{
+            width: "50%",
+            height: "50%",
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 0,
+            p: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {selectedImage && (
+            <img
+              src={selectedImage}
+              alt="Full view"
+              style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+            />
+          )}
+        </Box>
+      </Modal>
     </Box>
   );
 };

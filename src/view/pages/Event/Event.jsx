@@ -9,6 +9,7 @@ import {
   IconButton,
   Avatar,
   CircularProgress,
+  Modal,
 } from "@mui/material";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
@@ -22,7 +23,7 @@ const Events = () => {
   const dispatch = useDispatch();
   const eventsData = useSelector((state) => state.events) || {};
   const editor = useRef(null);
-  const descriptionRef = useRef(""); // Store real-time content without re-renders
+  const descriptionRef = useRef("");
 
   const [title, setTitle] = useState("Events");
   const [name, setName] = useState("");
@@ -31,7 +32,8 @@ const Events = () => {
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
   const [loading, setLoading] = useState(true);
-
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [openModal, setOpenModal] = useState(false); 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -48,7 +50,7 @@ const Events = () => {
       setTitle(eventsData.title || "Events");
       setName(eventsData.name || "");
       setDescription(eventsData.description || "");
-      descriptionRef.current = eventsData.description || ""; // Initialize ref with existing data
+      descriptionRef.current = eventsData.description || "";
       setSelectedImages(eventsData.images || []);
     }
   }, [eventsData]);
@@ -91,8 +93,8 @@ const Events = () => {
           })
         );
         const updatedData = await dispatch(fetchEventsData()).unwrap();
-        setDescription(updatedData.description || descriptionContent); // ✅ Update state with saved data
-        descriptionRef.current = updatedData.description || descriptionContent; // ✅ Sync ref with saved data
+        setDescription(updatedData.description || descriptionContent); 
+        descriptionRef.current = updatedData.description || descriptionContent; 
         setRemoveImages([]);
         // dispatch(fetchEventsData());
       } catch (error) {
@@ -110,6 +112,16 @@ const Events = () => {
       return image;
     }
     return "";
+  };
+  const handleImageClick = (image) => {
+    setSelectedImage(image);
+    setOpenModal(true);
+  };
+
+  // Close modal
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedImage(null);
   };
 
   return (
@@ -159,81 +171,22 @@ const Events = () => {
                 readonly: !isEditable,
                 height: 300,
                 uploader: {
-                  insertImageAsBase64URI: true, // Enables drag-and-drop image upload as base64
+                  insertImageAsBase64URI: true,
                 },
                 filebrowser: {
                   ajax: {
-                    url: "/upload", // Change this if you have a backend API to store images
+                    url: "/upload", 
                   },
                 },
                 image: {
                   openOnDblClick: true,
                   editSrc: true,
-                  allowDragAndDropFileToEditor: true, // Enables dragging images into the editor
+                  allowDragAndDropFileToEditor: true, 
                 },
                 toolbarSticky: false,
               }}
               onChange={(newContent) => (descriptionRef.current = newContent)}
             />
-
-            {/* <JoditEditor
-  ref={editor}
-  value={description}
-  config={{
-    readonly: !isEditable,
-    placeholder: "Write about Atal's life...",
-    height: 400,
-    cleanOnPaste: false,
-    cleanOnChange: false,
-    toolbar: {
-      items: [
-        "bold",
-        "italic",
-        "underline",
-        "strikethrough",
-        "eraser",
-        "|",
-        "font",
-        "fontsize",
-        "paragraph",
-        "|",
-        "align",
-        "outdent",
-        "indent",
-        "|",
-        "link",
-        "image",
-        "video",
-        "table",
-        "hr", // ✅ Horizontal Ruler
-        "line", // ✅ Line tool
-        "code",
-        "fullsize",
-        "undo",
-        "redo",
-        "|",
-        {
-          name: "ruler", // ✅ Custom Ruler Button
-          iconURL: "https://cdn-icons-png.flaticon.com/512/992/992703.png",
-          exec: (editor) => {
-            editor.s.insertHTML(
-              `<div style="border-top: 2px solid black; margin: 10px 0;"></div>`
-            );
-          },
-          tooltip: "Insert Ruler",
-        },
-      ],
-    },
-    uploader: {
-      insertImageAsBase64URI: true,
-      url: "/upload",
-      format: "json",
-    },
-  }}
-  style={{ width: "100%", minHeight: "200px" }}
-  onChange={debouncedEditorChange}
-  onBlur={(newContent) => setDescription(newContent?.trim() || "")}
-/> */}
 
             <Typography variant="h6" sx={{ mt: 2 }}>
               Upload Event Images
@@ -255,6 +208,7 @@ const Events = () => {
                   <Avatar
                     src={renderImageSource(image)}
                     sx={{ width: 100, height: 100 }}
+                    onClick={() => handleImageClick(renderImageSource(image))}
                   />
                   {isEditable && (
                     <IconButton
@@ -281,6 +235,37 @@ const Events = () => {
           </form>
         )}
       </Paper>
+       <Modal
+              open={openModal}
+              onClose={handleCloseModal}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Box
+                sx={{
+                  width: "80vw",
+                  height: "90vh",
+                  bg: "black",
+                  borderRadius: 2,
+                  boxShadow: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+         
+                }}
+              >
+                {selectedImage && (
+                  <img
+                    src={selectedImage}
+                    alt="Full view"
+                    style={{ width: "100%", height:"100%" }}
+                  />
+                )}
+              </Box>
+            </Modal>
     </Box>
   );
 };
