@@ -53,16 +53,16 @@ const Sidebar = () => {
       subItems: [{ text: "Event List",  icon: <EmojiEvents />,path: "/eventlist" }],
     },
     {
-      text: "Donation and Support",
-      icon: <VolunteerActivism />,
-      path: "/Donation-and-Support",
-      subItems: [{ text: "Donation Collections", path: "/donationcollection" }],
-    },
-    {
       text: "Books and Publications",
       icon: <AutoStories />,
       path: "/Books-and-Publications",
       subItems: [{ text: "Books List", path: "/booklist" }],
+    },
+    {
+      text: "Donation Collections",
+      icon: <VolunteerActivism />,
+      path: "/donationcollection",
+      // subItems: [{ text: "Donation Collections", path: "/donationcollection" }],
     },
     {
       text: "News List",

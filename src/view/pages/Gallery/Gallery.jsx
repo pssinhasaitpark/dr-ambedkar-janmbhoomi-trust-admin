@@ -39,6 +39,20 @@ const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [openModal, setOpenModal] = useState(false); 
 
+  const [visibleImages, setVisibleImages] = useState({
+    birthplace_media: 3,
+    events_media: 3,
+    exhibitions_media: 3,
+    online_media: 3,
+  });
+
+  const [showAllImages, setShowAllImages] = useState({
+    birthplace_media: false,
+    events_media: false,
+    exhibitions_media: false,
+    online_media: false,
+  });
+
   // Fetch gallery data on component mount
   useEffect(() => {
     const fetchData = async () => {
@@ -125,6 +139,30 @@ const Gallery = () => {
   const handleCloseModal = () => {
     setOpenModal(false);
     setSelectedImage(null);
+  };
+
+  // Load more images
+  const loadMoreImages = (category) => {
+    setVisibleImages((prev) => ({
+      ...prev,
+      [category]: media[category].length, // Show all images for the category
+    }));
+    setShowAllImages((prev) => ({
+      ...prev,
+      [category]: true,
+    }));
+  };
+
+  // Load less images
+  const loadLessImages = (category) => {
+    setVisibleImages((prev) => ({
+      ...prev,
+      [category]: 3, // Show only the first 3 images
+    }));
+    setShowAllImages((prev) => ({
+      ...prev,
+      [category]: false,
+    }));
   };
 
   return (
@@ -220,7 +258,7 @@ const Gallery = () => {
                   />
                 )}
                 <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
-                  {media[category].map((image, index) => (
+                  {media[category].slice(0, visibleImages[category]).map((image, index) => (
                     <Box key={index} sx={{ position: "relative" }}>
                       <Avatar
                         src={renderImageSource(image)}
@@ -251,6 +289,23 @@ const Gallery = () => {
                     </Box>
                   ))}
                 </Stack>
+                {showAllImages[category] ? (
+                  <Button
+                    onClick={() => loadLessImages(category)}
+                    sx={{ mt: 2 }}
+                  >
+                    View Less Images
+                  </Button>
+                ) : (
+                  media[category].length > visibleImages[category] && (
+                    <Button
+                      onClick={() => loadMoreImages(category)}
+                      sx={{ mt: 2 }}
+                    >
+                      View All Images
+                    </Button>
+                  )
+                )}
               </Box>
             ))}
 

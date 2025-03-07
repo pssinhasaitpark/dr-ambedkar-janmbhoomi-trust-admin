@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { initLightboxJS, SlideshowLightbox } from "lightbox.js-react";
+import { SlideshowLightbox } from "lightbox.js-react";
 import {
   fetchTestimonialsData,
   deleteTestimonialsData,

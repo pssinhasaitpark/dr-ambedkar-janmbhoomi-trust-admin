@@ -1,5 +1,6 @@
-import React, { useEffect, useState,useRef, useCallback } from "react";
+import React, { useEffect, useState,useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { SlideshowLightbox } from "lightbox.js-react";
 import {
   fetchEvents,
   addEvent,
@@ -38,7 +39,7 @@ import {
   Close,
   Image as ImageIcon,
 } from "@mui/icons-material";
-import debounce from "lodash.debounce";
+
 
 function EventList() {
   const dispatch = useDispatch();
@@ -160,12 +161,7 @@ function EventList() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
- const debouncedHandleChange = useCallback(
-  debounce((content) => {
-    setFormData((prev) => ({ ...prev, description: content }));
-  }, 500),
-  [setFormData] // Added dependency
-);
+
 
 
   const handleImageChange = (e) => {
@@ -185,12 +181,6 @@ function EventList() {
     if (typeof imageToRemove === "string") {
       setRemoveImages((prev) => [...prev, imageToRemove]);
     }
-  };
-  const config = {
-    toolbarInline: false, // Disables inline toolbar
-    showXPathInStatusbar: false, // Hides XPath in the status bar
-    showCharsCounter: false, // Hides character counter
-    disablePlugins: "inlinePopup", // Disables inline popups
   };
 
   return (
@@ -261,7 +251,8 @@ function EventList() {
                         <TableCell>{event.organized_by}</TableCell>
                         <TableCell>
                           {event.images && event.images.length > 0 ? (
-                            <img
+                            <SlideshowLightbox>
+                           <img
                               src={event.images[0]} // Fetch the first image from array
                               alt="Event"
                               style={{
@@ -271,6 +262,7 @@ function EventList() {
                                 borderRadius: "5px",
                               }}
                             />
+                            </SlideshowLightbox>
                           ) : (
                             <Typography variant="body2" color="text.secondary">
                               No Image
@@ -404,6 +396,7 @@ function EventList() {
                     key={index}
                     sx={{ position: "relative", width: 80, height: 80 }}
                   >
+                  <SlideshowLightbox>
                     <img
                       src={
                         image instanceof File
@@ -415,6 +408,7 @@ function EventList() {
                       height="100%"
                       style={{ borderRadius: 8, objectFit: "cover" }}
                     />
+                    </SlideshowLightbox>
                     <IconButton
                       size="small"
                       sx={{

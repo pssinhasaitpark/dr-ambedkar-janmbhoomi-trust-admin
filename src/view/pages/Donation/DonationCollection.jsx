@@ -119,6 +119,15 @@ function DonationCollections() {
                     Amount
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+                  OrderId
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+                  PaymentStatus
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+                  PaymentId
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
                     Date
                   </TableCell>
                 </TableRow>
@@ -133,6 +142,9 @@ function DonationCollections() {
                       <TableCell>{donation.email}</TableCell>
                       <TableCell>{donation.phone}</TableCell>
                       <TableCell>₹{donation.amount}</TableCell>
+                      <TableCell>{donation.orderId}</TableCell>
+                      <TableCell>{donation.paymentStatus}</TableCell>
+                      <TableCell>{donation.paymentId}</TableCell>
                       <TableCell>
                         {new Date(donation.createdAt).toLocaleDateString()}
                       </TableCell>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback,useRef } from "react";
+import React, { useEffect, useState,useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { SlideshowLightbox } from "lightbox.js-react";
 import {
@@ -39,7 +39,6 @@ import {
   Close,
   Image as ImageIcon,
 } from "@mui/icons-material";
-import debounce from "lodash.debounce";
 
 function BookList() {
   const dispatch = useDispatch();
@@ -47,7 +46,7 @@ function BookList() {
   const [removeImages, setRemoveImages] = useState([]);
   const [editingBook, setEditingBook] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(null);
+  // const [confirmDelete, setConfirmDelete] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [loading, setLoading] = useState(true);
@@ -167,12 +166,12 @@ function BookList() {
     setFormData({ ...formData, cover_image: e.target.files[0] });
   };
 
-  const debouncedHandleChange = useCallback(
-    debounce((content) => {
-      setFormData((prev) => ({ ...prev, description: content }));
-    }, 500),
-    []
-  );
+  // const debouncedHandleChange = useCallback(
+  //   debounce((content) => {
+  //     setFormData((prev) => ({ ...prev, description: content }));
+  //   }, 500),
+  //   []
+  // );
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -433,6 +432,7 @@ function BookList() {
             </Button>
             {formData.cover_image && (
               <Box mt={2}>
+                <SlideshowLightbox>
                 <img
                   src={
                     formData.cover_image instanceof File
@@ -443,6 +443,7 @@ function BookList() {
                   width="100"
                   height="100"
                 />
+                 </SlideshowLightbox>
               </Box>
             )}
 
@@ -470,17 +471,19 @@ function BookList() {
                     key={index}
                     sx={{ position: "relative", width: 80, height: 80 }}
                   >
+                     <SlideshowLightbox>
                     <img
                       src={
                         image instanceof File
                           ? URL.createObjectURL(image)
                           : image
                       }
-                      alt={"book-img-${index}"}
+                      alt={`book-img-${index}`}
                       width="100%"
                       height="100%"
                       style={{ borderRadius: 8, objectFit: "cover" }}
                     />
+                    </SlideshowLightbox>
                     <IconButton
                       size="small"
                       sx={{
