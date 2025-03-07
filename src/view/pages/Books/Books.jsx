@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect} from "react";
 import {
   Box,
   Typography,
@@ -18,7 +18,7 @@ import {
   fetchBooksData,
   saveBooksToBackend,
 } from "../../redux/slice/bookSlice";
-import debounce from "lodash.debounce";
+
 
 const Books = () => {
   const dispatch = useDispatch();
@@ -33,22 +33,24 @@ const Books = () => {
   const [isEditable, setIsEditable] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [openModal, setOpenModal] = useState(false); 
-  const [loading, setLoading] = useState(true);
+   const status = useSelector((state) => state.about.status);
+   const [showLoader, setShowLoader] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      await dispatch(fetchBooksData());
-      setTimeout(() => {
-        setLoading(false);
-      }, 500); 
-    };
-    fetchData();
+     dispatch(fetchBooksData());
   }, [dispatch]);
+
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        setShowLoader(false);
+      }, 1000);
+  
+      return () => clearTimeout(timer);
+    }, []);
 
   useEffect(() => {
     if (booksData) {
-      setTitle(booksData.title || "Books");
+      setTitle(booksData.title || "");
       setName(booksData.name || "");
       setDescription(booksData.description || "");
       descriptionRef.current = booksData.description || ""; // Initialize ref with existing data
@@ -96,7 +98,7 @@ const Books = () => {
                  setDescription(updatedData.description || descriptionContent); // Update state with saved data
                  descriptionRef.current = updatedData.description || descriptionContent; //  Sync ref with saved data
         setRemoveImages([]);
-        // dispatch(fetchBooksData());
+         dispatch(fetchBooksData());
       } catch (error) {
         console.error("Error saving/updating data: ", error);
       }
@@ -124,24 +126,35 @@ const Books = () => {
     setOpenModal(false);
     setSelectedImage(null);
   };
+
+
+    if (status === "loading" || showLoader)
+      return (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="50vh"
+        >
+          <CircularProgress />
+        </Box>
+      );
+  
+    if (status === "error")
+      return (
+        <Typography variant="h6" color="error">
+          Error: {status}
+        </Typography>
+      );
+  
+
   return (
     <Box>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold",mt:8 }}>
         {title}
       </Typography>
       <Paper sx={{ p: 0, borderRadius: 0, boxShadow: 0 }}>
-        {loading ? ( 
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "400px",
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        ) : (
+        
           <form onSubmit={handleEditSave}>
             <TextField
               fullWidth
@@ -234,7 +247,7 @@ const Books = () => {
               </Button>
             </Stack>
           </form>
-        )}
+        
       </Paper>
       <Modal
         open={openModal}
@@ -247,12 +260,6 @@ const Books = () => {
       >
         <Box
           sx={{
-            width: "50%",
-            height: "50%",
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 0,
-            p: 2,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -262,7 +269,7 @@ const Books = () => {
             <img
               src={selectedImage}
               alt="Full view"
-              style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+              style={{  maxHeight: "100%", objectFit: "contain" }}
             />
           )}
         </Box>

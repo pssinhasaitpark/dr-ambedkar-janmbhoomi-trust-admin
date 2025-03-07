@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../axios/axios";
 
 const initialState = {
-  title: "Events",
+  title: "",
   name: "",
   description: "",
   images: [],

@@ -4,9 +4,7 @@ import api from "../axios/axios"; // Import the Axios instance
 // Async thunk to fetch subscribers
 export const fetchSubscribers = createAsyncThunk("subscribers/fetchSubscribers", async () => {
   const response = await api.get("/newsletter");
-  return response.data.data;
-
-  
+  return response.data.data; 
 });
 
 const subscribersSlice = createSlice({

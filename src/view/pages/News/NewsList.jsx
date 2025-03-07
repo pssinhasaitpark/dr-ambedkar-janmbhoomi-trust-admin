@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchNews,
@@ -38,7 +38,7 @@ import {
   Close,
   Image as ImageIcon,
 } from "@mui/icons-material";
-import debounce from "lodash.debounce";
+import { SlideshowLightbox } from "lightbox.js-react";
 
 function NewsList() {
   const dispatch = useDispatch();
@@ -160,12 +160,12 @@ function NewsList() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const debouncedHandleChange = useCallback(
-    debounce((content) => {
-      setFormData((prev) => ({ ...prev, description: content }));
-    }, 500),
-    []
-  );
+  // const debouncedHandleChange = useCallback(
+  //   debounce((content) => {
+  //     setFormData((prev) => ({ ...prev, description: content }));
+  //   }, 500),
+  //   []
+  // );
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -210,7 +210,10 @@ function NewsList() {
               alignItems="center"
               mb={3}
             >
-              <Typography variant="h6">Manage News</Typography>
+             
+               <Typography variant="h5" sx={{ mb: 0, fontWeight: "bold", mt: 0 }}>
+               Manage News
+                        </Typography>
               <Button
                 variant="contained"
                 startIcon={<Add />}
@@ -437,6 +440,7 @@ function NewsList() {
                     key={index}
                     sx={{ position: "relative", width: 80, height: 80 }}
                   >
+                    <SlideshowLightbox>
                     <img
                       src={
                         image instanceof File
@@ -448,6 +452,7 @@ function NewsList() {
                       height="100%"
                       style={{ borderRadius: 8, objectFit: "cover" }}
                     />
+                    </SlideshowLightbox>
                     <IconButton
                       size="small"
                       sx={{

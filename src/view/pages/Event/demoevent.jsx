@@ -1,5 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
-import { SlideshowLightbox } from "lightbox.js-react";
+import React, { useState, useRef, useEffect} from "react";
 import {
   Box,
   Typography,
@@ -8,52 +7,53 @@ import {
   Paper,
   Stack,
   IconButton,
+  Avatar,
   CircularProgress,
+  Modal,
 } from "@mui/material";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  fetchAboutData,
-  saveAboutToBackend,
-} from "../../redux/slice/aboutSlice";
+  fetchEventsData,
+  saveEventsToBackend,
+} from "../../redux/slice/eventSlice";
 
-const About = () => {
+const Events = () => {
   const dispatch = useDispatch();
-  const aboutData = useSelector((state) => state.about) || {};
+  const eventsData = useSelector((state) => state.events) || {};
   const editor = useRef(null);
-  const biographyRef = useRef("");
-  const [title, setTitle] = useState("About");
+  const descriptionRef = useRef("");
+
+  const [title, setTitle] = useState("Events");
   const [name, setName] = useState("");
-  const [biography, setBiography] = useState("");
+  const [description, setDescription] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
-  // const [loading, setLoading] = useState(true);
-  const status = useSelector((state) => state.about.status);
-  const [showLoader, setShowLoader] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [openModal, setOpenModal] = useState(false); 
   useEffect(() => {
-dispatch(fetchAboutData());
+    const fetchData = async () => {
+      setLoading(true);
+      await dispatch(fetchEventsData());
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
+    };
+    fetchData();
   }, [dispatch]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowLoader(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-
-  useEffect(() => {
-    if (aboutData) {
-      setTitle(aboutData.title || "About");
-      setName(aboutData.name || "");
-      setBiography(aboutData.biography || "");
-      biographyRef.current = aboutData.biography || "";
-      setSelectedImages(aboutData.images || []);
+    if (eventsData) {
+      setTitle(eventsData.title || "");
+      setName(eventsData.name || "");
+      setDescription(eventsData.description || "");
+      descriptionRef.current = eventsData.description || "";
+      setSelectedImages(eventsData.images || []);
     }
-  }, [aboutData]);
+  }, [eventsData]);
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -62,9 +62,11 @@ dispatch(fetchAboutData());
 
   const handleImageRemove = (index) => {
     const imageToRemove = selectedImages[index];
+
     if (typeof imageToRemove === "string") {
       setRemoveImages((prev) => [...prev, imageToRemove]);
     }
+
     setSelectedImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
@@ -72,32 +74,34 @@ dispatch(fetchAboutData());
     e.preventDefault();
 
     if (isEditable) {
-      const biographyContent = biographyRef.current || "No biography provided";
+      const descriptionContent =
+        descriptionRef.current || "No description provided"; //  Get latest content from ref
 
-      const aboutDataToSend = {
+      const eventsDataToSend = {
         title,
         name,
-        biography: biographyContent,
+        description: descriptionContent,
         images: selectedImages,
         removeImages: removeImages.length > 0 ? removeImages : [],
       };
 
       try {
         await dispatch(
-          saveAboutToBackend({
-            id: aboutData._id,
-            aboutData: aboutDataToSend,
+          saveEventsToBackend({
+            id: eventsData._id,
+            eventsData: eventsDataToSend,
           })
         );
-
-        const updatedData = await dispatch(fetchAboutData()).unwrap();
-        setBiography(updatedData.biography || biographyContent);
-        biographyRef.current = updatedData.biography || biographyContent;
+        const updatedData = await dispatch(fetchEventsData()).unwrap();
+        setDescription(updatedData.description || descriptionContent); 
+        descriptionRef.current = updatedData.description || descriptionContent; 
         setRemoveImages([]);
+        // dispatch(fetchEventsData());
       } catch (error) {
         console.error("Error saving/updating data: ", error);
       }
     }
+
     setIsEditable(!isEditable);
   };
 
@@ -109,35 +113,16 @@ dispatch(fetchAboutData());
     }
     return "";
   };
-  // const handleImageClick = (image) => {
-  //   setSelectedImage(image);
-  //   setOpenModal(true);
-  // };
+  const handleImageClick = (image) => {
+    setSelectedImage(image);
+    setOpenModal(true);
+  };
 
-  // const handleCloseModal = () => {
-  //   setOpenModal(false);
-  //   setSelectedImage(null);
-  // };
-
-
-  if (status === "loading" || showLoader)
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="50vh"
-      >
-        <CircularProgress/>
-      </Box>
-    );
-
-  if (status === "error")
-    return (
-      <Typography variant="h6" color="error">
-        Error: {status}
-      </Typography>
-    );
+  // Close modal
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedImage(null);
+  };
 
   return (
     <Box>
@@ -145,7 +130,18 @@ dispatch(fetchAboutData());
         {title}
       </Typography>
       <Paper sx={{ p: 0, borderRadius: 0, boxShadow: 0 }}>
-     
+        {loading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "400px",
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
           <form onSubmit={handleEditSave}>
             <TextField
               fullWidth
@@ -163,13 +159,14 @@ dispatch(fetchAboutData());
               disabled={!isEditable}
               sx={{ mb: 2 }}
             />
+
             <Typography variant="h6" sx={{ mt: 2 }}>
-              Biography
+              Event Description
             </Typography>
 
             <JoditEditor
               ref={editor}
-              value={biography}
+              value={description}
               config={{
                 readonly: !isEditable,
                 height: 300,
@@ -178,50 +175,48 @@ dispatch(fetchAboutData());
                 },
                 filebrowser: {
                   ajax: {
-                    url: "/upload",
+                    url: "/upload", 
                   },
                 },
                 image: {
                   openOnDblClick: true,
                   editSrc: true,
-                  allowDragAndDropFileToEditor: true,
+                  allowDragAndDropFileToEditor: true, 
                 },
                 toolbarSticky: false,
               }}
-              onChange={(newContent) => (biographyRef.current = newContent)}
+              onChange={(newContent) => (descriptionRef.current = newContent)}
             />
+
             <Typography variant="h6" sx={{ mt: 2 }}>
-              Upload Banner Image
+              Upload Event Images
             </Typography>
-            {selectedImages.length === 0 && isEditable && (
+
+            {isEditable && (
               <input
                 type="file"
                 multiple
                 accept="image/*"
                 onChange={handleImageUpload}
-                style={{ margin: "20px 0" }}
+                style={{ marginBottom: "1rem" }}
               />
             )}
+
             <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
               {selectedImages.map((image, index) => (
                 <Box key={index} sx={{ position: "relative" }}>
-                  <SlideshowLightbox>
-                    <img
-                      src={renderImageSource(image)}
-                      alt={`Uploaded ${index}`}
-                      style={{
-                        width: "30%",
-                        height: "30%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </SlideshowLightbox>
+                  <Avatar
+                    src={renderImageSource(image)}
+                    sx={{ width: 100, height: 100 }}
+                    onClick={() => handleImageClick(renderImageSource(image))}
+                  />
                   {isEditable && (
                     <IconButton
                       onClick={() => handleImageRemove(index)}
                       sx={{
                         position: "absolute",
                         top: -10,
+                        right: -10,
                         backgroundColor: "white",
                       }}
                     >
@@ -231,16 +226,48 @@ dispatch(fetchAboutData());
                 </Box>
               ))}
             </Stack>
+
             <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
               <Button type="submit" variant="contained">
                 {isEditable ? "Save" : "Edit"}
               </Button>
             </Stack>
           </form>
-        
+        )}
       </Paper>
+       <Modal
+              open={openModal}
+              onClose={handleCloseModal}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Box
+                sx={{
+                  width: "80vw",
+                  height: "90vh",
+                  bg: "black",
+                  borderRadius: 2,
+                  boxShadow: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+         
+                }}
+              >
+                {selectedImage && (
+                  <img
+                    src={selectedImage}
+                    alt="Full view"
+                    style={{ width: "100%", height:"100%" }}
+                  />
+                )}
+              </Box>
+            </Modal>
     </Box>
   );
 };
 
-export default About;
+export default Events;
