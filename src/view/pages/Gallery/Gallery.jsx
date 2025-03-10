@@ -65,21 +65,27 @@ const Gallery = () => {
 
   // Update local state when gallery data changes
   useEffect(() => {
-    if (galleryData) {
-      setGalleryInfo(galleryData.gallery_info || "Gallery");
-      setGalleryDescription(galleryData.gallery_description || "");
+    setGalleryInfo(galleryData?.gallery_info || "Gallery");
+    setGalleryDescription(galleryData?.gallery_description || "");
 
-      infoEditorRef.current = galleryData.gallery_info || "";
-      descriptionEditorRef.current = galleryData.gallery_description || "";
+    infoEditorRef.current = galleryData?.gallery_info || "";
+    descriptionEditorRef.current = galleryData?.gallery_description || "";
 
-      setMedia({
-        birthplace_media: galleryData.birthplace_media || [],
-        events_media: galleryData.events_media || [],
-        exhibitions_media: galleryData.exhibitions_media || [],
-        online_media: galleryData.online_media || [],
-      });
-    }
-  }, [galleryData]);
+    setMedia({
+        birthplace_media: galleryData?.birthplace_media || [],
+        events_media: galleryData?.events_media || [],
+        exhibitions_media: galleryData?.exhibitions_media || [],
+        online_media: galleryData?.online_media || [],
+    });
+}, [
+    galleryData?.gallery_info,
+    galleryData?.gallery_description,
+    galleryData?.birthplace_media,
+    galleryData?.events_media,
+    galleryData?.exhibitions_media,
+    galleryData?.online_media
+]);
+
 
   // Handle save/edit action
   const handleEditSave = async (e) => {
@@ -119,7 +125,7 @@ const Gallery = () => {
     setIsEditable(!isEditable);
   };
 
-  // Render image source based on type
+
   const renderImageSource = (image) => {
     if (image instanceof File) {
       return URL.createObjectURL(image);
@@ -330,7 +336,7 @@ const Gallery = () => {
           sx={{
             width: "50%",
             height: "50%",
-            bgcolor: "background.paper",
+           
             borderRadius: 2,
             boxShadow: 0,
             p: 2,

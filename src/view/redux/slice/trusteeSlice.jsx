@@ -39,27 +39,17 @@ export const updateTrustee = createAsyncThunk(
   "trustee/updateTrustee",
   async ({ _id, updatedData }, { rejectWithValue, dispatch }) => {
     try {
-      // console.log("Updating trustee with ID:", _id);
-      // console.log("Updated Data (Before Sending):", updatedData);
-
       // Ensure _id is not in FormData
       for (let pair of updatedData.entries()) {
         if (pair[0] === "_id") {
-          // console.log("Removing _id from FormData before sending.");
           updatedData.delete("_id");
         }
       }
-
-      // console.log("Final FormData Entries Before API Call:");
-      // for (let pair of updatedData.entries()) {
-      //   console.log(pair[0], pair[1]); // Debugging
-      // }
-
       const response = await api.put(`/user/${_id}`, updatedData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      dispatch(fetchTrustees()); // Refresh list after updating
+      dispatch(fetchTrustees());
       return response.data?.data;
     } catch (error) {
       console.error("Update Error:", error.response?.data || error.message);
@@ -78,7 +68,7 @@ export const deleteTrustee = createAsyncThunk(
   async (_id, { rejectWithValue, dispatch }) => {
     try {
       await api.delete(`/user/${_id}`);
-      dispatch(fetchTrustees()); // Refresh list after deleting
+      dispatch(fetchTrustees());
       return _id;
     } catch (error) {
       return rejectWithValue(

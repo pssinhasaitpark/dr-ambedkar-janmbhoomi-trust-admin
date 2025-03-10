@@ -10,7 +10,7 @@ import NewsListpage from "../../pages/News/NewsList";
 import GalleryPage from "../../pages/Gallery/Gallery";
 import ContactPage from "../../pages/Contact/ContactUs";
 import BookListPage from "../../pages/Books/BookList";
-import BookDetailsPage from "../../pages/Books/BookDetails";
+
 import SubscriberPage from "../../pages/Subscribers/Subscribers";
 import TrusteePage from "../../pages/Trustee/TrusteeRegistration";
 import DonationCollectionsPage from "../../pages/Donation/DonationCollection";
@@ -37,7 +37,7 @@ const DashboardLayout = () => {
         <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/Contact-&-Enquiries" element={<ContactPage />} />
         <Route path="/booklist" element={<BookListPage />} />
-        <Route path="/bookdetails" element={<BookDetailsPage />} />
+
         <Route path="/subscriber" element={<SubscriberPage />} />
         <Route path="/trustee" element={<TrusteePage />} />
         <Route path="/eventlist" element={<EventListPage />} />

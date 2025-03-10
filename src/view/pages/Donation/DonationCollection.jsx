@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchDonations } from "../../redux/slice/donationcollectionSlice"; // Import the action
+import { fetchDonations } from "../../redux/slice/donationcollectionSlice"; 
 import {
   Table,
   TableBody,

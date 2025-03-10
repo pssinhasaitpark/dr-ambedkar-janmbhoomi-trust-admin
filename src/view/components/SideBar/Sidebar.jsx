@@ -104,9 +104,9 @@ const Sidebar = () => {
     } else {
       setActiveParent(parentIndex);
       setActiveChild(childIndex);
-      setExpandedIndex(parentIndex); // Expand the active submenu
+      setExpandedIndex(parentIndex);
     }
-  }, [location.pathname]);
+  }, [location.pathname,menuItems]);
 
   const handleParentClick = (index, item) => {
     if (item.subItems) {

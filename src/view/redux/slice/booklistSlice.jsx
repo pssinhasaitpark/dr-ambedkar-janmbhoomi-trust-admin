@@ -75,7 +75,7 @@ export const deleteBook = createAsyncThunk(
   "booklist/deleteBook",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await api.delete(`/booklist/${id}`);
+ await api.delete(`/booklist/${id}`);
       return id; // Return the deleted book ID
     } catch (error) {
       return rejectWithValue(error.response ? error.response.data : error.message);

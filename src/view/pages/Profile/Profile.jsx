@@ -15,7 +15,7 @@ import { Email, Person, Phone } from "@mui/icons-material";
 
 const Profile = () => {
   const dispatch = useDispatch();
-  const { first_name, last_name, user_name,user_role, email, mobile, loading, error } =
+  const {first_name, last_name, user_name,user_role, email, mobile, loading, error } =
     useSelector((state) => state.profile);
 
   useEffect(() => {
@@ -24,7 +24,7 @@ const Profile = () => {
 
   // Generate initials for avatar
   const getInitials = (first, last) => {
-    if (first && last) return `${first[0]}${last[0]}`.toUpperCase();
+    if (first && last) return `${first[0]}`.toUpperCase();
     return "A P";
   };
 
@@ -85,23 +85,6 @@ const Profile = () => {
           {/* Profile Details */}
           <Grid container spacing={2}>
             {/* Full Name */}
-            <Grid item xs={12}>
-              <Paper
-                sx={{
-                  padding: 2,
-                  backgroundColor: "#f0f0f0",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  boxShadow: 1,
-                }}
-              >
-                <Person fontSize="small" color="primary" />
-                <Typography variant="body1" fontWeight="bold">
-                  {first_name} {last_name}
-                </Typography>
-              </Paper>
-            </Grid>
 
             {/* Username */}
             <Grid item xs={12}>
