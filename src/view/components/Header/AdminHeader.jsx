@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   AppBar,
@@ -48,8 +47,8 @@ const Header = () => {
         backgroundColor: "#fff",
         color: "#000",
         borderBottom: "1px solid #e0e0e0",
-        marginTop:"1px",
-        minHeight:"69px"
+        marginTop: "1px",
+        minHeight: "69px",
       }}
     >
       <Toolbar
@@ -64,16 +63,13 @@ const Header = () => {
             variant="h6"
             sx={{
               fontWeight: "bold",
-              fontSize: { xs: "14px", sm: "18px", paddingLeft:"16%" },
+              fontSize: { xs: "14px", sm: "18px", paddingLeft: "16%" },
               color: "#3B0089",
             }}
-         
-
           >
             Dr Ambedkar Janmbhoomi Trust
           </Typography>
         </div>
-
 
         {/* Right Side */}
         <Box
@@ -97,7 +93,7 @@ const Header = () => {
             }}
             onClick={handleMenuClick}
           />
-           <KeyboardArrowDown
+          <KeyboardArrowDown
             fontSize="small"
             sx={{ cursor: "pointer" }}
             onClick={handleMenuClick}
@@ -109,7 +105,6 @@ const Header = () => {
             sx={{ mt: "45px" }}
           >
             <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
-            {/* <MenuItem onClick={handleMenuClose}>My Account</MenuItem> */}
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
         </Box>

@@ -24,7 +24,7 @@ const Books = () => {
   const dispatch = useDispatch();
   const booksData = useSelector((state) => state.books) || {};
   const editor = useRef(null);
- const descriptionRef = useRef(""); // Store real-time content without re-renders
+ const descriptionRef = useRef(""); 
   const [title, setTitle] = useState("Books");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -48,15 +48,18 @@ const Books = () => {
       return () => clearTimeout(timer);
     }, []);
 
-  useEffect(() => {
-    if (booksData) {
-      setTitle(booksData.title || "");
-      setName(booksData.name || "");
-      setDescription(booksData.description || "");
-      descriptionRef.current = booksData.description || ""; // Initialize ref with existing data
-      setSelectedImages(booksData.images || []);
-    }
-  }, [booksData]);
+  useEffect(() => { 
+      setTitle(booksData?.title || "");
+      setName(booksData?.name || "");
+      setDescription(booksData?.description || "");
+      descriptionRef.current = booksData?.description || ""; 
+      setSelectedImages(booksData?.images || []); 
+  },  [
+    booksData?.title,
+    booksData?.name,
+    booksData?.description,
+    booksData?.images
+]);
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);

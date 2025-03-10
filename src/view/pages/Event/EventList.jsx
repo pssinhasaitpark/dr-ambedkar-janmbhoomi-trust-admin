@@ -358,7 +358,7 @@ function EventList() {
               Description:
             </Typography>
             <JoditEditor
-              ref={editorRef} // Pass the ref to the editor
+              ref={editorRef} 
               value={formData.description}
               onChange={(content) => {
                 setFormData((prev) => ({ ...prev, description: content }));

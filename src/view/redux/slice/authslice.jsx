@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { toast } from "react-toastify";
+
 
 // Logout action using Redux and clearing localStorage
 export const logoutUser = createAsyncThunk("user/logoutUser", async (_, { dispatch }) => {
@@ -7,12 +7,10 @@ export const logoutUser = createAsyncThunk("user/logoutUser", async (_, { dispat
     localStorage.removeItem("token");
     localStorage.removeItem("userRole");
 
-    dispatch(resetAuth()); // Reset Redux state after logout
-
-    // console.log("Logout: localStorage cleared");
+    dispatch(resetAuth());
 
     setTimeout(() => {
-      window.location.href = "/login"; // Redirect to login after clearing data
+      window.location.href = "/login"; 
     }, 100);
   } catch (error) {
     console.error("Logout failed:", error);

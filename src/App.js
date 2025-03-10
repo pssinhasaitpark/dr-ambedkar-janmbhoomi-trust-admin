@@ -8,7 +8,6 @@ import Newspage from "./view/pages/News/News";
 import GalleryPage from "./view/pages/Gallery/Gallery";
 import ContactPage from "./view/pages/Contact/ContactUs";
 import BookListPage from "./view/pages/Books/BookList";
-import BookDetailsPage from "./view/pages/Books/BookDetails";
 import SubscriberPage from "./view/pages/Subscribers/Subscribers";
 import TrusteePage from "./view/pages/Trustee/TrusteeRegistration";
 import DonationCollectionsPage from "./view/pages/Donation/DonationCollection";
@@ -25,6 +24,7 @@ import DashboardLayout from "./view/layout/DashboardLayout/DashboardLayout";
 import AdminProfile from "./view/pages/Profile/Profile";
 import TestimonialsPage from "./view/pages/Testimonials/Testimonials";
 import SocialMediaPage from "./view/pages/SocialMedia/SocialMedia";
+import { Navigate } from "react-router-dom";
 
 function AppLayout({ children }) {
   const location = useLocation();
@@ -76,8 +76,7 @@ function App() {
           <Route path="/newslist" element={<NewsListpage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/Contact-&-Enquiries" element={<ContactPage />} />
-          <Route path="/booklist" element={<BookListPage />} />
-          <Route path="/bookdetails" element={<BookDetailsPage />} />
+          <Route path="/booklist" element={<BookListPage />} />       
           <Route path="/subscriber" element={<SubscriberPage />} />
           <Route path="/trustee" element={<TrusteePage />} />
           <Route path="/eventlist" element={<EventListPage />} />
@@ -88,6 +87,8 @@ function App() {
             element={<DonationCollectionsPage />}
           />
         </Route>
+          {/* Redirect unknown routes to login */}
+  <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </AppLayout>
   );

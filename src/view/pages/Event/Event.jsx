@@ -46,14 +46,17 @@ const Events = () => {
   }, []);
 
   useEffect(() => {
-    if (eventsData) {
-      setTitle(eventsData.title || "");
-      setName(eventsData.name || "");
-      setDescription(eventsData.description || "");
-      descriptionRef.current = eventsData.description || "";
-      setSelectedImages(eventsData.images || []);
-    }
-  }, [eventsData]);
+    setTitle(eventsData?.title || "");
+    setName(eventsData?.name || "");
+    setDescription(eventsData?.description || "");
+    descriptionRef.current = eventsData?.description || "";
+    setSelectedImages(eventsData?.images || []);
+  }, [
+    eventsData?.title,
+    eventsData?.name,
+    eventsData?.description,
+    eventsData?.images,
+  ]);
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -79,7 +82,7 @@ const Events = () => {
 
     if (isEditable) {
       const descriptionContent =
-        descriptionRef.current || "No description provided"; // Get latest content from ref
+        descriptionRef.current || "No description provided";
 
       const eventsDataToSend = {
         title,

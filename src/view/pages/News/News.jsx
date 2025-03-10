@@ -48,14 +48,18 @@ const News = () => {
       fetchData();
     }, [dispatch]);
 
-  useEffect(() => {
-    if (newsData) {
-      setTitle(newsData.title || "News");
-      setName(newsData.name || "");
-      setDescription(newsData.description || "");
-      setSelectedImages(newsData.images || []);
-    }
-  }, [newsData]);
+    useEffect(() => {
+      setTitle(newsData?.title || "News");
+      setName(newsData?.name || "");
+      setDescription(newsData?.description || "");
+      setSelectedImages(newsData?.images || []);
+  }, [
+      newsData?.title,
+      newsData?.name,
+      newsData?.description,
+      newsData?.images
+  ]);
+  
 
   const debouncedEditorChange = useCallback(
     debounce((newContent) => {
@@ -63,6 +67,7 @@ const News = () => {
     }, 3000),
     []
   );
+  
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);

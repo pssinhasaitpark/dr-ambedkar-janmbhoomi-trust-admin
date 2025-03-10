@@ -14,7 +14,6 @@ import {
   CircularProgress,
   Alert,
   TablePagination,
-  TextField,
   Button,
   Tooltip,
   IconButton,
@@ -23,7 +22,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
+// import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { Delete } from "@mui/icons-material";
 function ContactUs() {
   const dispatch = useDispatch();
@@ -31,8 +30,8 @@ function ContactUs() {
   const [showLoader, setShowLoader] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  // const [startDate, setStartDate] = useState("");
+  // const [endDate, setEndDate] = useState("");
  const [openDialog, setOpenDialog] = useState(false);
   const [selectedContactId, setSelectedContactId] = useState(null);
   useEffect(() => {
@@ -65,17 +64,6 @@ function ContactUs() {
         {error}
       </Alert>
     );
-
-  // Filter contacts based on date range
-  const filteredContacts = contacts.filter((contact) => {
-    const contactDate = new Date(contact.createdAt);
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    return (
-      (!startDate || contactDate >= start) && (!endDate || contactDate <= end)
-    );
-  });
-
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -85,12 +73,6 @@ function ContactUs() {
     setPage(0);
   };
 
-  // Reset filter function
-  const resetFilters = () => {
-    setStartDate("");
-    setEndDate("");
-    setPage(0); // Reset to first page when resetting filters
-  };
 
     const handleOpenDialog = (id) => {
       setSelectedContactId(id);
@@ -119,50 +101,6 @@ function ContactUs() {
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold", mt: 8 }}>
         Contact Inquiries
       </Typography>
-
-      <Box display="flex" justifyContent="space-between" mb={2}>
-        <Box>
-        <Box display="flex" alignItems="center" gap={2} mb={2} flexWrap="wrap">
-  <TextField
-    type="date"
-    label="Start Date"
-    value={startDate}
-    onChange={(e) => setStartDate(e.target.value)}
-    sx={{ minWidth: 180 }}
-    InputLabelProps={{ shrink: true }}
-    InputProps={{
-      inputProps: { max: new Date().toISOString().split("T")[0] },
-    }}
-  />
-
-  <TextField
-    type="date"
-    label="End Date"
-    value={endDate}
-    onChange={(e) => setEndDate(e.target.value)}
-    sx={{ minWidth: 180 }}
-    InputLabelProps={{ shrink: true }}
-    InputProps={{
-      inputProps: { max: new Date().toISOString().split("T")[0] },
-    }}
-  />
-
-  <Button
-    variant="outlined"
-    onClick={resetFilters}
-    sx={{
-      display: "flex",
-      alignItems: "center",
-      gap: 1,
-      whiteSpace: "nowrap",
-    }}
-  >
-    <RestartAltIcon fontSize="small" />
-    Reset Filter
-  </Button>
-</Box>
-        </Box>
-      </Box>
 
       <TableContainer
         component={Paper}
@@ -196,14 +134,14 @@ function ContactUs() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredContacts.length === 0 ? (
+            {contacts.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} sx={{ textAlign: "center" }}>
                   No contact inquiries found.
                 </TableCell>
               </TableRow>
             ) : (
-              filteredContacts
+              contacts
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((contact,index) => (
                   <TableRow key={contact._id}>
@@ -237,7 +175,7 @@ function ContactUs() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={filteredContacts.length}
+            count={contacts.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

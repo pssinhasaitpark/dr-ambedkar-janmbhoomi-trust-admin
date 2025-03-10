@@ -46,14 +46,18 @@ dispatch(fetchAboutData());
 
 
   useEffect(() => {
-    if (aboutData) {
-      setTitle(aboutData.title || "About");
-      setName(aboutData.name || "");
-      setBiography(aboutData.biography || "");
-      biographyRef.current = aboutData.biography || "";
-      setSelectedImages(aboutData.images || []);
-    }
-  }, [aboutData]);
+    setTitle(aboutData?.title || "About");
+    setName(aboutData?.name || "");
+    setBiography(aboutData?.biography || "");
+    biographyRef.current = aboutData?.biography || "";
+    setSelectedImages(aboutData?.images || []);
+}, [
+    aboutData?.title,
+    aboutData?.name,
+    aboutData?.biography,
+    aboutData?.images
+]);
+
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -109,16 +113,6 @@ dispatch(fetchAboutData());
     }
     return "";
   };
-  // const handleImageClick = (image) => {
-  //   setSelectedImage(image);
-  //   setOpenModal(true);
-  // };
-
-  // const handleCloseModal = () => {
-  //   setOpenModal(false);
-  //   setSelectedImage(null);
-  // };
-
 
   if (status === "loading" || showLoader)
     return (
@@ -236,8 +230,7 @@ dispatch(fetchAboutData());
                 {isEditable ? "Save" : "Edit"}
               </Button>
             </Stack>
-          </form>
-        
+          </form>    
       </Paper>
     </Box>
   );
