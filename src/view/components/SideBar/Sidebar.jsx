@@ -100,7 +100,7 @@ const Sidebar = () => {
     });
 
     if (currentPath === "/") {
-      setActiveParent(0); // Highlight Dashboard
+      setActiveParent(0);
     } else {
       setActiveParent(parentIndex);
       setActiveChild(childIndex);

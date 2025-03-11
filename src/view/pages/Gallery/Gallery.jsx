@@ -21,11 +21,12 @@ import {
 const Gallery = () => {
   const dispatch = useDispatch();
   const galleryData = useSelector((state) => state.gallery) || {};
-
+  const status = useSelector((state) => state.gallery) || {};
+  const [showLoader, setShowLoader] = useState(true);
   const infoEditorRef = useRef(""); 
   const descriptionEditorRef = useRef(""); 
 
-  const [loading, setLoading] = useState(true); 
+  // const [loading, setLoading] = useState(true); 
   const [gallery_info, setGalleryInfo] = useState("Gallery");
   const [gallery_description, setGalleryDescription] = useState("");
   const [media, setMedia] = useState({
@@ -55,13 +56,16 @@ const Gallery = () => {
 
   // Fetch gallery data on component mount
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      await dispatch(fetchGalleryData());
-      setLoading(false);
-    };
-    fetchData();
+     dispatch(fetchGalleryData());
   }, [dispatch]);
+
+   useEffect(() => {
+      const timer = setTimeout(() => {
+        setShowLoader(false);
+      }, 1000);
+  
+      return () => clearTimeout(timer);
+    }, []);
 
   // Update local state when gallery data changes
   useEffect(() => {
@@ -151,7 +155,7 @@ const Gallery = () => {
   const loadMoreImages = (category) => {
     setVisibleImages((prev) => ({
       ...prev,
-      [category]: media[category].length, // Show all images for the category
+      [category]: media[category].length,
     }));
     setShowAllImages((prev) => ({
       ...prev,
@@ -163,7 +167,7 @@ const Gallery = () => {
   const loadLessImages = (category) => {
     setVisibleImages((prev) => ({
       ...prev,
-      [category]: 3, // Show only the first 3 images
+      [category]: 3, 
     }));
     setShowAllImages((prev) => ({
       ...prev,
@@ -171,24 +175,33 @@ const Gallery = () => {
     }));
   };
 
+    if (status === "loading" || showLoader)
+      return (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="50vh"
+        >
+          <CircularProgress/>
+        </Box>
+      );
+  
+    if (status === "error")
+      return (
+        <Typography variant="h6" color="error">
+          Error: {status}
+        </Typography>
+      );
+  
+
   return (
     <Box>
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
         Gallery
       </Typography>
       <Paper sx={{ p: 0, borderRadius: 0, boxShadow: 0 }}>
-        {loading ? (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "400px",
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        ) : (
+      
           <form onSubmit={handleEditSave}>
             <Typography variant="h6" sx={{ mt: 2 }}>
               Gallery Info
@@ -321,7 +334,7 @@ const Gallery = () => {
               </Button>
             </Stack>
           </form>
-        )}
+       
       </Paper>
       <Modal
         open={openModal}
