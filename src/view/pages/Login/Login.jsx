@@ -30,6 +30,8 @@ function Login() {
   const handleSubmit = async (values) => {
     loginMutation.mutate(values, {
       onSuccess: (response) => {
+        // console.log("response:",response);
+        
         const { encryptedToken, user_role } = response.data;
   
         if (user_role === "user" || user_role === "trustees" ) {
@@ -46,7 +48,7 @@ function Login() {
   
         setTimeout(() => {
           if (user_role === "admin" || user_role === "super-admin") {
-            navigate("/"); // Admin/Super Admin Dashboard
+            navigate("/");
           }
         }, 1500);
       },
@@ -64,7 +66,7 @@ function Login() {
       display="flex"
       justifyContent="center"
       alignItems="center"
-      height="100vh"
+      height="100%"
       sx={{ backgroundColor: "background.paper" }}
     >
       <ToastContainer />

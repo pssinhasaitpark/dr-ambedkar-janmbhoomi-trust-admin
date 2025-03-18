@@ -3,8 +3,7 @@ import api from "../axios/axios";
 
 const initialState = {
   role: "",
-  first_name: "",
-  last_name: "",
+  full_name:"",
   user_name: "",
   user_role:"",
   email: "",
@@ -43,8 +42,7 @@ const profileSlice = createSlice({
       .addCase(fetchProfileData.fulfilled, (state, action) => {
         state.loading = false;
         state.role = action.payload.user_role;
-        state.first_name = action.payload.first_name;
-        state.last_name = action.payload.last_name;
+        state.full_name = action.payload.full_name;
         state.user_name = action.payload.user_name;
         state.user_role = action.payload.user_role;
         state.email = action.payload.email;

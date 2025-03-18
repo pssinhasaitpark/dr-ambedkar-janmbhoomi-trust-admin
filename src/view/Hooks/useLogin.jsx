@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "../redux/axios/axios";  // Import your Axios instance
+import api from "../redux/axios/axios"; 
 
 const login = async (userData) => {
-  const response = await api.post("/user/login", userData);  // Use the api instance
+  const response = await api.post("/user/login", userData);  
   // console.log("Response: ", response);
   
   return response.data;

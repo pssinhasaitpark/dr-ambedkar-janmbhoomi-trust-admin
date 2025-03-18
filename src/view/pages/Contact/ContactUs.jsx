@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchContactData,deleteContactData } from "../../redux/slice/contactSlice";
+import {
+  fetchContactData,
+  deleteContactData,
+} from "../../redux/slice/contactSlice";
 import {
   Table,
   TableBody,
@@ -32,7 +35,7 @@ function ContactUs() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   // const [startDate, setStartDate] = useState("");
   // const [endDate, setEndDate] = useState("");
- const [openDialog, setOpenDialog] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
   const [selectedContactId, setSelectedContactId] = useState(null);
   useEffect(() => {
     dispatch(fetchContactData());
@@ -73,28 +76,27 @@ function ContactUs() {
     setPage(0);
   };
 
+  const handleOpenDialog = (id) => {
+    setSelectedContactId(id);
+    setOpenDialog(true);
+  };
 
-    const handleOpenDialog = (id) => {
-      setSelectedContactId(id);
-      setOpenDialog(true);
-    };
-  
-    const handleCloseDialog = () => {
-      setOpenDialog(false);
-      setSelectedContactId(null);
-    };
-  
-    const handleDelete = async () => {
-      if (selectedContactId) {
-        try {
-          await dispatch(deleteContactData(selectedContactId)).unwrap();
-        } catch (error) {
-          console.error("Error deleting testimonial:", error);
-          alert("Failed to delete the testimonial. Please try again.");
-        }
-        handleCloseDialog();
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedContactId(null);
+  };
+
+  const handleDelete = async () => {
+    if (selectedContactId) {
+      try {
+        await dispatch(deleteContactData(selectedContactId)).unwrap();
+      } catch (error) {
+        console.error("Error deleting testimonial:", error);
+        alert("Failed to delete the testimonial. Please try again.");
       }
-    };
+      handleCloseDialog();
+    }
+  };
 
   return (
     <>
@@ -109,7 +111,12 @@ function ContactUs() {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: "#3387e8" }}>
-                 <TableCell align="center" sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>No.</TableCell>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}
+              >
+                No.
+              </TableCell>
               <TableCell>
                 <b>First Name</b>
               </TableCell>
@@ -128,8 +135,8 @@ function ContactUs() {
               <TableCell>
                 <b>Date</b>
               </TableCell>
-               <TableCell>
-               <b>Action</b>
+              <TableCell>
+                <b>Action</b>
               </TableCell>
             </TableRow>
           </TableHead>
@@ -143,9 +150,11 @@ function ContactUs() {
             ) : (
               contacts
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((contact,index) => (
+                .map((contact, index) => (
                   <TableRow key={contact._id}>
-                                      <TableCell align="center">{page * rowsPerPage + index + 1}</TableCell>
+                    <TableCell align="center">
+                      {page * rowsPerPage + index + 1}
+                    </TableCell>
                     <TableCell>{contact.first_name}</TableCell>
                     <TableCell>{contact.last_name}</TableCell>
                     <TableCell>{contact.email}</TableCell>
@@ -155,16 +164,16 @@ function ContactUs() {
                       {new Date(contact.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                        <Tooltip title="Delete">
-                          <IconButton
-                            color="error"
-                            onClick={() => handleOpenDialog(contact._id)}
-                            size="small"
-                          >
-                            <Delete />
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>             
+                      <Tooltip title="Delete">
+                        <IconButton
+                          color="error"
+                          onClick={() => handleOpenDialog(contact._id)}
+                          size="small"
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
                   </TableRow>
                 ))
             )}
@@ -184,8 +193,8 @@ function ContactUs() {
         </Box>
       </TableContainer>
 
-            {/* Confirmation Dialog */}
-            <Dialog open={openDialog} onClose={handleCloseDialog}>
+      {/* Confirmation Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Confirm Deletion</DialogTitle>
         <DialogContent>
           Are you sure you want to delete this Enquiries?

@@ -137,7 +137,7 @@ function DonationCollections() {
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((donation, index) => (
                     <TableRow key={donation._id}>
-                      <TableCell align="center">{index + 1}</TableCell>
+                      <TableCell align="center">{page * rowsPerPage + index + 1}</TableCell>
                       <TableCell>{donation.full_name}</TableCell>
                       <TableCell>{donation.email}</TableCell>
                       <TableCell>{donation.phone}</TableCell>

@@ -15,17 +15,18 @@ import { Email, Person, Phone } from "@mui/icons-material";
 
 const Profile = () => {
   const dispatch = useDispatch();
-  const {first_name, last_name, user_name,user_role, email, mobile, loading, error } =
+  const { full_name, user_name, user_role, email, mobile, loading, error } =
     useSelector((state) => state.profile);
 
   useEffect(() => {
     dispatch(fetchProfileData());
   }, [dispatch]);
 
-  // Generate initials for avatar
-  const getInitials = (first, last) => {
-    if (first && last) return `${first[0]}`.toUpperCase();
-    return "A P";
+  // Generate initials from full name
+  const getInitials = (name) => {
+    if (!name) return "A";
+    const nameParts = name.split(" ");
+    return nameParts.map((part) => part[0].toUpperCase()).join("").slice(0, 2);
   };
 
   if (loading) {
@@ -78,13 +79,27 @@ const Profile = () => {
             color: "#fff",
           }}
         >
-          {getInitials(first_name, last_name)}
+          {getInitials(full_name)}
         </Avatar>
 
         <CardContent>
-          {/* Profile Details */}
           <Grid container spacing={2}>
             {/* Full Name */}
+            <Grid item xs={12}>
+              <Paper
+                sx={{
+                  padding: 2,
+                  backgroundColor: "#f0f0f0",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  boxShadow: 1,
+                }}
+              >
+                <Person fontSize="small" color="primary" />
+                <Typography variant="body1">{full_name || "Admin"}</Typography>
+              </Paper>
+            </Grid>
 
             {/* Username */}
             <Grid item xs={12}>
@@ -103,6 +118,7 @@ const Profile = () => {
               </Paper>
             </Grid>
 
+            {/* User Role */}
             <Grid item xs={12}>
               <Paper
                 sx={{
@@ -115,9 +131,7 @@ const Profile = () => {
                 }}
               >
                 <Person fontSize="small" color="primary" />
-                <Typography variant="body1">
-                  {user_role || "admin"}
-                </Typography>
+                <Typography variant="body1">{user_role || "admin"}</Typography>
               </Paper>
             </Grid>
 

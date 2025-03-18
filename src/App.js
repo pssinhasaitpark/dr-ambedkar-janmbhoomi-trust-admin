@@ -12,11 +12,10 @@ import SubscriberPage from "./view/pages/Subscribers/Subscribers";
 import TrusteePage from "./view/pages/Trustee/TrusteeRegistration";
 import DonationCollectionsPage from "./view/pages/Donation/DonationCollection";
 import EventListPage from "./view/pages/Event/EventList";
-import NewsListpage from "./view/pages/News/NewsList"
+import NewsListpage from "./view/pages/News/NewsList";
 import Login from "./view/pages/Login/Login";
 import Sidebar from "./view/components/SideBar/Sidebar";
 import Header from "./view/components/Header/AdminHeader";
-import { Box } from "@mui/material";
 import Home from "./view/pages/Home/Home";
 import Dashboard from "./view/pages/Dashboard/Dashboard";
 import PrivateRoute from "./view/routes/PrivateRoute";
@@ -25,7 +24,7 @@ import AdminProfile from "./view/pages/Profile/Profile";
 import TestimonialsPage from "./view/pages/Testimonials/Testimonials";
 import SocialMediaPage from "./view/pages/SocialMedia/SocialMedia";
 import { Navigate } from "react-router-dom";
-
+import { Box } from "@mui/material";
 function AppLayout({ children }) {
   const location = useLocation();
   const hideSidebarAndHeader = ["/login", "/signup"].includes(
@@ -76,7 +75,7 @@ function App() {
           <Route path="/newslist" element={<NewsListpage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/Contact-&-Enquiries" element={<ContactPage />} />
-          <Route path="/booklist" element={<BookListPage />} />       
+          <Route path="/booklist" element={<BookListPage />} />
           <Route path="/subscriber" element={<SubscriberPage />} />
           <Route path="/trustee" element={<TrusteePage />} />
           <Route path="/eventlist" element={<EventListPage />} />
@@ -87,8 +86,8 @@ function App() {
             element={<DonationCollectionsPage />}
           />
         </Route>
-          {/* Redirect unknown routes to login */}
-  <Route path="*" element={<Navigate to="/login" />} />
+        {/* Redirect unknown routes to login */}
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </AppLayout>
   );

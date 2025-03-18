@@ -31,6 +31,8 @@ import {
   deleteTrustee,
   clearMessages,
 } from "../../redux/slice/trusteeSlice";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 
 const TrusteeManagement = () => {
   const dispatch = useDispatch();
@@ -39,8 +41,7 @@ const TrusteeManagement = () => {
   );
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  // const [designationFilter, setDesignationFilter] = useState("");
-  const [searchQuery, setSearchQuery] = useState(""); // New state for search query
+  const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
@@ -120,6 +121,21 @@ const TrusteeManagement = () => {
     setOpen(true);
   };
 
+
+  const handleCloseDialog = () => {
+    setOpen(false); // Close the dialog
+  };
+  
+  const initialState = {
+    user_role: "",
+    user_name: "",
+    full_name: "",
+    email: "",
+    mobile: "",
+    password: "",
+    designations: "",
+    image: "",
+  };
   const handleClose = () => {
     setOpen(false);
     setEditMode(false);
@@ -136,62 +152,85 @@ const TrusteeManagement = () => {
     });
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e, setFieldValue) => {
     const { name, value, files } = e.target;
 
     if (name === "image") {
       const file = files[0];
-      setFormData((prev) => ({ ...prev, image: file }));
+      setFieldValue(name, file);
 
       if (file) {
         const reader = new FileReader();
         reader.onloadend = () => {
-          setImagePreview(reader.result);
+          setImagePreview(reader.result); 
         };
         reader.readAsDataURL(file);
       }
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFieldValue(name, value);
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (values) => {
     const data = new FormData();
 
-    Object.keys(formData).forEach((key) => {
+    Object.keys(values).forEach((key) => {
       if (["_id", "createdAt", "updatedAt", "__v"].includes(key)) {
         // Skip these fields
       } else if (
         key === "image" &&
-        typeof formData[key] === "string" &&
-        formData[key].startsWith("http")
+        typeof values[key] === "string" &&
+        values[key].startsWith("http")
       ) {
         // Skip image field if it's a URL
       } else {
-        data.append(key, formData[key]);
+        data.append(key, values[key]);
       }
     });
+  const action = editMode ? updateTrustee : registerTrustee;
 
-    const action = editMode ? updateTrustee : registerTrustee;
-    dispatch(action(editMode ? { _id: formData._id, updatedData: data } : data))
-      .then(() => {
-        setSnackbarMessage(
-          editMode
-            ? "Trustee updated successfully!"
-            : "Trustee added successfully!"
-        );
+  dispatch(action(editMode ? { _id: values._id, updatedData: data } : data))
+    .then((res) => {
+      console.log("API Response:", res);
+  
+      if (res.meta.requestStatus === "fulfilled") {
+        setSnackbarMessage(editMode ? "Trustee updated successfully!" : "Trustee added successfully!");
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
-        // Do not close the form here
-      })
-      .catch((err) => {
-        setSnackbarMessage(err.message || "An error occurred!");
+  
+        if (res.payload.image) {
+          setFormData((prev) => ({ ...prev, image: res.payload.image }));
+          setImagePreview(res.payload.image);
+        }
+  
+
+        dispatch(fetchTrustees());    
+        handleCloseDialog();   
+        setFormData(initialState); 
+        setEditMode(false);
+      } else {
+        const errorMessage = typeof res.payload === "string" ? res.payload : "An error occurred!";
+        setSnackbarMessage(errorMessage);
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
-        // Do not close the form here
-      });
-  };
-
+  
+        // Reset image if an error occurs
+        setFormData((prev) => ({ ...prev, image: "" }));
+        setImagePreview("");
+      }
+    })
+    .catch((err) => {
+      console.error("Request failed:", err);
+      setSnackbarMessage(err?.message || "An unexpected error occurred!");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+  
+      // Reset image on server error
+      setFormData((prev) => ({ ...prev, image: "" }));
+      setImagePreview("");
+    });
+  
+  }  
   const handleDelete = (_id) => {
     if (window.confirm("Are you sure you want to delete this trustee?")) {
       dispatch(deleteTrustee(_id));
@@ -199,16 +238,41 @@ const TrusteeManagement = () => {
   };
 
   const filteredTrustees = trustees.filter((trustee) => {
-    // const matchesDesignation = designationFilter
-    //   ? trustee.designations === designationFilter
-    //   : true;
-
     const matchesSearchQuery = trustee.full_name
       .toLowerCase()
-      .includes(searchQuery.toLowerCase()); // Corrected line
-
-    // return matchesDesignation && matchesSearchQuery;
+      .includes(searchQuery.toLowerCase());
     return matchesSearchQuery;
+  });
+
+  // Validation Schema
+  const validationSchema = Yup.object().shape({
+    user_name: Yup.string().required("User  Name is required"),
+    full_name: Yup.string().required("Full Name is required"),
+    email: Yup.string()
+      .email("Invalid email format")
+      .required("Email is required"),
+    mobile: Yup.string()
+      .matches(/^[0-9]+$/, "Mobile must be a number")
+      .min(10, "Mobile must be at least 10 digits")
+      .max(12, "Mobile must be at most 12 digits")
+      .required("Mobile is required"),
+    password: Yup.string().required("Password is required"),
+    designations: Yup.string().required("Designation is required"),
+    image: Yup.mixed()
+      .test("fileRequired", "Image is required", function (value) {
+        if (!this.parent.id && !value) {
+          return false;
+        }
+        return true;
+      })
+      .test("fileSize", "File too large", (value) => {
+        if (!value || typeof value === "string") return true;
+        return value.size <= 5000000; // 2MB limit
+      })
+      .test("fileType", "Unsupported File Format", (value) => {
+        if (!value || typeof value === "string") return true;
+        return ["image/jpeg", "image/png", "image/gif"].includes(value.type);
+      }),
   });
 
   return (
@@ -221,7 +285,7 @@ const TrusteeManagement = () => {
           mb={3}
         >
           <Typography variant="h5" sx={{ mb: 0, fontWeight: "bold", mt: 0 }}>
-            Trustee Managment
+            Trustee Management
           </Typography>
           <Button
             variant="contained"
@@ -233,18 +297,6 @@ const TrusteeManagement = () => {
         </Box>
 
         <Box display="flex" justifyContent="space-between" mb={1}>
-          {/* <TextField
-          select
-          label="Filter by Designation"
-          value={designationFilter}
-          onChange={(e) => setDesignationFilter(e.target.value)}
-          style={{ width: "200px", marginRight: "20px" }}
-        >
-          <MenuItem value="">All</MenuItem>
-          <MenuItem value="Management">Management</MenuItem>
-          <MenuItem value="Developer">Developer</MenuItem>
-        </TextField> */}
-
           {/* Search Bar */}
           <TextField
             label="Search by Full Name"
@@ -297,16 +349,16 @@ const TrusteeManagement = () => {
                     <TableCell>{trustee.user_role}</TableCell>
                     <TableCell>
                       {trustee.image && (
-                     <SlideshowLightbox>
-                        <img
-                          src={trustee.image}
-                          alt="Trustee"
-                          style={{
-                            width: "50px",
-                            height: "50px",
-                            borderRadius: "50%",
-                          }}
-                        />
+                        <SlideshowLightbox>
+                          <img
+                            src={trustee.image}
+                            alt="Trustee"
+                            style={{
+                              width: "50px",
+                              height: "50px",
+                              borderRadius: "50%",
+                            }}
+                          />
                         </SlideshowLightbox>
                       )}
                     </TableCell>
@@ -346,7 +398,7 @@ const TrusteeManagement = () => {
           open={snackbarOpen}
           autoHideDuration={null}
           onClose={() => setSnackbarOpen(false)}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }} // Positioning the Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
           <Alert
             onClose={() => setSnackbarOpen(false)}
@@ -367,103 +419,148 @@ const TrusteeManagement = () => {
             {editMode ? "Edit Trustee" : "Add New Trustee"}
           </DialogTitle>
           <DialogContent>
-            <TextField
-              margin="dense"
-              label="User    Name"
-              name="user_name"
-              fullWidth
-              value={formData.user_name}
-              onChange={handleChange}
-            />
-            <TextField
-              margin="dense"
-              label="Full Name"
-              name="full_name"
-              fullWidth
-              value={formData.full_name}
-              onChange={handleChange}
-            />
-            <TextField
-              margin="dense"
-              label="Email"
-              name="email"
-              fullWidth
-              value={formData.email}
-              onChange={handleChange}
-            />
-            <TextField
-              margin="dense"
-              label="Mobile"
-              name="mobile"
-              fullWidth
-              value={formData.mobile}
-              onChange={handleChange}
-            />
-            <TextField
-              margin="dense"
-              label="Password"
-              type="password"
-              name="password"
-              fullWidth
-              value={formData.password}
-              onChange={handleChange}
-            />
-            <TextField
-              margin="dense"
-              label="Designation"
-              name="designations"
-              fullWidth
-              select
-              value={formData.designations}
-              onChange={handleChange}
+            <Formik
+              initialValues={formData}
+              validationSchema={validationSchema}
+              onSubmit={handleSubmit}
             >
-              <MenuItem value="Management">Management</MenuItem>
-              <MenuItem value="Developer">Developer</MenuItem>
-            </TextField>
-            {/* User Role Dropdown */}
-            <TextField
-              margin="dense"
-              label="User    Role"
-              name="user_role"
-              fullWidth
-              select
-              value={formData.user_role}
-              onChange={handleChange}
-            >
-              <MenuItem value="trustees">Trustee</MenuItem>
-            </TextField>
+              {({ setFieldValue }) => (
+                <Form>
+                  <Field
+                    as={TextField}
+                    margin="dense"
+                    label="User  Name"
+                    name="user_name"
+                    fullWidth
+                  />
+                  <ErrorMessage
+                    name="user_name"
+                    component="div"
+                    style={{ color: "red" }}
+                  />
 
-            {/* Image Upload & Preview */}
-            <input
-              type="file"
-              name="image"
-              accept="image/*"
-              onChange={handleChange}
-              style={{ marginTop: "10px" }}
-            />
-            {imagePreview && (
-              <SlideshowLightbox>
-              <img
-                src={imagePreview}
-                alt="Preview"
-                style={{
-                  marginTop: "10px",
-                  width: "100px",
-                  height: "100px",
-                  borderRadius: "10px",
-                }}
-              />
-              </SlideshowLightbox>
-            )}
+                  <Field
+                    as={TextField}
+                    margin="dense"
+                    label="Full Name"
+                    name="full_name"
+                    fullWidth
+                  />
+                  <ErrorMessage
+                    name="full_name"
+                    component="div"
+                    style={{ color: "red" }}
+                  />
+
+                  <Field
+                    as={TextField}
+                    margin="dense"
+                    label="Email"
+                    name="email"
+                    fullWidth
+                  />
+                  <ErrorMessage
+                    name="email"
+                    component="div"
+                    style={{ color: "red" }}
+                  />
+
+                  <Field
+                    as={TextField}
+                    margin="dense"
+                    label="Mobile"
+                    name="mobile"
+                    fullWidth
+                  />
+                  <ErrorMessage
+                    name="mobile"
+                    component="div"
+                    style={{ color: "red" }}
+                  />
+
+                  <Field
+                    as={TextField}
+                    margin="dense"
+                    label="Password"
+                    type="password"
+                    name="password"
+                    fullWidth
+                  />
+                  <ErrorMessage
+                    name="password"
+                    component="div"
+                    style={{ color: "red" }}
+                  />
+
+                  <Field
+                    as={TextField}
+                    margin="dense"
+                    label="Designation"
+                    name="designations"
+                    fullWidth
+                    select
+                  >
+                    <MenuItem value="Management">Management</MenuItem>
+                    <MenuItem value="Developer">Developer</MenuItem>
+                  </Field>
+                  <ErrorMessage
+                    name="designations"
+                    component="div"
+                    style={{ color: "red" }}
+                  />
+
+                  {/* User Role Dropdown */}
+                  <Field
+                    as={TextField}
+                    margin="dense"
+                    label="User  Role"
+                    name="user_role"
+                    fullWidth
+                    select
+                  >
+                    <MenuItem value="trustees">Trustee</MenuItem>
+                  </Field>
+
+                  {/* Image Upload & Preview */}
+                  <input
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    onChange={(e) => handleChange(e, setFieldValue)}
+                    style={{ marginTop: "10px" }}
+                  />
+                  <ErrorMessage
+                    name="image"
+                    component="div"
+                    style={{ color: "red" }}
+                  />
+                  {imagePreview && (
+                    <SlideshowLightbox>
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        style={{
+                          marginTop: "10px",
+                          width: "100px",
+                          height: "100px",
+                          borderRadius: "10px",
+                        }}
+                      />
+                    </SlideshowLightbox>
+                  )}
+
+                  <DialogActions>
+                    <Button onClick={handleClose} color="secondary">
+                      Cancel
+                    </Button>
+                    <Button type="submit" variant="contained" color="primary">
+                      {editMode ? "Update" : "Save"}
+                    </Button>
+                  </DialogActions>
+                </Form>
+              )}
+            </Formik>
           </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose} color="secondary">
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit} variant="contained" color="primary">
-              {editMode ? "Update" : "Save"}
-            </Button>
-          </DialogActions>
         </Dialog>
       </div>
     </>
