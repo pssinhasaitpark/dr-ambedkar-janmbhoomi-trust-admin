@@ -3,28 +3,30 @@ import api from "../axios/axios";
 
 const initialState = {
   role: "",
-  full_name:"",
+  full_name: "",
   user_name: "",
-  user_role:"",
+  user_role: "",
   email: "",
   mobile: "",
   loading: false,
   error: null,
 };
 
-
-
 export const fetchProfileData = createAsyncThunk(
   "profile/fetchProfileData",
   async (_, { rejectWithValue }) => {
     try {
-      // console.log("Fetching profile data...");
       const response = await api.get("/user/me");
-      // console.log("Profile API Response:", response);
+      
+      // Ensure response has expected structure
+      if (!response.data || !response.data.data) {
+        throw new Error("Invalid API response structure");
+      }
+
       return response.data.data;
     } catch (error) {
-      console.error("Profile API Error:", error.response?.data || error);
-      return rejectWithValue(error.response?.data || "Unknown error");
+      console.error("Profile API Error:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch profile data");
     }
   }
 );
@@ -41,16 +43,18 @@ const profileSlice = createSlice({
       })
       .addCase(fetchProfileData.fulfilled, (state, action) => {
         state.loading = false;
-        state.role = action.payload.user_role;
-        state.full_name = action.payload.full_name;
-        state.user_name = action.payload.user_name;
-        state.user_role = action.payload.user_role;
-        state.email = action.payload.email;
-        state.mobile = action.payload.mobile;
+        const { full_name, user_name, user_role, email, mobile } = action.payload || {};
+
+        state.role = user_role || "";
+        state.full_name = full_name || "";
+        state.user_name = user_name || "";
+        state.user_role = user_role || "";
+        state.email = email || "";
+        state.mobile = mobile || "";
       })
       .addCase(fetchProfileData.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload || "Something went wrong";
       });
   },
 });

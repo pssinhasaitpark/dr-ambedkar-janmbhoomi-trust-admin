@@ -1,20 +1,14 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
+// Logout action to clear token and user data
+export const logoutUser = createAsyncThunk("auth/logoutUser", async (_, { dispatch }) => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("userRole");
+  dispatch(resetAuth());
 
-// Logout action using Redux and clearing localStorage
-export const logoutUser = createAsyncThunk("user/logoutUser", async (_, { dispatch }) => {
-  try {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userRole");
-
-    dispatch(resetAuth());
-
-    setTimeout(() => {
-      window.location.href = "/login"; 
-    }, 100);
-  } catch (error) {
-    console.error("Logout failed:", error);
-  }
+  setTimeout(() => {
+    window.location.href = "/login"; 
+  }, 100);
 });
 
 const authSlice = createSlice({
@@ -37,12 +31,11 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(logoutUser.fulfilled, (state) => {
-        state.user = null;
-        state.token = null;
-        state.userRole = null;
-      });
+    builder.addCase(logoutUser.fulfilled, (state) => {
+      state.user = null;
+      state.token = null;
+      state.userRole = null;
+    });
   },
 });
 

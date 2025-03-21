@@ -173,15 +173,26 @@ function EventList() {
   };
 
   const handleRemoveImage = (index) => {
-    const imageToRemove = formData.images[index];
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index),
-    }));
-    if (typeof imageToRemove === "string") {
-      setRemoveImages((prev) => [...prev, imageToRemove]);
-    }
+    setFormData((prev) => {
+      const updatedImages = prev.images.filter((_, i) => i !== index); // Remove specific index
+  
+      return {
+        ...prev,
+        images: updatedImages,
+      };
+    });
+  
+    setRemoveImages((prevRemoveImages) => {
+      const imageToRemove = formData.images[index]; // Get the image before the state updates
+  
+      if (typeof imageToRemove === "string") {
+        return [...prevRemoveImages, imageToRemove];
+      }
+      return prevRemoveImages;
+    });
   };
+  
+  
 
   return (
      <Container maxWidth="xlg" sx={{ mt: 8, p: 0 }} disableGutters>

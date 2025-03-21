@@ -4,14 +4,7 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  TextField,
-  Button,
-  // Checkbox,
-  // FormControlLabel,
-  Typography,
-  Box,
-} from "@mui/material";
+import { TextField, Button, Typography, Box } from "@mui/material";
 import { useLogin } from "../../Hooks/useLogin";
 import logo from "../../../assets/Images/logo.png";
 
@@ -21,78 +14,63 @@ function Login() {
 
   const validationSchema = Yup.object({
     email: Yup.string().email("Invalid email").required("Email is required"),
-    password: Yup.string()
-      .min(8, "Password must be at least 8 characters")
-      .required("Password is required"),
+    password: Yup.string().min(8, "Password must be at least 8 characters").required("Password is required"),
   });
 
   const initialValues = { email: "", password: "" };
+
   const handleSubmit = async (values) => {
     loginMutation.mutate(values, {
       onSuccess: (response) => {
-        // console.log("response:",response);
+        const { encryptedToken, user_role, expiresIn, user } = response.data;
+        console.log("response.data===",response.data);
         
-        const { encryptedToken, user_role } = response.data;
-  
-        if (user_role === "user" || user_role === "trustees" ) {
-          toast.error("Access denied! Only admins can log in.", {
-            position: "top-right",
-          });
+
+        if (user_role === "user" || user_role === "trustees") {
+          toast.error("Access denied! Only admins can log in.", { position: "top-right" });
           return;
         }
-  
-        localStorage.setItem("token", encryptedToken);
-        localStorage.setItem("userRole", user_role);
-  
-        toast.success("Login Successful!", { position: "top-right" });
-  
-        setTimeout(() => {
-          if (user_role === "admin" || user_role === "super-admin") {
-            navigate("/");
+
+        try {
+          if (!encryptedToken || typeof encryptedToken !== "string") {
+            throw new Error("Invalid token received from server");
           }
-        }, 1500);
+
+          const expiryTimestamp = Date.now() + expiresIn * 1000;
+
+          // ✅ Store user data and token in localStorage
+          localStorage.setItem("token", encryptedToken);
+          localStorage.setItem("userRole", user_role);
+          localStorage.setItem("tokenExpiry", expiryTimestamp.toString()); // Store as string
+          localStorage.setItem("user", JSON.stringify(user)); // Store user details
+
+          toast.success("Login Successful!", { position: "top-right" });
+
+          setTimeout(() => {
+            navigate("/");
+          }, 1500);
+        } catch (error) {
+          console.error("Error storing token:", error);
+          toast.error("Invalid token received. Please try again.", { position: "top-right" });
+        }
       },
       onError: () => {
-        toast.error("Invalid credentials! Please try again.", {
-          position: "top-right",
-        });
+        toast.error("Invalid credentials! Please try again.", { position: "top-right" });
       },
     });
   };
-  
 
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      height="100%"
-      sx={{ backgroundColor: "background.paper" }}
-    >
+    <Box display="flex" justifyContent="center" alignItems="center" height="100%">
       <ToastContainer />
-      <Box
-        component="div"
-        boxShadow={3}
-        p={4}
-        width="100%"
-        maxWidth="400px"
-        sx={{ borderRadius: 2 }}
-      >
+      <Box boxShadow={3} p={4} width="100%" maxWidth="400px" sx={{ borderRadius: 2 }}>
         <Box mb={3} textAlign="center">
-          <img
-            src={logo}
-            alt="Nest Mart Logo"
-            style={{ width: "150px", height: "auto" }}
-          />
+          <img src={logo} alt="Nest Mart Logo" style={{ width: "150px", height: "auto" }} />
         </Box>
         <Typography variant="h5" align="center" gutterBottom>
           Admin Login
         </Typography>
-        <Formik
-          initialValues={initialValues}
-          validationSchema={validationSchema}
-          onSubmit={handleSubmit}
-        >
+        <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
           {({ touched, errors }) => (
             <Form>
               <Box mb={2}>
@@ -121,29 +99,11 @@ function Login() {
                 />
               </Box>
 
-              {/* <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={2}
-              >
-                <FormControlLabel
-                  control={<Field as={Checkbox} name="remember" />}
-                  label="Remember Me"
-                />
-                <Link href="#" variant="body2">
-                  Forgot password?
-                </Link>
-              </Box> */}
-
               <Button
                 type="submit"
                 variant="contained"
                 fullWidth
-                sx={{
-                  backgroundColor: "#3bb77e",
-                  "&:hover": { backgroundColor: "#34a768" },
-                }}
+                sx={{ backgroundColor: "#3bb77e", "&:hover": { backgroundColor: "#34a768" } }}
                 disabled={loginMutation.isLoading}
               >
                 {loginMutation.isLoading ? "Logging in..." : "Login"}

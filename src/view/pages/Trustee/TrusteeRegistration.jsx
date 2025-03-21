@@ -121,11 +121,10 @@ const TrusteeManagement = () => {
     setOpen(true);
   };
 
-
   const handleCloseDialog = () => {
     setOpen(false); // Close the dialog
   };
-  
+
   const initialState = {
     user_role: "",
     user_name: "",
@@ -162,7 +161,7 @@ const TrusteeManagement = () => {
       if (file) {
         const reader = new FileReader();
         reader.onloadend = () => {
-          setImagePreview(reader.result); 
+          setImagePreview(reader.result);
         };
         reader.readAsDataURL(file);
       }
@@ -187,50 +186,55 @@ const TrusteeManagement = () => {
         data.append(key, values[key]);
       }
     });
-  const action = editMode ? updateTrustee : registerTrustee;
+    const action = editMode ? updateTrustee : registerTrustee;
 
-  dispatch(action(editMode ? { _id: values._id, updatedData: data } : data))
-    .then((res) => {
-      console.log("API Response:", res);
-  
-      if (res.meta.requestStatus === "fulfilled") {
-        setSnackbarMessage(editMode ? "Trustee updated successfully!" : "Trustee added successfully!");
-        setSnackbarSeverity("success");
-        setSnackbarOpen(true);
-  
-        if (res.payload.image) {
-          setFormData((prev) => ({ ...prev, image: res.payload.image }));
-          setImagePreview(res.payload.image);
+    dispatch(action(editMode ? { _id: values._id, updatedData: data } : data))
+      .then((res) => {
+        console.log("API Response:", res);
+
+        if (res.meta.requestStatus === "fulfilled") {
+          setSnackbarMessage(
+            editMode
+              ? "Trustee updated successfully!"
+              : "Trustee added successfully!"
+          );
+          setSnackbarSeverity("success");
+          setSnackbarOpen(true);
+
+          if (res.payload.image) {
+            setFormData((prev) => ({ ...prev, image: res.payload.image }));
+            setImagePreview(res.payload.image);
+          }
+
+          dispatch(fetchTrustees());
+          handleCloseDialog();
+          setFormData(initialState);
+          setEditMode(false);
+        } else {
+          const errorMessage =
+            typeof res.payload === "string"
+              ? res.payload
+              : "An error occurred!";
+          setSnackbarMessage(errorMessage);
+          setSnackbarSeverity("error");
+          setSnackbarOpen(true);
+
+          // Reset image if an error occurs
+          setFormData((prev) => ({ ...prev, image: "" }));
+          setImagePreview("");
         }
-  
-
-        dispatch(fetchTrustees());    
-        handleCloseDialog();   
-        setFormData(initialState); 
-        setEditMode(false);
-      } else {
-        const errorMessage = typeof res.payload === "string" ? res.payload : "An error occurred!";
-        setSnackbarMessage(errorMessage);
+      })
+      .catch((err) => {
+        console.error("Request failed:", err);
+        setSnackbarMessage(err?.message || "An unexpected error occurred!");
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
-  
-        // Reset image if an error occurs
+
+        // Reset image on server error
         setFormData((prev) => ({ ...prev, image: "" }));
         setImagePreview("");
-      }
-    })
-    .catch((err) => {
-      console.error("Request failed:", err);
-      setSnackbarMessage(err?.message || "An unexpected error occurred!");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-  
-      // Reset image on server error
-      setFormData((prev) => ({ ...prev, image: "" }));
-      setImagePreview("");
-    });
-  
-  }  
+      });
+  };
   const handleDelete = (_id) => {
     if (window.confirm("Are you sure you want to delete this trustee?")) {
       dispatch(deleteTrustee(_id));
