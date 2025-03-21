@@ -1,53 +1,22 @@
+// DashboardLayout.js
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Outlet } from "react-router-dom";
+import Sidebar from "../../components/SideBar/Sidebar";
+import Header from "../../components/Header/AdminHeader";
+import { Box } from "@mui/material";
 
-import AboutPage from "../../pages/About/About";
-import BookPage from "../../pages/Books/Books";
-import EventPage from "../../pages/Event/Event";
-import DonationPage from "../../pages/Donation/Donation";
-import Newspage from "../../pages/News/News";
-import NewsListpage from "../../pages/News/NewsList";
-import GalleryPage from "../../pages/Gallery/Gallery";
-import ContactPage from "../../pages/Contact/ContactUs";
-import BookListPage from "../../pages/Books/BookList";
-
-import SubscriberPage from "../../pages/Subscribers/Subscribers";
-import TrusteePage from "../../pages/Trustee/TrusteeRegistration";
-import DonationCollectionsPage from "../../pages/Donation/DonationCollection";
-import EventListPage from "../../pages/Event/EventList";
-import TestimonialsPage from "../../pages/Testimonials/Testimonials";
-import SocialMediaPage from "../../pages/SocialMedia/SocialMedia";
-
-import Home from "../../pages/Home/Home";
-import Dashboard from "../../pages/Dashboard/Dashboard";
-import AdminProfile from "../../pages/Profile/Profile";
 const DashboardLayout = () => {
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="home" element={<Home />} />
-        <Route path="about" element={<AboutPage />} />
-        <Route path="Books-and-Publications" element={<BookPage />} />
-        <Route path="Events-&-Celebrations" element={<EventPage />} />
-        <Route path="Donation and Support" element={<DonationPage />} />
-        <Route path="/profile" element={<AdminProfile />} />
-        <Route path="/News-&-Updates" element={<Newspage />} />
-        <Route path="/newslist" element={<NewsListpage />} />
-        <Route path="/gallery" element={<GalleryPage />} />
-        <Route path="/Contact-&-Enquiries" element={<ContactPage />} />
-        <Route path="/booklist" element={<BookListPage />} />
-
-        <Route path="/subscriber" element={<SubscriberPage />} />
-        <Route path="/trustee" element={<TrusteePage />} />
-        <Route path="/eventlist" element={<EventListPage />} />
-        <Route path="/donationcollection" element={<DonationCollectionsPage />} />
-        <Route path="/testimonials" element={<TestimonialsPage />} />
-        <Route path="/socialmedia" element={<SocialMediaPage />} />
-      </Routes>
-    </>
+    <Box sx={{ display: "flex", height: "100vh" }}>
+      <Sidebar />
+      <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
+        <Header />
+        <Box sx={{ flexGrow: 1, p: 2 }}>
+          <Outlet />
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
 export default DashboardLayout;
-

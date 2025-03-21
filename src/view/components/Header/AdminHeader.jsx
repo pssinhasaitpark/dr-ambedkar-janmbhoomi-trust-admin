@@ -102,7 +102,7 @@ const Header = () => {
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
-            sx={{ mt: "45px" }}
+            sx={{ mt: "16px" }}
           >
             <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>

@@ -1,30 +1,44 @@
 import "./App.css";
-import { Routes, Route, useLocation } from "react-router-dom";
-import AboutPage from "./view/pages/About/About";
-import BookPage from "./view/pages/Books/Books";
-import EventPage from "./view/pages/Event/Event";
-import DonationPage from "./view/pages/Donation/Donation";
-import Newspage from "./view/pages/News/News";
-import GalleryPage from "./view/pages/Gallery/Gallery";
-import ContactPage from "./view/pages/Contact/ContactUs";
-import BookListPage from "./view/pages/Books/BookList";
-import SubscriberPage from "./view/pages/Subscribers/Subscribers";
-import TrusteePage from "./view/pages/Trustee/TrusteeRegistration";
-import DonationCollectionsPage from "./view/pages/Donation/DonationCollection";
-import EventListPage from "./view/pages/Event/EventList";
-import NewsListpage from "./view/pages/News/NewsList"
-import Login from "./view/pages/Login/Login";
+import {
+  Routes,
+  Route,
+  useLocation,
+  useNavigate,
+  Navigate,
+} from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Box } from "@mui/material";
+
+import {
+  AboutPage,
+  BookPage,
+  EventPage,
+  DonationPage,
+  Newspage,
+  GalleryPage,
+  ContactPage,
+  BookListPage,
+  SubscriberPage,
+  TrusteePage,
+  DonationCollectionsPage,
+  EventListPage,
+  NewsListpage,
+  Login,
+  Home,
+  Dashboard,
+  AdminProfile,
+  TestimonialsPage,
+  SocialMediaPage,
+} from "./view/pages/index";
 import Sidebar from "./view/components/SideBar/Sidebar";
 import Header from "./view/components/Header/AdminHeader";
-import { Box } from "@mui/material";
-import Home from "./view/pages/Home/Home";
-import Dashboard from "./view/pages/Dashboard/Dashboard";
 import PrivateRoute from "./view/routes/PrivateRoute";
 import DashboardLayout from "./view/layout/DashboardLayout/DashboardLayout";
-import AdminProfile from "./view/pages/Profile/Profile";
-import TestimonialsPage from "./view/pages/Testimonials/Testimonials";
-import SocialMediaPage from "./view/pages/SocialMedia/SocialMedia";
-import { Navigate } from "react-router-dom";
+
+const isTokenExpired = () => {
+  const tokenExpiry = localStorage.getItem("tokenExpiry");
+  return !tokenExpiry || Date.now() >= Number(tokenExpiry);
+};
 
 function AppLayout({ children }) {
   const location = useLocation();
@@ -50,12 +64,34 @@ function AppLayout({ children }) {
 }
 
 function App() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      if (isTokenExpired()) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("tokenExpiry");
+        navigate("/login");
+      } else {
+        setUser({ token });
+      }
+    } else if (location.pathname !== "/login") {
+      navigate("/login");
+    }
+  }, [navigate, location.pathname]);
+
   return (
     <AppLayout>
       <Routes>
+        {/* Public Route */}
         <Route path="/login" element={<Login />} />
 
-        {/* Protect all admin routes */}
+        {/* ✅ Protect all admin routes */}
         <Route
           path="/"
           element={
@@ -65,7 +101,6 @@ function App() {
           }
         >
           <Route index element={<Dashboard />} />
-          <Route path="/" element={<Dashboard />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/Books-and-Publications" element={<BookPage />} />
           <Route path="/Events-&-Celebrations" element={<EventPage />} />
@@ -76,7 +111,7 @@ function App() {
           <Route path="/newslist" element={<NewsListpage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/Contact-&-Enquiries" element={<ContactPage />} />
-          <Route path="/booklist" element={<BookListPage />} />       
+          <Route path="/booklist" element={<BookListPage />} />
           <Route path="/subscriber" element={<SubscriberPage />} />
           <Route path="/trustee" element={<TrusteePage />} />
           <Route path="/eventlist" element={<EventListPage />} />
@@ -87,8 +122,9 @@ function App() {
             element={<DonationCollectionsPage />}
           />
         </Route>
-          {/* Redirect unknown routes to login */}
-  <Route path="*" element={<Navigate to="/login" />} />
+
+        {/* 🔄 Redirect unknown routes to login */}
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </AppLayout>
   );

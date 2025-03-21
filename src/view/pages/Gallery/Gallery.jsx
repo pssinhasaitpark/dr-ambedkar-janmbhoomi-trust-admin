@@ -21,12 +21,9 @@ import {
 const Gallery = () => {
   const dispatch = useDispatch();
   const galleryData = useSelector((state) => state.gallery) || {};
-  const status = useSelector((state) => state.gallery) || {};
-  const [showLoader, setShowLoader] = useState(true);
-  const infoEditorRef = useRef(""); 
-  const descriptionEditorRef = useRef(""); 
-
-  // const [loading, setLoading] = useState(true); 
+  const infoEditorRef = useRef("");
+  const descriptionEditorRef = useRef("");
+  const [loading, setLoading] = useState(true);
   const [gallery_info, setGalleryInfo] = useState("Gallery");
   const [gallery_description, setGalleryDescription] = useState("");
   const [media, setMedia] = useState({
@@ -38,7 +35,7 @@ const Gallery = () => {
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [openModal, setOpenModal] = useState(false); 
+  const [openModal, setOpenModal] = useState(false);
 
   const [visibleImages, setVisibleImages] = useState({
     birthplace_media: 3,
@@ -56,16 +53,13 @@ const Gallery = () => {
 
   // Fetch gallery data on component mount
   useEffect(() => {
-     dispatch(fetchGalleryData());
+    const fetchData = async () => {
+      setLoading(true);
+      await dispatch(fetchGalleryData());
+      setLoading(false);
+    };
+    fetchData();
   }, [dispatch]);
-
-   useEffect(() => {
-      const timer = setTimeout(() => {
-        setShowLoader(false);
-      }, 1000);
-  
-      return () => clearTimeout(timer);
-    }, []);
 
   // Update local state when gallery data changes
   useEffect(() => {
@@ -76,27 +70,27 @@ const Gallery = () => {
     descriptionEditorRef.current = galleryData?.gallery_description || "";
 
     setMedia({
-        birthplace_media: galleryData?.birthplace_media || [],
-        events_media: galleryData?.events_media || [],
-        exhibitions_media: galleryData?.exhibitions_media || [],
-        online_media: galleryData?.online_media || [],
+      birthplace_media: galleryData?.birthplace_media || [],
+      events_media: galleryData?.events_media || [],
+      exhibitions_media: galleryData?.exhibitions_media || [],
+      online_media: galleryData?.online_media || [],
     });
-}, [
+  }, [
     galleryData?.gallery_info,
     galleryData?.gallery_description,
     galleryData?.birthplace_media,
     galleryData?.events_media,
     galleryData?.exhibitions_media,
-    galleryData?.online_media
-]);
-
+    galleryData?.online_media,
+  ]);
 
   // Handle save/edit action
   const handleEditSave = async (e) => {
     e.preventDefault();
     if (isEditable) {
-      const infoContent = infoEditorRef.current || "No Info provided"; 
-      const descriptionContent = descriptionEditorRef.current || "No description provided";
+      const infoContent = infoEditorRef.current || "No Info provided";
+      const descriptionContent =
+        descriptionEditorRef.current || "No description provided";
 
       const galleryDataToSend = {
         gallery_info: infoContent,
@@ -116,10 +110,13 @@ const Gallery = () => {
         // Fetch updated data after saving
         const updatedData = await dispatch(fetchGalleryData()).unwrap();
         setGalleryInfo(updatedData.gallery_info || infoContent);
-        setGalleryDescription(updatedData.gallery_description || descriptionContent);
+        setGalleryDescription(
+          updatedData.gallery_description || descriptionContent
+        );
 
         infoEditorRef.current = updatedData.gallery_info || infoContent;
-        descriptionEditorRef.current = updatedData.gallery_description || descriptionContent;
+        descriptionEditorRef.current =
+          updatedData.gallery_description || descriptionContent;
 
         setRemoveImages([]);
       } catch (error) {
@@ -128,7 +125,6 @@ const Gallery = () => {
     }
     setIsEditable(!isEditable);
   };
-
 
   const renderImageSource = (image) => {
     if (image instanceof File) {
@@ -155,7 +151,7 @@ const Gallery = () => {
   const loadMoreImages = (category) => {
     setVisibleImages((prev) => ({
       ...prev,
-      [category]: media[category].length,
+      [category]: media[category].length, // Show all images for the category
     }));
     setShowAllImages((prev) => ({
       ...prev,
@@ -167,7 +163,7 @@ const Gallery = () => {
   const loadLessImages = (category) => {
     setVisibleImages((prev) => ({
       ...prev,
-      [category]: 3, 
+      [category]: 3, // Show only the first 3 images
     }));
     setShowAllImages((prev) => ({
       ...prev,
@@ -175,33 +171,24 @@ const Gallery = () => {
     }));
   };
 
-    if (status === "loading" || showLoader)
-      return (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          height="50vh"
-        >
-          <CircularProgress/>
-        </Box>
-      );
-  
-    if (status === "error")
-      return (
-        <Typography variant="h6" color="error">
-          Error: {status}
-        </Typography>
-      );
-  
-
   return (
     <Box>
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
         Gallery
       </Typography>
       <Paper sx={{ p: 0, borderRadius: 0, boxShadow: 0 }}>
-      
+        {loading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "400px",
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
           <form onSubmit={handleEditSave}>
             <Typography variant="h6" sx={{ mt: 2 }}>
               Gallery Info
@@ -256,12 +243,16 @@ const Gallery = () => {
                 },
                 toolbarSticky: false,
               }}
-              onChange={(newContent) => (descriptionEditorRef.current = newContent)}
+              onChange={(newContent) =>
+                (descriptionEditorRef.current = newContent)
+              }
             />
 
             {Object.keys(media).map((category) => (
               <Box key={category} sx={{ mt: 3 }}>
-                <Typography variant="h6">{category.replace("_", " ")}</Typography>
+                <Typography variant="h6">
+                  {category.replace("_", " ")}
+                </Typography>
                 {isEditable && (
                   <input
                     type="file"
@@ -276,37 +267,50 @@ const Gallery = () => {
                     }}
                   />
                 )}
-                <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
-                  {media[category].slice(0, visibleImages[category]).map((image, index) => (
-                    <Box key={index} sx={{ position: "relative" }}>
-                      <Avatar
-                        src={renderImageSource(image)}
-                        sx={{ width: 100, height: 100 }}
-                        onClick={() => handleImageClick(renderImageSource(image))}
-                      />
-                      {isEditable && (
-                        <IconButton
-                          onClick={() => {
-                            if (typeof media[category][index] === "string") {
-                              setRemoveImages((prev) => [...prev, media[category][index]]);
-                            }
-                            setMedia((prev) => ({
-                              ...prev,
-                              [category]: prev[category].filter((_, i) => i !== index),
-                            }));
-                          }}
-                          sx={{
-                            position: "absolute",
-                            top: -10,
-                            right: -10,
-                            backgroundColor: "white",
-                          }}
-                        >
-                          <DeleteIcon color="error" />
-                        </IconButton>
-                      )}
-                    </Box>
-                  ))}
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{ flexWrap: "wrap", mt: 2 }}
+                >
+                  {media[category]
+                    .slice(0, visibleImages[category])
+                    .map((image, index) => (
+                      <Box key={index} sx={{ position: "relative" }}>
+                        <Avatar
+                          src={renderImageSource(image)}
+                          sx={{ width: 100, height: 100 }}
+                          onClick={() =>
+                            handleImageClick(renderImageSource(image))
+                          }
+                        />
+                        {isEditable && (
+                          <IconButton
+                            onClick={() => {
+                              if (typeof media[category][index] === "string") {
+                                setRemoveImages((prev) => [
+                                  ...prev,
+                                  media[category][index],
+                                ]);
+                              }
+                              setMedia((prev) => ({
+                                ...prev,
+                                [category]: prev[category].filter(
+                                  (_, i) => i !== index
+                                ),
+                              }));
+                            }}
+                            sx={{
+                              position: "absolute",
+                              top: -10,
+                              right: -10,
+                              backgroundColor: "white",
+                            }}
+                          >
+                            <DeleteIcon color="error" />
+                          </IconButton>
+                        )}
+                      </Box>
+                    ))}
                 </Stack>
                 {showAllImages[category] ? (
                   <Button
@@ -334,7 +338,7 @@ const Gallery = () => {
               </Button>
             </Stack>
           </form>
-       
+        )}
       </Paper>
       <Modal
         open={openModal}
@@ -349,7 +353,7 @@ const Gallery = () => {
           sx={{
             width: "50%",
             height: "50%",
-           
+
             borderRadius: 2,
             boxShadow: 0,
             p: 2,
@@ -362,7 +366,11 @@ const Gallery = () => {
             <img
               src={selectedImage}
               alt="Full view"
-              style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+              style={{
+                maxWidth: "100%",
+                maxHeight: "100%",
+                objectFit: "contain",
+              }}
             />
           )}
         </Box>
