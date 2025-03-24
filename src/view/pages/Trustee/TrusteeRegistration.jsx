@@ -122,7 +122,7 @@ const TrusteeManagement = () => {
   };
 
   const handleCloseDialog = () => {
-    setOpen(false); // Close the dialog
+    setOpen(false);
   };
 
   const initialState = {
@@ -175,13 +175,11 @@ const TrusteeManagement = () => {
 
     Object.keys(values).forEach((key) => {
       if (["_id", "createdAt", "updatedAt", "__v"].includes(key)) {
-        // Skip these fields
       } else if (
         key === "image" &&
         typeof values[key] === "string" &&
         values[key].startsWith("http")
       ) {
-        // Skip image field if it's a URL
       } else {
         data.append(key, values[key]);
       }
@@ -190,8 +188,6 @@ const TrusteeManagement = () => {
 
     dispatch(action(editMode ? { _id: values._id, updatedData: data } : data))
       .then((res) => {
-        console.log("API Response:", res);
-
         if (res.meta.requestStatus === "fulfilled") {
           setSnackbarMessage(
             editMode
@@ -219,7 +215,6 @@ const TrusteeManagement = () => {
           setSnackbarSeverity("error");
           setSnackbarOpen(true);
 
-          // Reset image if an error occurs
           setFormData((prev) => ({ ...prev, image: "" }));
           setImagePreview("");
         }
@@ -230,7 +225,6 @@ const TrusteeManagement = () => {
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
 
-        // Reset image on server error
         setFormData((prev) => ({ ...prev, image: "" }));
         setImagePreview("");
       });

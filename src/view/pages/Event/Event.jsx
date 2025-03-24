@@ -219,6 +219,7 @@ const Events = () => {
                     }}
                   />
                 </SlideshowLightbox>
+                {isEditable && (
                 <IconButton
                   onClick={() => handleImageRemove(index)}
                   sx={{
@@ -229,7 +230,8 @@ const Events = () => {
                 >
                   <DeleteIcon color="error" />
                 </IconButton>
-              </Box>
+                )}
+             </Box>
             ))}
           </Stack>
           <Button type="submit" variant="contained" sx={{ mt: 2 }}>

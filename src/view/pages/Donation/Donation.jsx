@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -16,7 +16,7 @@ import {
   fetchDonationData,
   saveDonationToBackend,
 } from "../../redux/slice/donationSlice";
-import debounce from "lodash.debounce";
+// import debounce from "lodash.debounce";
 
 const Donation = () => {
   const dispatch = useDispatch();
@@ -43,12 +43,12 @@ const Donation = () => {
     }
   }, [donationData]);
 
-  const debouncedEditorChange = useCallback(
-    debounce((newContent) => {
-      setDescription(newContent);
-    }, 3000),
-    []
-  );
+  // const debouncedEditorChange = useCallback(
+  //   debounce((newContent) => {
+  //     setDescription(newContent);
+  //   }, 3000),
+  //   []
+  // );
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);

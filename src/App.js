@@ -91,7 +91,7 @@ function App() {
         {/* Public Route */}
         <Route path="/login" element={<Login />} />
 
-        {/* ✅ Protect all admin routes */}
+        {/*Protect all admin routes */}
         <Route
           path="/"
           element={
@@ -123,7 +123,7 @@ function App() {
           />
         </Route>
 
-        {/* 🔄 Redirect unknown routes to login */}
+        {/* Redirect unknown routes to login */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </AppLayout>
