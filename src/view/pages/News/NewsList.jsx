@@ -173,14 +173,18 @@ function NewsList() {
   };
 
   const handleRemoveImage = (index) => {
-    const imageToRemove = formData.images[index];
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index),
-    }));
-    if (typeof imageToRemove === "string") {
-      setRemoveImages((prev) => [...prev, imageToRemove]);
-    }
+    setFormData((prev) => {
+      const updatedImages = [...prev.images];
+      const imageToRemove = updatedImages[index]; 
+      updatedImages.splice(index, 1); 
+      if (typeof imageToRemove === "string") {
+        setRemoveImages((prevRemoveImages) => [
+          ...prevRemoveImages,
+          imageToRemove,
+        ]);
+      }
+      return { ...prev, images: updatedImages };
+    });
   };
 
   const toggleReadMore = (id) => {
@@ -437,7 +441,7 @@ function NewsList() {
               <Box display="flex" flexWrap="wrap" gap={2} mt={2}>
                 {formData.images.map((image, index) => (
                   <Box
-                    key={index}
+                  key={`${image}-${index}`}
                     sx={{ position: "relative", width: 80, height: 80 }}
                   >
                     <SlideshowLightbox>

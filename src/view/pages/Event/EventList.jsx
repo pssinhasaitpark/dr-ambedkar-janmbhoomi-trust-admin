@@ -1,4 +1,4 @@
-import React, { useEffect, useState,useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { SlideshowLightbox } from "lightbox.js-react";
 import {
@@ -40,7 +40,6 @@ import {
   Image as ImageIcon,
 } from "@mui/icons-material";
 
-
 function EventList() {
   const dispatch = useDispatch();
   const { events } = useSelector((state) => state.eventlist);
@@ -50,8 +49,8 @@ function EventList() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [loading, setLoading] = useState(true);
-    const [openDialog, setOpenDialog] = useState(false);
-   const [selectedEventId, setselectedEventId] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedEventId, setselectedEventId] = useState(null);
   const [formData, setFormData] = useState({
     id: null,
     event_title: "",
@@ -59,7 +58,7 @@ function EventList() {
     description: "",
     images: [],
   });
-    const editorRef = useRef(null);
+  const editorRef = useRef(null);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -109,17 +108,17 @@ function EventList() {
     setselectedEventId(null);
   };
 
-    const handleDelete = async () => {
-      if (selectedEventId) {
-        try {
-          await dispatch(deleteEvent(selectedEventId)).unwrap();
-        } catch (error) {
-          console.error("Error deleting testimonial:", error);
-          alert("Failed to delete the testimonial. Please try again.");
-        }
-        handleCloseDialog();
+  const handleDelete = async () => {
+    if (selectedEventId) {
+      try {
+        await dispatch(deleteEvent(selectedEventId)).unwrap();
+      } catch (error) {
+        console.error("Error deleting testimonial:", error);
+        alert("Failed to delete the testimonial. Please try again.");
       }
-    };
+      handleCloseDialog();
+    }
+  };
 
   const handleSave = async () => {
     if (!formData.event_title.trim() || !formData.organized_by.trim()) {
@@ -161,9 +160,6 @@ function EventList() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-
-
-
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     setFormData((prev) => ({
@@ -174,28 +170,21 @@ function EventList() {
 
   const handleRemoveImage = (index) => {
     setFormData((prev) => {
-      const updatedImages = prev.images.filter((_, i) => i !== index); // Remove specific index
-  
-      return {
-        ...prev,
-        images: updatedImages,
-      };
-    });
-  
-    setRemoveImages((prevRemoveImages) => {
-      const imageToRemove = formData.images[index]; // Get the image before the state updates
-  
+      const updatedImages = [...prev.images];
+      const imageToRemove = updatedImages[index]; 
+      updatedImages.splice(index, 1); 
       if (typeof imageToRemove === "string") {
-        return [...prevRemoveImages, imageToRemove];
+        setRemoveImages((prevRemoveImages) => [
+          ...prevRemoveImages,
+          imageToRemove,
+        ]);
       }
-      return prevRemoveImages;
+      return { ...prev, images: updatedImages };
     });
   };
-  
-  
 
   return (
-     <Container maxWidth="xlg" sx={{ mt: 8, p: 0 }} disableGutters>
+    <Container maxWidth="xlg" sx={{ mt: 8, p: 0 }} disableGutters>
       <Box my={3}>
         {loading ? (
           <Box
@@ -263,16 +252,16 @@ function EventList() {
                         <TableCell>
                           {event.images && event.images.length > 0 ? (
                             <SlideshowLightbox>
-                           <img
-                              src={event.images[0]} // Fetch the first image from array
-                              alt="Event"
-                              style={{
-                                width: 60,
-                                height: 60,
-                                objectFit: "cover",
-                                borderRadius: "5px",
-                              }}
-                            />
+                              <img
+                                src={event.images[0]} 
+                                alt="Event"
+                                style={{
+                                  width: 60,
+                                  height: 60,
+                                  objectFit: "cover",
+                                  borderRadius: "5px",
+                                }}
+                              />
                             </SlideshowLightbox>
                           ) : (
                             <Typography variant="body2" color="text.secondary">
@@ -314,20 +303,20 @@ function EventList() {
                 />
               </Box>
             </TableContainer>
-             <Dialog open={openDialog} onClose={handleCloseDialog}>
-                    <DialogTitle>Confirm Deletion</DialogTitle>
-                    <DialogContent>
-                      Are you sure you want to delete this Event?
-                    </DialogContent>
-                    <DialogActions>
-                      <Button onClick={handleCloseDialog} color="primary">
-                        Cancel
-                      </Button>
-                      <Button onClick={handleDelete} color="error" autoFocus>
-                        Delete
-                      </Button>
-                    </DialogActions>
-                  </Dialog>
+            <Dialog open={openDialog} onClose={handleCloseDialog}>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+              <DialogContent>
+                Are you sure you want to delete this Event?
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCloseDialog} color="primary">
+                  Cancel
+                </Button>
+                <Button onClick={handleDelete} color="error" autoFocus>
+                  Delete
+                </Button>
+              </DialogActions>
+            </Dialog>
           </>
         )}
         <Dialog
@@ -369,14 +358,16 @@ function EventList() {
               Description:
             </Typography>
             <JoditEditor
-              ref={editorRef} 
+              ref={editorRef}
               value={formData.description}
               onChange={(content) => {
                 setFormData((prev) => ({ ...prev, description: content }));
               }}
               onPaste={(event) => {
                 event.preventDefault();
-                const text = (event.clipboardData || window.clipboardData).getData('text');
+                const text = (
+                  event.clipboardData || window.clipboardData
+                ).getData("text");
                 const editor = editorRef.current;
                 if (editor) {
                   editor.selection.insertHTML(text);
@@ -404,21 +395,21 @@ function EventList() {
               <Box display="flex" flexWrap="wrap" gap={2} mt={2}>
                 {formData.images.map((image, index) => (
                   <Box
-                    key={index}
+                    key={`${image}-${index}`}
                     sx={{ position: "relative", width: 80, height: 80 }}
                   >
-                  <SlideshowLightbox>
-                    <img
-                      src={
-                        image instanceof File
-                          ? URL.createObjectURL(image)
-                          : image
-                      }
-                      alt={`book-img-${index}`}
-                      width="100%"
-                      height="100%"
-                      style={{ borderRadius: 8, objectFit: "cover" }}
-                    />
+                    <SlideshowLightbox>
+                      <img
+                        src={
+                          image instanceof File
+                            ? URL.createObjectURL(image)
+                            : image
+                        }
+                        alt={`book-img-${index}`}
+                        width="100%"
+                        height="100%"
+                        style={{ borderRadius: 8, objectFit: "cover" }}
+                      />
                     </SlideshowLightbox>
                     <IconButton
                       size="small"

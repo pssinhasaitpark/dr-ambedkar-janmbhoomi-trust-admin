@@ -1,4 +1,4 @@
-import React, { useEffect, useState,useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { SlideshowLightbox } from "lightbox.js-react";
 import {
@@ -46,12 +46,13 @@ function BookList() {
   const [removeImages, setRemoveImages] = useState([]);
   const [editingBook, setEditingBook] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  // const [confirmDelete, setConfirmDelete] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [bookToDelete, setBookToDelete] = useState(null);
+  const [selectedFileName, setSelectedFileName] = useState("");
   const [formData, setFormData] = useState({
     id: null,
     title: "",
@@ -92,12 +93,16 @@ function BookList() {
       images: [],
       cover_image: null,
     });
+    setPreviewImage(null); // Reset preview image
+    setSelectedFileName(""); // Reset selected file name
     setIsFormOpen(true);
   };
 
   const handleEdit = (book) => {
     setEditingBook(book.id);
     setFormData(book);
+    setPreviewImage(book.cover_image); // Set preview image to existing cover image
+    setSelectedFileName(book.cover_image.split("/").pop()); // Set selected file name to existing cover image name
     setIsFormOpen(true);
   };
 
@@ -128,7 +133,7 @@ function BookList() {
     const formDataToSend = new FormData();
     formDataToSend.append("book_title", formData.title);
     formDataToSend.append("author_name", formData.author);
-    formDataToSend.append("description", formData.description); 
+    formDataToSend.append("description", formData.description);
 
     if (formData.cover_image instanceof File) {
       formDataToSend.append("cover_image", formData.cover_image);
@@ -153,7 +158,8 @@ function BookList() {
       }
 
       setIsFormOpen(false);
-      window.location.reload(); 
+      window.location.reload();
+      // dispatch(fetchBooks());
     } catch (error) {
       console.error("Error saving book:", error);
     }
@@ -163,16 +169,13 @@ function BookList() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
   const handleCoverImageChange = (e) => {
-    setFormData({ ...formData, cover_image: e.target.files[0] });
+    const file = e.target.files[0];
+    if (file) {
+      setPreviewImage(URL.createObjectURL(file)); // Show new image preview
+      setSelectedFileName(file.name); // Set selected file name
+      setFormData({ ...formData, cover_image: file }); // Update form data with the new file
+    }
   };
-
-  // const debouncedHandleChange = useCallback(
-  //   debounce((content) => {
-  //     setFormData((prev) => ({ ...prev, description: content }));
-  //   }, 500),
-  //   []
-  // );
-
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     setFormData((prev) => ({
@@ -180,19 +183,21 @@ function BookList() {
       images: [...prev.images, ...files],
     }));
   };
-
   const handleRemoveImage = (index) => {
-    const imageToRemove = formData.images[index];
+    setFormData((prev) => {
+      const updatedImages = [...prev.images];
+      const imageToRemove = updatedImages[index];
+      updatedImages.splice(index, 1);
 
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index),
-    }));
+      if (typeof imageToRemove === "string") {
+        setRemoveImages((prevRemoveImages) => [
+          ...prevRemoveImages,
+          imageToRemove,
+        ]);
+      }
 
-    // If the image is from the backend (string URL), store it in `removeImages`
-    if (typeof imageToRemove === "string") {
-      setRemoveImages((prev) => [...prev, imageToRemove]);
-    }
+      return { ...prev, images: updatedImages }; // Ensure state updates correctly
+    });
   };
 
   return (
@@ -235,10 +240,7 @@ function BookList() {
                 </Typography>
               </Paper>
             ) : (
-              <TableContainer
-                component={Paper}
-                sx={{overflow: "hidden" }}
-              >
+              <TableContainer component={Paper} sx={{ overflow: "hidden" }}>
                 <Table>
                   <TableHead>
                     <TableRow sx={{ backgroundColor: "#3387e8" }}>
@@ -276,17 +278,17 @@ function BookList() {
                           <TableCell>{book.author}</TableCell>
                           <TableCell>
                             {book.cover_image && book.cover_image.length > 0 ? (
-                                 <SlideshowLightbox>
-                              <img
-                                src={book.cover_image} 
-                                alt="Book"
-                                style={{
-                                  width: 60,
-                                  height: 60,
-                                  objectFit: "cover",
-                                  borderRadius: "5px",
-                                }}
-                              />
+                              <SlideshowLightbox>
+                                <img
+                                  src={book.cover_image}
+                                  alt="Book"
+                                  style={{
+                                    width: 60,
+                                    height: 60,
+                                    objectFit: "cover",
+                                    borderRadius: "5px",
+                                  }}
+                                />
                               </SlideshowLightbox>
                             ) : (
                               <Typography
@@ -401,15 +403,16 @@ function BookList() {
               Description:
             </Typography>
             <JoditEditor
-              ref={editorRef} 
+              ref={editorRef}
               value={formData.description}
               onChange={(content) => {
                 setFormData((prev) => ({ ...prev, description: content }));
               }}
               onPaste={(event) => {
-               
-                event.preventDefault();     
-                const text = (event.clipboardData || window.clipboardData).getData('text');
+                event.preventDefault();
+                const text = (
+                  event.clipboardData || window.clipboardData
+                ).getData("text");
                 const editor = editorRef.current;
                 if (editor) {
                   editor.selection.insertHTML(text);
@@ -430,20 +433,27 @@ function BookList() {
                 onChange={handleCoverImageChange}
               />
             </Button>
-            {formData.cover_image && (
+
+            {/* Show selected file name */}
+            {selectedFileName && (
+              <Typography variant="body2">
+                Selected: {selectedFileName}
+              </Typography>
+            )}
+
+            {(previewImage || formData.cover_image) && (
               <Box mt={2}>
-                <SlideshowLightbox>
                 <img
                   src={
-                    formData.cover_image instanceof File
+                    previewImage ||
+                    (formData.cover_image instanceof File
                       ? URL.createObjectURL(formData.cover_image)
-                      : formData.cover_image
+                      : formData.cover_image)
                   }
-                  alt="Cover"
+                  alt="Cover Preview"
                   width="100"
                   height="100"
                 />
-                 </SlideshowLightbox>
               </Box>
             )}
 
@@ -468,21 +478,21 @@ function BookList() {
               <Box display="flex" flexWrap="wrap" gap={2} mt={2}>
                 {formData.images.map((image, index) => (
                   <Box
-                    key={index}
+                    key={`${image}-${index}`}
                     sx={{ position: "relative", width: 80, height: 80 }}
                   >
-                     <SlideshowLightbox>
-                    <img
-                      src={
-                        image instanceof File
-                          ? URL.createObjectURL(image)
-                          : image
-                      }
-                      alt={`book-img-${index}`}
-                      width="100%"
-                      height="100%"
-                      style={{ borderRadius: 8, objectFit: "cover" }}
-                    />
+                    <SlideshowLightbox>
+                      <img
+                        src={
+                          image instanceof File
+                            ? URL.createObjectURL(image)
+                            : image
+                        }
+                        alt={`book-img-${index}`}
+                        width="100%"
+                        height="100%"
+                        style={{ borderRadius: 8, objectFit: "cover" }}
+                      />
                     </SlideshowLightbox>
                     <IconButton
                       size="small"

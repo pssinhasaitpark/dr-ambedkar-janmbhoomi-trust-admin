@@ -23,9 +23,6 @@ function Login() {
     loginMutation.mutate(values, {
       onSuccess: (response) => {
         const { encryptedToken, user_role, expiresIn, user } = response.data;
-        console.log("response.data===",response.data);
-        
-
         if (user_role === "user" || user_role === "trustees") {
           toast.error("Access denied! Only admins can log in.", { position: "top-right" });
           return;
