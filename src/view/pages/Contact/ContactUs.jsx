@@ -15,7 +15,6 @@ import {
   Box,
   Typography,
   CircularProgress,
-  Alert,
   TablePagination,
   Button,
   Tooltip,
@@ -25,18 +24,17 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
-// import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { Delete } from "@mui/icons-material";
+
 function ContactUs() {
   const dispatch = useDispatch();
-  const { contacts, loading, error } = useSelector((state) => state.contact);
+  const { contacts, loading} = useSelector((state) => state.contact);
   const [showLoader, setShowLoader] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  // const [startDate, setStartDate] = useState("");
-  // const [endDate, setEndDate] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedContactId, setSelectedContactId] = useState(null);
+
   useEffect(() => {
     dispatch(fetchContactData());
   }, [dispatch]);
@@ -49,6 +47,7 @@ function ContactUs() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Loader
   if (loading || showLoader)
     return (
       <Box
@@ -61,12 +60,6 @@ function ContactUs() {
       </Box>
     );
 
-  if (error)
-    return (
-      <Alert severity="error" style={{ margin: "20px" }}>
-        {error}
-      </Alert>
-    );
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -91,8 +84,8 @@ function ContactUs() {
       try {
         await dispatch(deleteContactData(selectedContactId)).unwrap();
       } catch (error) {
-        console.error("Error deleting testimonial:", error);
-        alert("Failed to delete the testimonial. Please try again.");
+        console.error("Error deleting contact:", error);
+        alert("Failed to delete the contact. Please try again.");
       }
       handleCloseDialog();
     }
@@ -143,14 +136,14 @@ function ContactUs() {
           <TableBody>
             {contacts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} sx={{ textAlign: "center" }}>
+                <TableCell colSpan={8} sx={{ textAlign: "center" }}>
                   No contact inquiries found.
                 </TableCell>
               </TableRow>
             ) : (
               contacts
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((contact, index) => (
+                ?.map((contact, index) => (
                   <TableRow key={contact._id}>
                     <TableCell align="center">
                       {page * rowsPerPage + index + 1}
@@ -197,7 +190,7 @@ function ContactUs() {
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Confirm Deletion</DialogTitle>
         <DialogContent>
-          Are you sure you want to delete this Enquiries?
+          Are you sure you want to delete this inquiry?
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog} color="primary">

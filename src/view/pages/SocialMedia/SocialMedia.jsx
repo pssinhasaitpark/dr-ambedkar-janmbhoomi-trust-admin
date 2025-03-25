@@ -73,12 +73,12 @@ const SocialMedia = () => {
       </Box>
     );
 
-  if (error)
-    return (
-      <Typography variant="h6" color="error">
-        Error: {error}
-      </Typography>
-    );
+  // if (error)
+  //   return (
+  //     <Typography variant="h6" color="error">
+  //       Error: {error}
+  //     </Typography>
+  //   );
 
   const handleChange = (e) => {
     setSocialLinks({ ...socialLinks, [e.target.name]: e.target.value });
@@ -141,7 +141,7 @@ const SocialMedia = () => {
         </Typography>
 
         {/* Input Fields with Icons Outside */}
-        {Object.keys(socialLinks).map((key) => (
+        {Object?.keys(socialLinks)?.map((key) => (
           <Box
             key={key}
             sx={{

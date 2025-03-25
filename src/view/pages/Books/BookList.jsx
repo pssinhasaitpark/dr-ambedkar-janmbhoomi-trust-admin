@@ -42,7 +42,7 @@ import {
 
 function BookList() {
   const dispatch = useDispatch();
-  const { books, error } = useSelector((state) => state.booklist);
+  const { books} = useSelector((state) => state.booklist);
   const [removeImages, setRemoveImages] = useState([]);
   const [editingBook, setEditingBook] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -230,8 +230,8 @@ function BookList() {
               </Button>
             </Box>
 
-            {loading && <Typography>Loading...</Typography>}
-            {error && <Typography color="error">{error}</Typography>}
+            {/* {loading && <Typography>Loading...</Typography>}
+            {error && <Typography color="error">{error}</Typography>} */}
 
             {books.length === 0 ? (
               <Paper sx={{ p: 4, textAlign: "center", borderRadius: 2 }}>
