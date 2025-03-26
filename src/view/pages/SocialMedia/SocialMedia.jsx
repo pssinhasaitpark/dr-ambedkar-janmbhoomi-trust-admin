@@ -13,12 +13,13 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   fetchSocialMedia,
   updateSocialMedia,
+  addSocialMedia,
 } from "../../redux/slice/socialMediaSlice";
-import { WhatsApp, Facebook, Instagram, YouTube } from "@mui/icons-material"; 
+import { WhatsApp, Facebook, Instagram, YouTube } from "@mui/icons-material";
 
 const SocialMedia = () => {
   const dispatch = useDispatch();
-  const { links, id, loading, error } = useSelector(
+  const { links, id, loading} = useSelector(
     (state) => state.socialMedia
   );
   const [showLoader, setShowLoader] = useState(true);
@@ -44,8 +45,7 @@ const SocialMedia = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowLoader(false);
-    }, 1000); 
-
+    }, 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -67,54 +67,58 @@ const SocialMedia = () => {
         justifyContent="center"
         alignItems="center"
         height="50vh"
-    
       >
         <CircularProgress />
       </Box>
     );
-
-  // if (error)
-  //   return (
-  //     <Typography variant="h6" color="error">
-  //       Error: {error}
-  //     </Typography>
-  //   );
 
   const handleChange = (e) => {
     setSocialLinks({ ...socialLinks, [e.target.name]: e.target.value });
   };
 
   const handleSaveAll = async () => {
-    if (!id) {
-      setSnackbar({
-        open: true,
-        message: "Error: Data not loaded. Please refresh.",
-        severity: "error",
-      });
-      return;
-    }
-
-    setSaving(true);
-    try {
-      await dispatch(
-        updateSocialMedia({ id, updatedLinks: socialLinks })
-      ).unwrap();
-
-      setSnackbar({
-        open: true,
-        message: "Social media links updated successfully!",
-        severity: "success",
-      });
-
-      dispatch(fetchSocialMedia()); // Fetch latest data only after successful update
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Update failed. Try again.",
-        severity: "error",
-      });
-    } finally {
-      setSaving(false);
+    if (id) {
+      // Update existing data
+      setSaving(true);
+      try {
+        await dispatch(
+          updateSocialMedia({ id, updatedLinks: socialLinks })
+        ).unwrap();
+        setSnackbar({
+          open: true,
+          message: "Social media links updated successfully!",
+          severity: "success",
+        });
+        dispatch(fetchSocialMedia());
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: "Update failed. Try again.",
+          severity: "error",
+        });
+      } finally {
+        setSaving(false);
+      }
+    } else {
+      // Add new data
+      setSaving(true);
+      try {
+        await dispatch(addSocialMedia(socialLinks)).unwrap();
+        setSnackbar({
+          open: true,
+          message: "Social media links added successfully!",
+          severity: "success",
+        });
+        dispatch(fetchSocialMedia());
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: "Adding failed. Try again.",
+          severity: "error",
+        });
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
@@ -148,7 +152,7 @@ const SocialMedia = () => {
               display: "flex",
               alignItems: "center",
               gap: 2,
-              mb: 3, // Adjusted margin-bottom for better spacing
+              mb: 3,
             }}
           >
             {/* Icon */}
@@ -183,7 +187,7 @@ const SocialMedia = () => {
               py: 1,
               backgroundColor: "#1665c0",
               "&:hover": {
-                backgroundColor: "#1665c0", // Darker shade for hover effect
+                backgroundColor: "#1665c0",
               },
             }}
           >
@@ -191,20 +195,16 @@ const SocialMedia = () => {
           </Button>
         </Box>
       </Box>
-
-      {/* Snackbar for notifications */}
-     {/* Snackbar for notifications */}
-<Snackbar
-  open={snackbar.open}
-  autoHideDuration={3000}
-  onClose={() => setSnackbar({ ...snackbar, open: false })}
-  anchorOrigin={{ vertical: "top", horizontal: "right" }} // Set position from left to right on top
->
-  <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
-    {snackbar.message}
-  </Alert>
-</Snackbar>
-
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

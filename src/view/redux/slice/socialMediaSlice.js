@@ -32,12 +32,32 @@ export const updateSocialMedia = createAsyncThunk(
   }
 );
 
+export const addSocialMedia = createAsyncThunk(
+  "socialMedia/add",
+  async (newLinks, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      Object.keys(newLinks).forEach((key) => {
+        formData.append(key, newLinks[key]);
+      });
+
+      const response = await api.post("/socialmedia", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Adding failed");
+    }
+  }
+);
+
 
 const socialMediaSlice = createSlice({
   name: "socialMedia",
   initialState: {
-    links: {}, 
-    id: null, 
+    links: {},
+    id: null,
     loading: false,
     error: null,
   },
@@ -71,6 +91,18 @@ const socialMediaSlice = createSlice({
         state.links = action.payload;
       })
       .addCase(updateSocialMedia.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(addSocialMedia.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(addSocialMedia.fulfilled, (state, action) => {
+        state.loading = false;
+        state.links = action.payload;
+        state.id = action.payload._id;
+      })
+      .addCase(addSocialMedia.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });

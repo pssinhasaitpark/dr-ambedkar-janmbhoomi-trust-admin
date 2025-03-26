@@ -42,7 +42,7 @@ import {
 
 function BookList() {
   const dispatch = useDispatch();
-  const { books} = useSelector((state) => state.booklist);
+  const { books } = useSelector((state) => state.booklist);
   const [removeImages, setRemoveImages] = useState([]);
   const [editingBook, setEditingBook] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -93,16 +93,16 @@ function BookList() {
       images: [],
       cover_image: null,
     });
-    setPreviewImage(null); // Reset preview image
-    setSelectedFileName(""); // Reset selected file name
+    setPreviewImage(null);
+    setSelectedFileName("");
     setIsFormOpen(true);
   };
 
   const handleEdit = (book) => {
     setEditingBook(book.id);
     setFormData(book);
-    setPreviewImage(book.cover_image); // Set preview image to existing cover image
-    setSelectedFileName(book.cover_image.split("/").pop()); // Set selected file name to existing cover image name
+    setPreviewImage(book.cover_image);
+    setSelectedFileName(book.cover_image.split("/").pop());
     setIsFormOpen(true);
   };
 
@@ -171,9 +171,9 @@ function BookList() {
   const handleCoverImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setPreviewImage(URL.createObjectURL(file)); // Show new image preview
-      setSelectedFileName(file.name); // Set selected file name
-      setFormData({ ...formData, cover_image: file }); // Update form data with the new file
+      setPreviewImage(URL.createObjectURL(file));
+      setSelectedFileName(file.name);
+      setFormData({ ...formData, cover_image: file });
     }
   };
   const handleImageChange = (e) => {
@@ -196,7 +196,7 @@ function BookList() {
         ]);
       }
 
-      return { ...prev, images: updatedImages }; // Ensure state updates correctly
+      return { ...prev, images: updatedImages };
     });
   };
 
@@ -229,9 +229,6 @@ function BookList() {
                 Add New Book
               </Button>
             </Box>
-
-            {/* {loading && <Typography>Loading...</Typography>}
-            {error && <Typography color="error">{error}</Typography>} */}
 
             {books.length === 0 ? (
               <Paper sx={{ p: 4, textAlign: "center", borderRadius: 2 }}>
