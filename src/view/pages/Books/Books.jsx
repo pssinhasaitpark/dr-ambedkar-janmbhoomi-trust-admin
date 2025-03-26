@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect} from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -19,12 +19,11 @@ import {
   saveBooksToBackend,
 } from "../../redux/slice/bookSlice";
 
-
 const Books = () => {
   const dispatch = useDispatch();
   const booksData = useSelector((state) => state.books) || {};
   const editor = useRef(null);
- const descriptionRef = useRef(""); 
+  const descriptionRef = useRef("");
   const [title, setTitle] = useState("Books");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -32,34 +31,34 @@ const Books = () => {
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [openModal, setOpenModal] = useState(false); 
-   const status = useSelector((state) => state.about.status);
-   const [showLoader, setShowLoader] = useState(true);
+  const [openModal, setOpenModal] = useState(false);
+  const status = useSelector((state) => state.about.status);
+  const [showLoader, setShowLoader] = useState(true);
 
   useEffect(() => {
-     dispatch(fetchBooksData());
+    dispatch(fetchBooksData());
   }, [dispatch]);
 
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        setShowLoader(false);
-      }, 1000);
-  
-      return () => clearTimeout(timer);
-    }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000);
 
-  useEffect(() => { 
-      setTitle(booksData?.title || "");
-      setName(booksData?.name || "");
-      setDescription(booksData?.description || "");
-      descriptionRef.current = booksData?.description || ""; 
-      setSelectedImages(booksData?.images || []); 
-  },  [
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    setTitle(booksData?.title || "");
+    setName(booksData?.name || "");
+    setDescription(booksData?.description || "");
+    descriptionRef.current = booksData?.description || "";
+    setSelectedImages(booksData?.images || []);
+  }, [
     booksData?.title,
     booksData?.name,
     booksData?.description,
-    booksData?.images
-]);
+    booksData?.images,
+  ]);
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -80,7 +79,8 @@ const Books = () => {
     e.preventDefault();
 
     if (isEditable) {
-      const descriptionContent = descriptionRef.current || "No description provided"; //  Get latest content from ref
+      const descriptionContent =
+        descriptionRef.current || "No description provided"; //  Get latest content from ref
 
       const booksDataToSend = {
         title,
@@ -97,11 +97,11 @@ const Books = () => {
             booksData: booksDataToSend,
           })
         );
-         const updatedData = await dispatch(fetchBooksData()).unwrap();
-                 setDescription(updatedData.description || descriptionContent); // Update state with saved data
-                 descriptionRef.current = updatedData.description || descriptionContent; //  Sync ref with saved data
+        const updatedData = await dispatch(fetchBooksData()).unwrap();
+        setDescription(updatedData.description || descriptionContent);
+        descriptionRef.current = updatedData.description || descriptionContent;
         setRemoveImages([]);
-         dispatch(fetchBooksData());
+        dispatch(fetchBooksData());
       } catch (error) {
         console.error("Error saving/updating data: ", error);
       }
@@ -130,127 +130,122 @@ const Books = () => {
     setSelectedImage(null);
   };
 
+  if (status === "loading" || showLoader)
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
 
-    if (status === "loading" || showLoader)
-      return (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          height="50vh"
-        >
-          <CircularProgress />
-        </Box>
-      );
-  
-    if (status === "error")
-      return (
-        <Typography variant="h6" color="error">
-          Error: {status}
-        </Typography>
-      );
-  
+  if (status === "error")
+    return (
+      <Typography variant="h6" color="error">
+        Error: {status}
+      </Typography>
+    );
 
   return (
     <Box>
-      <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold",mt:8 }}>
+      <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold", mt: 8 }}>
         {title}
       </Typography>
       <Paper sx={{ p: 0, borderRadius: 0, boxShadow: 0 }}>
-        
-          <form onSubmit={handleEditSave}>
-            <TextField
-              fullWidth
-              label="Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              disabled={!isEditable}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={!isEditable}
-              sx={{ mb: 2 }}
-            />
+        <form onSubmit={handleEditSave}>
+          <TextField
+            fullWidth
+            label="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            disabled={!isEditable}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={!isEditable}
+            sx={{ mb: 2 }}
+          />
 
-            <Typography variant="h6" sx={{ mt: 2 }}>
-              Book Description
-            </Typography>
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Book Description
+          </Typography>
 
-            <JoditEditor
-              ref={editor}
-              value={description}
-              config={{
-                readonly: !isEditable,
-                height: 500,
-                uploader: {
-                  insertImageAsBase64URI: true, 
+          <JoditEditor
+            ref={editor}
+            value={description}
+            config={{
+              readonly: !isEditable,
+              height: 500,
+              uploader: {
+                insertImageAsBase64URI: true,
+              },
+              filebrowser: {
+                ajax: {
+                  url: "/upload",
                 },
-                filebrowser: {
-                  ajax: {
-                    url: "/upload", 
-                  },
-                },
-                image: {
-                  openOnDblClick: true,
-                  editSrc: true,
-                  allowDragAndDropFileToEditor: true, 
-                },
-                toolbarSticky: false,
-              }}
-              onChange={(newContent) => (descriptionRef.current = newContent)}
+              },
+              image: {
+                openOnDblClick: true,
+                editSrc: true,
+                allowDragAndDropFileToEditor: true,
+              },
+              toolbarSticky: false,
+            }}
+            onChange={(newContent) => (descriptionRef.current = newContent)}
+          />
+
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Upload Book Cover
+          </Typography>
+
+          {isEditable && (
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageUpload}
+              style={{ marginBottom: "1rem" }}
             />
+          )}
 
+          <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
+            {selectedImages.map((image, index) => (
+              <Box key={index} sx={{ position: "relative" }}>
+                <Avatar
+                  src={renderImageSource(image)}
+                  sx={{ width: 100, height: 100 }}
+                  onClick={() => handleImageClick(renderImageSource(image))}
+                />
+                {isEditable && (
+                  <IconButton
+                    onClick={() => handleImageRemove(index)}
+                    sx={{
+                      position: "absolute",
+                      top: -10,
+                      right: -10,
+                      backgroundColor: "white",
+                    }}
+                  >
+                    <DeleteIcon color="error" />
+                  </IconButton>
+                )}
+              </Box>
+            ))}
+          </Stack>
 
-            <Typography variant="h6" sx={{ mt: 2 }}>
-              Upload Book Cover
-            </Typography>
-
-            {isEditable && (
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageUpload}
-                style={{ marginBottom: "1rem" }}
-              />
-            )}
-
-            <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
-              {selectedImages.map((image, index) => (
-                <Box key={index} sx={{ position: "relative" }}>
-                  <Avatar
-                    src={renderImageSource(image)}
-                    sx={{ width: 100, height: 100 }}
-                    onClick={() => handleImageClick(renderImageSource(image))}
-                  />
-                  {isEditable && (
-                    <IconButton
-                      onClick={() => handleImageRemove(index)}
-                      sx={{
-                        position: "absolute",
-                        top: -10,
-                        right: -10,
-                        backgroundColor: "white",
-                      }}
-                    >
-                      <DeleteIcon color="error" />
-                    </IconButton>
-                  )}
-                </Box>
-              ))}
-            </Stack>
-
-            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-              <Button type="submit" variant="contained">
-                {isEditable ? "Save" : "Edit"}
-              </Button>
-            </Stack>
-          </form>
-        
+          <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+            <Button type="submit" variant="contained">
+              {isEditable ? "Save" : "Edit"}
+            </Button>
+          </Stack>
+        </form>
       </Paper>
       <Modal
         open={openModal}
@@ -272,7 +267,7 @@ const Books = () => {
             <img
               src={selectedImage}
               alt="Full view"
-              style={{  maxHeight: "100%", objectFit: "contain" }}
+              style={{ maxHeight: "100%", objectFit: "contain" }}
             />
           )}
         </Box>

@@ -15,15 +15,12 @@ import {
   TablePagination,
 } from "@mui/material";
 
-
 function Subscribers() {
   const dispatch = useDispatch();
-  const { data: subscribers, loading, error } = useSelector((state) => state.subscribers);
+  const { data: subscribers, loading } = useSelector((state) => state.subscribers);
   const [showLoader, setShowLoader] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  // const [startDate, setStartDate] = useState("");
-  // const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     dispatch(fetchSubscribers());
@@ -36,6 +33,7 @@ function Subscribers() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Loader
   if (loading || showLoader)
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
@@ -52,20 +50,6 @@ function Subscribers() {
     setPage(0);
   };
 
-  if (error)
-    return (
-      <Typography color="error" align="center" mt={4}>
-        Error: {error}
-      </Typography>
-    );
-
-  if (!Array.isArray(subscribers) || subscribers.length === 0)
-    return (
-      <Typography align="center" mt={4}>
-        No subscribers found.
-      </Typography>
-    );
-
   return (
     <>
       <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", mt: 8 }}>
@@ -78,7 +62,8 @@ function Subscribers() {
           p: 0,
           maxWidth: "100%",
           overflowX: "auto",
-          boxShadow: 0, borderRadius: 0 ,
+          boxShadow: 0,
+          borderRadius: 0,
         }}
       >
         <Table sx={{ width: "100%" }}>
@@ -91,15 +76,23 @@ function Subscribers() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {subscribers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((subscriber, index) => (
-                <TableRow key={subscriber._id}>
-                  <TableCell align="center">{page * rowsPerPage + index + 1}</TableCell>
-                  <TableCell>{subscriber.email}</TableCell>
-                  <TableCell>{subscriber.status}</TableCell>
-                  <TableCell>{new Date(subscriber.createdAt).toLocaleDateString()}</TableCell>
-                </TableRow>
-              ))}
+            {Array.isArray(subscribers) && subscribers.length > 0 ? (
+              subscribers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((subscriber, index) => (
+                  <TableRow key={subscriber._id}>
+                    <TableCell align="center">{page * rowsPerPage + index + 1}</TableCell>
+                    <TableCell>{subscriber.email}</TableCell>
+                    <TableCell>{subscriber.status}</TableCell>
+                    <TableCell>{new Date(subscriber.createdAt).toLocaleDateString()}</TableCell>
+                  </TableRow>
+                ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  <Typography>No subscribers found.</Typography>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
 

@@ -20,7 +20,7 @@ function DonationCollections() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const { data: donations, error } = useSelector((state) => state.donations);
+  const { data: donations} = useSelector((state) => state.donations);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -45,28 +45,9 @@ function DonationCollections() {
 
   if (loading)
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="50vh"
-      >
+      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
         <CircularProgress />
       </Box>
-    );
-
-  if (error)
-    return (
-      <Typography color="error" align="center" mt={4}>
-        Error: {error}
-      </Typography>
-    );
-
-  if (!Array.isArray(donations) || donations.length === 0)
-    return (
-      <Typography align="center" mt={4}>
-        No donations found.
-      </Typography>
     );
 
   return (
@@ -76,94 +57,59 @@ function DonationCollections() {
       </Typography>
 
       <Paper>
-        {loading ? (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "400px",
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        ) : (
-          <TableContainer
-            component={Paper}
-            sx={{
-              borderRadius: 0,
-              boxShadow: 0,
-              maxWidth: "100%",
-              overflowX: "auto",
-            }}
-          >
-            <Table sx={{ width: "100%" }}>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: "#3387e8" }}>
-                  <TableCell
-                    align="center"
-                    sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}
-                  >
-                    No.
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
-                    Full Name
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
-                    Email
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
-                    Phone
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
-                    Amount
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
-                  OrderId
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
-                  PaymentStatus
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
-                  PaymentId
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
-                    Date
+        <TableContainer component={Paper} sx={{ borderRadius: 0, boxShadow: 0, maxWidth: "100%", overflowX: "auto" }}>
+          <Table sx={{ width: "100%" }}>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: "#3387e8" }}>
+                <TableCell align="center" sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>No.</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Full Name</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Email</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Phone</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Amount</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>OrderId</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>PaymentStatus</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>PaymentId</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Date</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {Array.isArray(donations) && donations.length > 0 ? (
+                donations.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((donation, index) => (
+                  <TableRow key={donation._id}>
+                    <TableCell align="center">{page * rowsPerPage + index + 1}</TableCell>
+                    <TableCell>{donation.full_name}</TableCell>
+                    <TableCell>{donation.email}</TableCell>
+                    <TableCell>{donation.phone}</TableCell>
+                    <TableCell>₹{donation.amount}</TableCell>
+                    <TableCell>{donation.orderId}</TableCell>
+                    <TableCell>{donation.paymentStatus}</TableCell>
+                    <TableCell>{donation.paymentId}</TableCell>
+                    <TableCell>{new Date(donation.createdAt).toLocaleDateString()}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={9} align="center">
+                    No donations found.
                   </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {donations
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((donation, index) => (
-                    <TableRow key={donation._id}>
-                      <TableCell align="center">{page * rowsPerPage + index + 1}</TableCell>
-                      <TableCell>{donation.full_name}</TableCell>
-                      <TableCell>{donation.email}</TableCell>
-                      <TableCell>{donation.phone}</TableCell>
-                      <TableCell>₹{donation.amount}</TableCell>
-                      <TableCell>{donation.orderId}</TableCell>
-                      <TableCell>{donation.paymentStatus}</TableCell>
-                      <TableCell>{donation.paymentId}</TableCell>
-                      <TableCell>
-                        {new Date(donation.createdAt).toLocaleDateString()}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-            <Box display="flex" justifyContent="center" width="100%" mt={2}>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={donations.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-            </Box>
-          </TableContainer>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {Array.isArray(donations) && donations.length > 0 && (
+          <Box display="flex" justifyContent="center" width="100%" mt={2}>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={donations.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </Box>
         )}
       </Paper>
     </>

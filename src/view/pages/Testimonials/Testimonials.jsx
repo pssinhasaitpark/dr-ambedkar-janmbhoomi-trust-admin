@@ -16,7 +16,6 @@ import {
   Box,
   Typography,
   CircularProgress,
-  Alert,
   TablePagination,
   Tooltip,
   IconButton,
@@ -30,7 +29,7 @@ import { Delete } from "@mui/icons-material";
 
 function Testimonials() {
   const dispatch = useDispatch();
-  const { testimonials, loading, error } = useSelector(
+  const { testimonials, loading} = useSelector(
     (state) => state.testimonials
   );
   const [expandedRows, setExpandedRows] = useState({});
@@ -71,13 +70,6 @@ function Testimonials() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
-  if (error)
-    return (
-      <Alert severity="error" style={{ margin: "20px" }}>
-        {error}
-      </Alert>
-    );
 
   const handleOpenDialog = (id) => {
     setSelectedTestimonialId(id);
@@ -148,7 +140,7 @@ function Testimonials() {
               ) : (
                 testimonials
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((testimonial) => (
+                  ?.map((testimonial) => (
                     <TableRow key={testimonial._id}>
                       {/* <TableCell>{testimonial.description}</TableCell> */}
                       <TableCell>
