@@ -33,7 +33,7 @@ const About = () => {
   const status = useSelector((state) => state.about.status);
   const [showLoader, setShowLoader] = useState(true);
   useEffect(() => {
-dispatch(fetchAboutData());
+    dispatch(fetchAboutData());
   }, [dispatch]);
 
   useEffect(() => {
@@ -44,20 +44,18 @@ dispatch(fetchAboutData());
     return () => clearTimeout(timer);
   }, []);
 
-
   useEffect(() => {
     setTitle(aboutData?.title || "About");
     setName(aboutData?.name || "");
     setBiography(aboutData?.biography || "");
     biographyRef.current = aboutData?.biography || "";
     setSelectedImages(aboutData?.images || []);
-}, [
+  }, [
     aboutData?.title,
     aboutData?.name,
     aboutData?.biography,
-    aboutData?.images
-]);
-
+    aboutData?.images,
+  ]);
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -122,7 +120,7 @@ dispatch(fetchAboutData());
         alignItems="center"
         height="50vh"
       >
-        <CircularProgress/>
+        <CircularProgress />
       </Box>
     );
 
@@ -139,98 +137,98 @@ dispatch(fetchAboutData());
         {title}
       </Typography>
       <Paper sx={{ p: 0, borderRadius: 0, boxShadow: 0 }}>
-     
-          <form onSubmit={handleEditSave}>
-            <TextField
-              fullWidth
-              label="Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              disabled={!isEditable}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={!isEditable}
-              sx={{ mb: 2 }}
-            />
-            <Typography variant="h6" sx={{ mt: 2 }}>
-              Biography
-            </Typography>
+        <form onSubmit={handleEditSave}>
+          <TextField
+            fullWidth
+            label="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            disabled={!isEditable}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={!isEditable}
+            sx={{ mb: 2 }}
+          />
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Biography
+          </Typography>
 
-            <JoditEditor
-              ref={editor}
-              value={biography}
-              config={{
-                readonly: !isEditable,
-                height: 300,
-                uploader: {
-                  insertImageAsBase64URI: true,
+          <JoditEditor
+            ref={editor}
+            value={biography}
+            config={{
+              readonly: !isEditable,
+              height: 300,
+              uploader: {
+                insertImageAsBase64URI: true,
+              },
+              filebrowser: {
+                ajax: {
+                  url: "/upload",
                 },
-                filebrowser: {
-                  ajax: {
-                    url: "/upload",
-                  },
-                },
-                image: {
-                  openOnDblClick: true,
-                  editSrc: true,
-                  allowDragAndDropFileToEditor: true,
-                },
-                toolbarSticky: false,
-              }}
-              onChange={(newContent) => (biographyRef.current = newContent)}
+              },
+              image: {
+                openOnDblClick: true,
+                editSrc: true,
+                allowDragAndDropFileToEditor: true,
+              },
+              toolbarSticky: false,
+            }}
+            onChange={(newContent) => (biographyRef.current = newContent)}
+          />
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Upload Banner Image
+          </Typography>
+          {selectedImages.length === 0 && isEditable && (
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageUpload}
+              style={{ margin: "20px 0" }}
             />
-            <Typography variant="h6" sx={{ mt: 2 }}>
-              Upload Banner Image
-            </Typography>
-            {selectedImages.length === 0 && isEditable && (
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageUpload}
-                style={{ margin: "20px 0" }}
-              />
-            )}
-            <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
-              {selectedImages.map((image, index) => (
-                <Box key={index} sx={{ position: "relative" }}>
-                  <SlideshowLightbox>
-                    <img
-                      src={renderImageSource(image)}
-                      alt={`Uploaded ${index}`}
-                      style={{
-                        width: "30%",
-                        height: "30%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </SlideshowLightbox>
-                  {isEditable && (
-                    <IconButton
-                      onClick={() => handleImageRemove(index)}
-                      sx={{
-                        position: "absolute",
-                        top: -10,
-                        backgroundColor: "white",
-                      }}
-                    >
-                      <DeleteIcon color="error" />
-                    </IconButton>
-                  )}
-                </Box>
-              ))}
-            </Stack>
-            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-              <Button type="submit" variant="contained">
-                {isEditable ? "Save" : "Edit"}
-              </Button>
-            </Stack>
-          </form>    
+          )}
+          <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
+            {selectedImages.map((image, index) => (
+              <Box key={index} sx={{ position: "relative" }}>
+                <SlideshowLightbox>
+                  <img
+                    src={renderImageSource(image)}
+                    alt={`Uploaded ${index}`}
+                    style={{
+                      width: "100px", 
+                      height: "100px", 
+                      objectFit: "cover",
+                      borderRadius: "50%",
+                    }}
+                  />
+                </SlideshowLightbox>
+                {isEditable && (
+                  <IconButton
+                    onClick={() => handleImageRemove(index)}
+                    sx={{
+                      position: "absolute",
+                      top: -10,
+                      backgroundColor: "white",
+                    }}
+                  >
+                    <DeleteIcon color="error" />
+                  </IconButton>
+                )}
+              </Box>
+            ))}
+          </Stack>
+          <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+            <Button type="submit" variant="contained">
+              {isEditable ? "Save" : "Edit"}
+            </Button>
+          </Stack>
+        </form>
       </Paper>
     </Box>
   );
