@@ -46,6 +46,8 @@ const TrusteeManagement = () => {
   const [editMode, setEditMode] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [showLoader, setShowLoader] = useState(true);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedTrusteeId, setSelectedTrusteeId] = useState(null);
   const [formData, setFormData] = useState({
     user_name: "",
     full_name: "",
@@ -229,10 +231,39 @@ const TrusteeManagement = () => {
         setImagePreview("");
       });
   };
-  const handleDelete = (_id) => {
-    if (window.confirm("Are you sure you want to delete this trustee?")) {
-      dispatch(deleteTrustee(_id));
+  // const handleDelete = (_id) => {
+  //   if (window.confirm("Are you sure you want to delete this trustee?")) {
+  //     dispatch(deleteTrustee(_id));
+  //   }
+  // };
+
+  const handleDelete = async () => {
+    if (selectedTrusteeId) {
+      try {
+        await dispatch(deleteTrustee(selectedTrusteeId)).unwrap();
+        setSnackbarMessage("Trustee deleted successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+      } catch (error) {
+        console.error("Error deleting trustee:", error);
+        setSnackbarMessage("Failed to delete the trustee. Please try again.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      }
+      handleCloseDeleteDialog(); // Close the delete confirmation dialog
     }
+  };
+
+  // Open delete confirmation dialog
+  const handleOpenDialog = (id) => {
+    setSelectedTrusteeId(id);
+    setOpenDialog(true);
+  };
+
+  // Close delete confirmation dialog
+  const handleCloseDeleteDialog = () => {
+    setOpenDialog(false);
+    setSelectedTrusteeId(null);
   };
 
   const filteredTrustees = trustees.filter((trustee) => {
@@ -368,7 +399,7 @@ const TrusteeManagement = () => {
                         <Edit />
                       </IconButton>
                       <IconButton
-                        onClick={() => handleDelete(trustee._id)}
+                        onClick={() => handleOpenDialog(trustee._id)}
                         color="error"
                       >
                         <Delete />
@@ -390,6 +421,21 @@ const TrusteeManagement = () => {
             />
           </Box>
         </TableContainer>
+        {/* Confirmation Dialog */}
+        <Dialog open={openDialog} onClose={handleCloseDeleteDialog}>
+          <DialogTitle>Confirm Deletion</DialogTitle>
+          <DialogContent>
+            Are you sure you want to delete this trustee?
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDeleteDialog} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={handleDelete} color="error" autoFocus>
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Snackbar for success/error messages */}
         <Snackbar

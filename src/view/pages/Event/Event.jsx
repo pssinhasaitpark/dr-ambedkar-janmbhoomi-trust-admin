@@ -209,13 +209,14 @@ const Events = () => {
                 }}
               >
                 <SlideshowLightbox>
-                  <img
+                <img
                     src={renderImageSource(image)}
                     alt={`Uploaded ${index}`}
                     style={{
-                      width: "30%",
-                      height: "30%",
+                      width: "100px", 
+                      height: "100px", 
                       objectFit: "cover",
+                      borderRadius: "50%",
                     }}
                   />
                 </SlideshowLightbox>
