@@ -16,7 +16,6 @@ import {
   fetchDonationData,
   saveDonationToBackend,
 } from "../../redux/slice/donationSlice";
-// import debounce from "lodash.debounce";
 
 const Donation = () => {
   const dispatch = useDispatch();
@@ -35,20 +34,15 @@ const Donation = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (donationData) {
-      setTitle(donationData.title || "Donation");
-      setName(donationData.name || "");
-      setDescription(donationData.description || "");
-      setSelectedImages(donationData.images || []);
-    }
-  }, [donationData]);
-
-  // const debouncedEditorChange = useCallback(
-  //   debounce((newContent) => {
-  //     setDescription(newContent);
-  //   }, 3000),
-  //   []
-  // );
+      setTitle(donationData?.title || "Donation");
+      setName(donationData?.name || "");
+      setDescription(donationData?.description || "");
+      setSelectedImages(donationData?.images || []);
+  }, [donationData?.title,
+    donationData?.name,
+    donationData?.description,
+    donationData?.images,
+  ]);
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);

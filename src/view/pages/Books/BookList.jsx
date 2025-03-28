@@ -399,11 +399,32 @@ function BookList() {
             <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
               Description:
             </Typography>
-            <JoditEditor
+            {/* <JoditEditor
               ref={editorRef}
               value={formData.description}
               onChange={(content) => {
                 setFormData((prev) => ({ ...prev, description: content }));
+              }}
+              onPaste={(event) => {
+                event.preventDefault();
+                const text = (
+                  event.clipboardData || window.clipboardData
+                ).getData("text");
+                const editor = editorRef.current;
+                if (editor) {
+                  editor.selection.insertHTML(text);
+                }
+              }}
+            /> */}
+
+            <JoditEditor
+              ref={editorRef}
+              value={formData.description}
+              onBlur={(newContent) => {
+                setFormData((prev) => ({ ...prev, description: newContent }));
+              }}
+              onChange={() => {
+                // Do nothing here to avoid cursor jumping issues
               }}
               onPaste={(event) => {
                 event.preventDefault();

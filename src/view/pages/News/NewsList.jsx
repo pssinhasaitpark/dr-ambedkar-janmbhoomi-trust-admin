@@ -175,8 +175,8 @@ function NewsList() {
   const handleRemoveImage = (index) => {
     setFormData((prev) => {
       const updatedImages = [...prev.images];
-      const imageToRemove = updatedImages[index]; 
-      updatedImages.splice(index, 1); 
+      const imageToRemove = updatedImages[index];
+      updatedImages.splice(index, 1);
       if (typeof imageToRemove === "string") {
         setRemoveImages((prevRemoveImages) => [
           ...prevRemoveImages,
@@ -187,11 +187,27 @@ function NewsList() {
     });
   };
 
-  const toggleReadMore = (id) => {
+  const toggleReadMore = (id, column) => {
     setExpandedRows((prev) => ({
       ...prev,
-      [id]: !prev[id],
+      [id]: {
+        ...prev[id], // Keep existing expanded states for other columns
+        [column]: !prev[id]?.[column], // Toggle only the specific column
+      },
     }));
+  };
+  const formatText = (text, expanded) => {
+    if (!text) return "";
+    const words = text.split(" ");
+    const lines = [];
+
+    for (let i = 0; i < words.length; i += 10) {
+      lines.push(words.slice(i, i + 10).join(" "));
+    }
+
+    return expanded
+      ? lines.join("\n")
+      : lines[0] + (lines.length > 1 ? "..." : "");
   };
 
   return (
@@ -214,10 +230,12 @@ function NewsList() {
               alignItems="center"
               mb={3}
             >
-             
-               <Typography variant="h5" sx={{ mb: 0, fontWeight: "bold", mt: 0 }}>
-               Manage News
-                        </Typography>
+              <Typography
+                variant="h5"
+                sx={{ mb: 0, fontWeight: "bold", mt: 0 }}
+              >
+                Manage News
+              </Typography>
               <Button
                 variant="contained"
                 startIcon={<Add />}
@@ -253,42 +271,55 @@ function NewsList() {
                         <TableCell>
                           <Typography
                             variant="body1"
-                            sx={{ maxWidth: "200px", display: "inline" }}
+                            sx={{
+                              maxWidth: "200px",
+                              whiteSpace: "pre-line",
+                              display: "inline",
+                            }}
                           >
-                            {expandedRows[newsItem?.id] ||
-                            newsItem?.headline?.length <= 50
-                              ? newsItem?.headline
-                              : `${newsItem?.headline?.substring(0, 50)}...`}
+                            {formatText(
+                              newsItem?.headline,
+                              expandedRows[newsItem?.id]?.headline
+                            )}
                           </Typography>
-                          {newsItem?.headline?.length > 50 && (
+                          {newsItem?.headline?.split(" ").length > 15 && (
                             <Button
                               size="small"
-                              onClick={() => toggleReadMore(newsItem?.id)}
+                              onClick={() =>
+                                toggleReadMore(newsItem?.id, "headline")
+                              }
                               sx={{ textTransform: "none", color: "#007BFF" }}
                             >
-                              {expandedRows[newsItem?.id]
+                              {expandedRows[newsItem?.id]?.headline
                                 ? "Read Less"
                                 : "Read More"}
                             </Button>
                           )}
                         </TableCell>
+
                         <TableCell>
                           <Typography
                             variant="body1"
-                            sx={{ maxWidth: "200px", display: "inline" }}
+                            sx={{
+                              maxWidth: "200px",
+                              whiteSpace: "pre-line",
+                              display: "inline",
+                            }}
                           >
-                            {expandedRows[newsItem?.id] ||
-                            newsItem?.latest_news?.length <= 50
-                              ? newsItem?.latest_news
-                              : `${newsItem?.latest_news?.substring(0, 50)}...`}
+                            {formatText(
+                              newsItem?.latest_news,
+                              expandedRows[newsItem?.id]?.latest_news
+                            )}
                           </Typography>
-                          {newsItem?.latest_news?.length > 50 && (
+                          {newsItem?.latest_news?.split(" ").length > 15 && (
                             <Button
                               size="small"
-                              onClick={() => toggleReadMore(newsItem?.id)}
+                              onClick={() =>
+                                toggleReadMore(newsItem?.id, "latest_news")
+                              }
                               sx={{ textTransform: "none", color: "#007BFF" }}
                             >
-                              {expandedRows[newsItem?.id]
+                              {expandedRows[newsItem?.id]?.latest_news
                                 ? "Read Less"
                                 : "Read More"}
                             </Button>
@@ -397,29 +428,27 @@ function NewsList() {
             <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
               Description:
             </Typography>
+
             <JoditEditor
-              ref={editorRef} // Pass the ref to the editor
+              ref={editorRef}
               value={formData.description}
-              onChange={(content) => {
-                setFormData((prev) => ({ ...prev, description: content }));
+              onBlur={(newContent) => {
+                setFormData((prev) => ({ ...prev, description: newContent }));
+              }}
+              onChange={() => {
+                // Do nothing here to avoid cursor jumping issues
               }}
               onPaste={(event) => {
-                // Prevent default paste behavior
                 event.preventDefault();
-
-                // Get the pasted data
                 const text = (
                   event.clipboardData || window.clipboardData
                 ).getData("text");
-
-                // Insert the text at the current cursor position
                 const editor = editorRef.current;
                 if (editor) {
                   editor.selection.insertHTML(text);
                 }
               }}
             />
-
             <Box sx={{ mt: 2 }}>
               <Typography variant="subtitle1">Upload Images:</Typography>
               <Button
@@ -441,21 +470,21 @@ function NewsList() {
               <Box display="flex" flexWrap="wrap" gap={2} mt={2}>
                 {formData.images.map((image, index) => (
                   <Box
-                  key={`${image}-${index}`}
+                    key={`${image}-${index}`}
                     sx={{ position: "relative", width: 80, height: 80 }}
                   >
                     <SlideshowLightbox>
-                    <img
-                      src={
-                        image instanceof File
-                          ? URL.createObjectURL(image)
-                          : image
-                      }
-                      alt={`image-${index}`}
-                      width="100%"
-                      height="100%"
-                      style={{ borderRadius: 8, objectFit: "cover" }}
-                    />
+                      <img
+                        src={
+                          image instanceof File
+                            ? URL.createObjectURL(image)
+                            : image
+                        }
+                        alt={`image-${index}`}
+                        width="100%"
+                        height="100%"
+                        style={{ borderRadius: 8, objectFit: "cover" }}
+                      />
                     </SlideshowLightbox>
                     <IconButton
                       size="small"
