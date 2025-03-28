@@ -171,8 +171,8 @@ function EventList() {
   const handleRemoveImage = (index) => {
     setFormData((prev) => {
       const updatedImages = [...prev.images];
-      const imageToRemove = updatedImages[index]; 
-      updatedImages.splice(index, 1); 
+      const imageToRemove = updatedImages[index];
+      updatedImages.splice(index, 1);
       if (typeof imageToRemove === "string") {
         setRemoveImages((prevRemoveImages) => [
           ...prevRemoveImages,
@@ -253,7 +253,7 @@ function EventList() {
                           {event.images && event.images.length > 0 ? (
                             <SlideshowLightbox>
                               <img
-                                src={event.images[0]} 
+                                src={event.images[0]}
                                 alt="Event"
                                 style={{
                                   width: 60,
@@ -360,8 +360,11 @@ function EventList() {
             <JoditEditor
               ref={editorRef}
               value={formData.description}
-              onChange={(content) => {
-                setFormData((prev) => ({ ...prev, description: content }));
+              onBlur={(newContent) => {
+                setFormData((prev) => ({ ...prev, description: newContent }));
+              }}
+              onChange={() => {
+                // Do nothing here to avoid cursor jumping issues
               }}
               onPaste={(event) => {
                 event.preventDefault();
@@ -374,6 +377,7 @@ function EventList() {
                 }
               }}
             />
+
             <Box sx={{ mt: 2 }}>
               <Typography variant="subtitle1">Upload Images:</Typography>
               <Button

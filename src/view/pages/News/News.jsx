@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -13,17 +13,13 @@ import {
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchNewsData,
-  saveNewsToBackend,
-} from "../../redux/slice/newsSlice";
-import debounce from "lodash.debounce";
+import { fetchNewsData, saveNewsToBackend } from "../../redux/slice/newsSlice";
 
 const News = () => {
   const dispatch = useDispatch();
   const newsData = useSelector((state) => state.news) || {};
   const editor = useRef(null);
-
+  const descriptionRef = useRef("");
   const [title, setTitle] = useState("News");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -32,42 +28,29 @@ const News = () => {
   const [isEditable, setIsEditable] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   dispatch(fetchNewsData());
-  // }, [dispatch]);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      await dispatch(fetchNewsData());
 
-    useEffect(() => {
-      const fetchData = async () => {
-        setLoading(true);
-        await dispatch(fetchNewsData());
-   
-        setTimeout(() => {
-          setLoading(false); 
-        }, 500); 
-      };
-      fetchData();
-    }, [dispatch]);
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
+    };
+    fetchData();
+  }, [dispatch]);
 
-    useEffect(() => {
-      setTitle(newsData?.title || "News");
-      setName(newsData?.name || "");
-      setDescription(newsData?.description || "");
-      setSelectedImages(newsData?.images || []);
+  useEffect(() => {
+    setTitle(newsData?.title || "News");
+    setName(newsData?.name || "");
+    setDescription(newsData?.description || "");
+    setSelectedImages(newsData?.images || []);
   }, [
-      newsData?.title,
-      newsData?.name,
-      newsData?.description,
-      newsData?.images
+    newsData?.title,
+    newsData?.name,
+    newsData?.description,
+    newsData?.images,
   ]);
-  
-
-  const debouncedEditorChange = useCallback(
-    debounce((newContent) => {
-      setDescription(newContent);
-    }, 3000),
-    []
-  );
-  
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -104,7 +87,7 @@ const News = () => {
           })
         );
         setRemoveImages([]);
-       dispatch(fetchNewsData()); 
+        dispatch(fetchNewsData());
       } catch (error) {
         console.error("Error saving/updating data: ", error);
       }
@@ -128,132 +111,108 @@ const News = () => {
         {title}
       </Typography>
       <Paper sx={{ p: 3, borderRadius: 0, boxShadow: 0 }}>
-           {loading ? ( 
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      height: "400px",
-                    }}
-                  >
-                    <CircularProgress />
-                  </Box>
-                ) : (
-        <form onSubmit={handleEditSave}>
-          <TextField
-            fullWidth
-            label="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={!isEditable}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={!isEditable}
-            sx={{ mb: 2 }}
-          />
-
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            News Description
-          </Typography>
-          <JoditEditor
-            ref={editor}
-            value={description}
-            config={{
-              readonly: !isEditable,
-              placeholder: "Write news content...",
-              height: 400,
-              cleanOnPaste: false,
-              cleanOnChange: false,
-              toolbar: {
-                items: [
-                  "bold",
-                  "italic",
-                  "underline",
-                  "strikethrough",
-                  "eraser",
-                  "|",
-                  "font",
-                  "fontsize",
-                  "paragraph",
-                  "|",
-                  "align",
-                  "outdent",
-                  "indent",
-                  "|",
-                  "link",
-                  "image",
-                  "video",
-                  "table",
-                  "line",
-                  "code",
-                  "fullsize",
-                  "undo",
-                  "redo",
-                ],
-              },
-              uploader: {
-                insertImageAsBase64URI: true,
-                url: "/upload",
-                format: "json",
-              },
+        {loading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "400px",
             }}
-            style={{ width: "100%", minHeight: "200px" }}
-            onChange={debouncedEditorChange}
-            onBlur={(newContent) => setDescription(newContent?.trim() || "")}
-          />
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Upload News Images
-          </Typography>
-
-          {isEditable && (
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              style={{ marginBottom: "1rem" }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
+          <form onSubmit={handleEditSave}>
+            <TextField
+              fullWidth
+              label="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              disabled={!isEditable}
+              sx={{ mb: 2 }}
             />
-          )}
+            <TextField
+              fullWidth
+              label="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={!isEditable}
+              sx={{ mb: 2 }}
+            />
 
-          <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
-            {selectedImages.map((image, index) => (
-              <Box key={index} sx={{ position: "relative" }}>
-                <Avatar
-                  src={renderImageSource(image)}
-                  sx={{ width: 100, height: 100 }}
-                />
-                {isEditable && (
-                  <IconButton
-                    onClick={() => handleImageRemove(index)}
-                    sx={{
-                      position: "absolute",
-                      top: -10,
-                      right: -10,
-                      backgroundColor: "white",
-                    }}
-                  >
-                    <DeleteIcon color="error" />
-                  </IconButton>
-                )}
-              </Box>
-            ))}
-          </Stack>
+            <Typography variant="h6" sx={{ mt: 2 }}>
+              News Description
+            </Typography>
+            <JoditEditor
+              ref={editor}
+              value={description}
+              config={{
+                readonly: !isEditable,
+                height: 500,
+                uploader: {
+                  insertImageAsBase64URI: true,
+                },
+                filebrowser: {
+                  ajax: {
+                    url: "/upload",
+                  },
+                },
+                image: {
+                  openOnDblClick: true,
+                  editSrc: true,
+                  allowDragAndDropFileToEditor: true,
+                },
+                toolbarSticky: false,
+              }}
+              onChange={(newContent) => (descriptionRef.current = newContent)}
+            />
+            <Typography variant="h6" sx={{ mt: 2 }}>
+              Upload News Images
+            </Typography>
 
-          <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-            <Button type="submit" variant="contained">
-              {isEditable ? "Save" : "Edit"}
-            </Button>
-          </Stack>
-        </form>
-          )}
+            {isEditable && (
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+                style={{ marginBottom: "1rem" }}
+              />
+            )}
+
+            <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
+              {selectedImages.map((image, index) => (
+                <Box key={index} sx={{ position: "relative" }}>
+                  <Avatar
+                    src={renderImageSource(image)}
+                    sx={{ width: 100, height: 100 }}
+                  />
+                  {isEditable && (
+                    <IconButton
+                      onClick={() => handleImageRemove(index)}
+                      sx={{
+                        position: "absolute",
+                        top: -10,
+                        right: -10,
+                        backgroundColor: "white",
+                      }}
+                    >
+                      <DeleteIcon color="error" />
+                    </IconButton>
+                  )}
+                </Box>
+              ))}
+            </Stack>
+
+            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+              <Button type="submit" variant="contained">
+                {isEditable ? "Save" : "Edit"}
+              </Button>
+            </Stack>
+          </form>
+        )}
       </Paper>
-
     </Box>
   );
 };
